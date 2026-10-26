@@ -1,0 +1,15 @@
+# Keep the image small and build fast.
+node_modules
+backend/.venv
+FarmIQ-rag/**/__pycache__
+backend/**/__pycache__
+**/__pycache__
+*.pyc
+dist
+.git
+.gitignore
+android
+public
+# Don't leak local secrets into the image (env vars are set in Render).
+backend/.env
+.env

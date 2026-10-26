@@ -1,0 +1,40 @@
+# Render Blueprint — deploys the FarmIQ backend as a Docker web service.
+# After connecting this repo to Render, the dashboard reads this file and
+# creates the service with the correct runtime, port, and env vars.
+# Secrets use `sync: false` — set their values in the Render dashboard
+# (Environment tab), never commit them here.
+services:
+  - type: web
+    name: farmiq-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      # ── Supabase (set values in dashboard) ──────────────────────────────
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # ── CORS — include the Android WebView origin + your web origin ──────
+      - key: FRONTEND_ORIGINS
+        value: "http://localhost:5173,http://127.0.0.1:5173,capacitor://localhost,http://localhost"
+      # ── ML/RAG asset paths (absolute, matching the Dockerfile layout) ───
+      - key: FARMIQ_ML_PROCESSED_PATH
+        value: "/app/FarmIQ-rag/datasets/processed"
+      - key: FARMIQ_ML_MODELS_PATH
+        value: "/app/FarmIQ-rag/models"
+      - key: FARMIQ_ML_RAW_PATH
+        value: "/app/FarmIQ-rag/datasets/raw"
+      # ── Speech-to-text (Groq Whisper) ───────────────────────────────────
+      - key: STT_API_KEY
+        sync: false
+      - key: STT_BASE_URL
+        value: "https://api.groq.com/openai/v1"
+      - key: STT_MODEL
+        value: "whisper-large-v3"
