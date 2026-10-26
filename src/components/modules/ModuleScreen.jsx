@@ -8,6 +8,9 @@ import CalendarManager from "./CalendarManager";
 import KnowledgeCenter from "./KnowledgeCenter";
 import SettingsPanel from "./SettingsPanel";
 import DeviceManager from "./DeviceManager";
+import SensorSimulator from "./SensorSimulator";
+import Schemes from "./Schemes";
+import MlopsDashboard from "./MlopsDashboard";
 
 /**
  * Renders the correct content component for a given module key,
@@ -48,6 +51,12 @@ export default function ModuleScreen({
         );
       case "devices":
         return <DeviceManager />;
+      case "sensor-simulator":
+        return <SensorSimulator />;
+      case "schemes":
+        return <Schemes />;
+      case "mlops":
+        return <MlopsDashboard />;
       case "crop-recommendation":
       case "fertilizer":
       case "irrigation":

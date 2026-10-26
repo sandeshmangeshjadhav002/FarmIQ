@@ -46,6 +46,33 @@ class ModelNotAvailableError(AppError):
         super().__init__(501, detail)
 
 
+class InputValidationError(AppError):
+    """A payload that failed *semantic* validation (outside the model's
+    supported ranges, missing, or not a number).
+
+    Distinct from FastAPI's ``RequestValidationError`` (which is about JSON
+    shape/type): this is raised after the request parsed successfully but the
+    values cannot honestly be fed to the model. It carries the structured
+    ``errors`` (blocking) plus any ``warnings`` (unusual-but-permitted values)
+    so the frontend can show exactly what to fix. Values are never clamped.
+    """
+
+    def __init__(
+        self,
+        detail: str,
+        errors: list[dict],
+        warnings: list[str] | None = None,
+        advisory: list[str] | None = None,
+    ):
+        super().__init__(
+            422,
+            detail,
+            errors=errors,
+            warnings=warnings or [],
+            advisory=advisory or [],
+        )
+
+
 def register_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error_handler(request: Request, exc: AppError):

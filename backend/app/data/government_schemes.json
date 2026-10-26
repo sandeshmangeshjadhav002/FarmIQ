@@ -1,0 +1,206 @@
+{
+  "metadata": {
+    "title": "Government Agricultural Schemes (India)",
+    "last_verified": "2026-10-26",
+    "verification_note": "Details are compiled from official Government of India scheme portals. Fields marked \"needs_verification\" could not be confirmed from a primary source at the time of writing and MUST be checked on the official portal or at a bank / Common Service Centre / agriculture office before acting. No eligibility condition, subsidy amount, or deadline is stated here unless it came from an official source.",
+    "disclaimer": "This is reference information, not an endorsement or an application. Scheme rules and amounts change; always confirm current details on the official portal linked for each scheme."
+  },
+  "legend": {
+    "confirmed": "Stated on the official government portal at last verification.",
+    "needs_verification": "General description only — specifics (eligibility, amounts, dates) were not confirmed from a primary source."
+  },
+  "schemes": [
+    {
+      "id": "pm-kisan",
+      "name": "PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)",
+      "category": "Income support",
+      "summary": "Direct income support paid to eligible landholding farmer families, credited as instalments directly to the bank account.",
+      "purpose": {
+        "text": "Provide direct income support to eligible landholding farmer families, paid in instalments directly to the bank account.",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Eligible landholding farmer families as defined by the scheme. Registration and Aadhaar-linked bank account details are required.",
+        "status": "needs_verification",
+        "note": "The exact eligibility definition and any exclusions can change — confirm on the official PM-KISAN portal."
+      },
+      "benefits": [
+        {
+          "text": "Income support paid in instalments directly to the beneficiary's bank account.",
+          "status": "confirmed"
+        },
+        {
+          "text": "The current instalment amount is not stated here because it is revised from time to time — confirm the latest figure on the official portal.",
+          "status": "needs_verification"
+        }
+      ],
+      "application_process": [
+        { "step": "Check current eligibility on the official PM-KISAN portal.", "status": "confirmed" },
+        { "step": "Register with Aadhaar and bank account details (self-service on the portal or via a Common Service Centre / agriculture office).", "status": "confirmed" },
+        { "step": "Await verification and instalment credit to the linked bank account.", "status": "confirmed" }
+      ],
+      "official_links": [
+        { "label": "PM-KISAN official portal", "url": "https://pmkisan.gov.in" }
+      ],
+      "last_verified": "2026-10-26"
+    },
+    {
+      "id": "pmfby",
+      "name": "PMFBY (Pradhan Mantri Fasal Bima Yojana)",
+      "category": "Crop insurance",
+      "summary": "Crop insurance against losses from natural calamities, pests and diseases, with the government subsidising most of the premium.",
+      "purpose": {
+        "text": "Insure farmers against crop losses from natural calamities, pests and diseases.",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Farmers growing notified crops in notified areas during a notified season. Enrolment is usually through banks, cooperatives, or the national crop insurance portal.",
+        "status": "needs_verification",
+        "note": "Notified crops and areas differ by state and season — confirm with your bank or the official portal."
+      },
+      "benefits": [
+        {
+          "text": "Farmers pay a modest share of the premium; the government subsidises the remaining premium.",
+          "status": "confirmed"
+        },
+        {
+          "text": "The exact premium share and sum-insured rules are set per season and are not stated here — confirm on the official portal.",
+          "status": "needs_verification"
+        }
+      ],
+      "application_process": [
+        { "step": "Enrol through your bank, cooperative, or the national crop insurance portal within the notified cut-off date for the season.", "status": "needs_verification" },
+        { "step": "Pay the farmer's share of the premium at enrolment.", "status": "confirmed" },
+        { "step": "If a crop loss occurs, report it promptly to the insurer / bank to raise a claim.", "status": "confirmed" }
+      ],
+      "official_links": [
+        { "label": "Pradhan Mantri Fasal Bima Yojana official portal", "url": "https://pmfby.gov.in" }
+      ],
+      "last_verified": "2026-10-26"
+    },
+    {
+      "id": "soil-health-card",
+      "name": "Soil Health Card Scheme",
+      "category": "Soil health / advisory",
+      "summary": "Soil-test-based information on nutrient status with crop-wise fertiliser recommendations, to improve fertiliser use efficiency.",
+      "purpose": {
+        "text": "Give farmers soil-test-based information on nutrient status and crop-wise fertiliser recommendations, to improve fertiliser use efficiency and reduce unnecessary spending.",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Farmers whose soil samples are collected and tested under the scheme. Samples are collected and tested, and a card is issued with recommendations.",
+        "status": "needs_verification",
+        "note": "How and when samples are collected varies by state — check with your local agriculture department."
+      },
+      "benefits": [
+        { "text": "A Soil Health Card giving nutrient status and crop-wise fertiliser recommendations.", "status": "confirmed" },
+        { "text": "Helps improve fertiliser use efficiency and reduce unnecessary spending.", "status": "confirmed" }
+      ],
+      "application_process": [
+        { "step": "Contact your local agriculture department / Krishi Vigyan Kendra to have soil samples collected and tested.", "status": "needs_verification" },
+        { "step": "Receive the Soil Health Card with nutrient status and recommendations.", "status": "confirmed" }
+      ],
+      "official_links": [
+        { "label": "Soil Health Card official portal", "url": "https://soilhealth.dac.gov.in" }
+      ],
+      "last_verified": "2026-10-26"
+    },
+    {
+      "id": "kcc",
+      "name": "Kisan Credit Card (KCC)",
+      "category": "Credit",
+      "summary": "Timely access to short-term credit for crop inputs and other needs, at concessional interest with prompt-repayment incentives.",
+      "purpose": {
+        "text": "Provide farmers with timely access to short-term credit for crop inputs and other needs, at concessional interest with prompt-repayment incentives.",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Available through banks; may also cover animal husbandry and fisheries needs in many cases.",
+        "status": "needs_verification",
+        "note": "Eligibility and documentation are decided by the issuing bank — confirm at your bank branch."
+      },
+      "benefits": [
+        { "text": "Short-term credit for crop inputs and related needs at concessional interest with prompt-repayment incentives.", "status": "confirmed" },
+        { "text": "The current interest rate and credit limit are not stated here — confirm with your bank.", "status": "needs_verification" }
+      ],
+      "application_process": [
+        { "step": "Apply at a bank that issues Kisan Credit Cards.", "status": "needs_verification" },
+        { "step": "Submit identity, land records, and bank account documents as required by the bank.", "status": "needs_verification" }
+      ],
+      "official_links": [],
+      "last_verified": "2026-10-26",
+      "verification_note": "Administered through banks; no single self-service application URL. Contact your bank branch."
+    },
+    {
+      "id": "pmksy",
+      "name": "Pradhan Mantri Krishi Sinchayee Yojana (PMKSY)",
+      "category": "Irrigation",
+      "summary": "Expands irrigation coverage (\"Har Khet Ko Pani\") and improves water-use efficiency (\"Per Drop More Crop\"), supporting micro-irrigation.",
+      "purpose": {
+        "text": "Expand irrigation coverage (\"Har Khet Ko Pani\") and improve water-use efficiency (\"Per Drop More Crop\").",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Supports micro-irrigation (drip and sprinkler). Applications are handled by the state agriculture / horticulture department.",
+        "status": "needs_verification",
+        "note": "State-level norms and subsidy percentages vary — confirm with your state agriculture / horticulture department."
+      },
+      "benefits": [
+        { "text": "Support for micro-irrigation (drip and sprinkler) with subsidies.", "status": "confirmed" },
+        { "text": "Subsidy amounts are set per state and are not stated here — confirm with your state department.", "status": "needs_verification" }
+      ],
+      "application_process": [
+        { "step": "Apply through your state agriculture / horticulture department.", "status": "confirmed" }
+      ],
+      "official_links": [],
+      "last_verified": "2026-10-26",
+      "verification_note": "State-administered; no single central self-service application URL. Contact your state agriculture / horticulture department."
+    },
+    {
+      "id": "enam",
+      "name": "e-NAM (National Agriculture Market)",
+      "category": "Market access",
+      "summary": "An online trading platform linking mandis to help farmers get better price discovery and access to more buyers.",
+      "purpose": {
+        "text": "Link mandis on an online trading platform to help farmers get better price discovery and reach more buyers.",
+        "status": "confirmed"
+      },
+      "eligibility": {
+        "text": "Farmers can sell produce through participating mandis and registered traders.",
+        "status": "needs_verification",
+        "note": "Participation depends on whether your local mandi is integrated — confirm locally."
+      },
+      "benefits": [
+        { "text": "Online access to participating mandis and registered traders for better price discovery.", "status": "confirmed" }
+      ],
+      "application_process": [
+        { "step": "Sell produce through a participating mandi with registered traders.", "status": "needs_verification" }
+      ],
+      "official_links": [],
+      "last_verified": "2026-10-26",
+      "verification_note": "Access is through participating mandis; ask at your local mandi about e-NAM integration."
+    }
+  ],
+  "additional_support": [
+    {
+      "name": "Agricultural extension and Krishi Vigyan Kendras (KVKs)",
+      "summary": "Free or low-cost technical advice, demonstrations, and training.",
+      "status": "confirmed"
+    },
+    {
+      "name": "Kisan Call Centre",
+      "summary": "Telephone advisory service for farming queries.",
+      "status": "confirmed"
+    },
+    {
+      "name": "State-specific schemes",
+      "summary": "Many states run additional subsidy and support programmes — check your state agriculture department.",
+      "status": "needs_verification"
+    }
+  ],
+  "cautions": [
+    "Be cautious of anyone charging money to \"guarantee\" a scheme benefit.",
+    "Keep copies of applications and receipts.",
+    "Apply within notified timelines — especially for crop insurance."
+  ]
+}

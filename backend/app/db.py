@@ -209,6 +209,11 @@ def insert_sensor_reading(
         "id": str(uuid.uuid4()),
         "owner_id": owner_id,
         "farm_id": farm_id,
+        # Hardware ingestion never sets this, so real readings are explicitly
+        # marked non-demo. The simulator passes is_demo=True in ``payload``,
+        # which overrides this default — demo rows can never be confused with
+        # real ones.
+        "is_demo": False,
         "created_at": _now_iso(),
         **{k: v for k, v in payload.items() if v is not None},
     }
@@ -224,12 +229,16 @@ def list_sensor_readings(
     farm_id: str | None = None,
     limit: int = 100,
     offset: int = 0,
+    is_demo: bool | None = None,
 ) -> tuple[list, int]:
     q = client.table("sensor_readings").select("*", count="exact").eq("owner_id", owner_id)
     if device_id:
         q = q.eq("device_id", device_id)
     if farm_id:
         q = q.eq("farm_id", farm_id)
+    if is_demo is not None:
+        # Lets the UI switch between real hardware readings and DEMO data.
+        q = q.eq("is_demo", is_demo)
     resp = q.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
     return _data(resp) or [], _count(resp) or 0
 

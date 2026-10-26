@@ -94,8 +94,19 @@ def list_readings(
     client=Depends(get_admin_client),
     device_id: Optional[str] = Query(None),
     farm_id: Optional[str] = Query(None),
+    source: str = Query("all", pattern="^(all|real|demo)$",
+                        description="all = both, real = hardware only, demo = simulator only"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ):
-    rows, total = db.list_sensor_readings(client, user.id, device_id, farm_id, limit, offset)
-    return {"items": [r for r in rows], "total": total, "limit": limit, "offset": offset}
+    is_demo = {"all": None, "real": False, "demo": True}[source]
+    rows, total = db.list_sensor_readings(
+        client, user.id, device_id, farm_id, limit, offset, is_demo=is_demo
+    )
+    return {
+        "items": [r for r in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "source": source,
+    }

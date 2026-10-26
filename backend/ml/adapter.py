@@ -47,6 +47,14 @@ IRR_NUMERIC = ["SoilMoisture", "SoilTemperature", "Temperature", "Humidity", "Cr
 # names sent by the frontend must be translated before encoding.
 IRRIGATION_CROP_CODES = {"Paddy": "1", "Ground Nuts": "2"}
 
+# How the crop model's per-class score is labelled. RandomForestClassifier
+# exposes ``predict_proba``, whose columns are the mean class-vote fractions of
+# the trees — a genuine model probability, not an arbitrary ranking score — so
+# it is named exactly that rather than being called "confidence" or "accuracy".
+CROP_SCORE_TYPE = "probability"
+CROP_SCORE_LABEL = "Model probability (RandomForest class-vote fraction)"
+TOP_K = 3
+
 
 def _resolve_irrigation_crop(crop: Any, classes: list[str]) -> str:
     """Translate a crop_type from a request into a LabelEncoder class.
@@ -72,6 +80,35 @@ def _load_joblib(path: Path):
 def _load_json(path: Path) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def _rank_classifications(model: Any, features: Any, label_encoder: Any, k: int = TOP_K) -> list[dict[str, Any]]:
+    """Top-``k`` class recommendations from a classifier's real ``predict_proba``.
+
+    Returns ``[]`` when the model has no probability support or anything goes
+    wrong — the caller then reports the limitation instead of inventing scores.
+    """
+    import numpy as np
+
+    if not hasattr(model, "predict_proba"):
+        return []
+    try:
+        proba = model.predict_proba(features)[0]
+        order = np.argsort(proba)[::-1][:k]
+        classes = label_encoder.inverse_transform(order)
+        return [
+            {
+                "rank": i + 1,
+                "crop": str(c),
+                "score": round(float(p), 4),
+                "score_type": CROP_SCORE_TYPE,
+                "score_label": CROP_SCORE_LABEL,
+            }
+            for i, (c, p) in enumerate(zip(classes, proba[order]))
+        ]
+    except Exception as exc:  # noqa: BLE001 - degrade to "no probabilities"
+        logger.warning("predict_proba ranking failed: %s", exc)
+        return []
 
 
 class MLAdapter:
@@ -142,19 +179,22 @@ class MLAdapter:
         scaled = b["scaler"].transform(row)
         pred_idx = int(model.predict(scaled)[0])
         crop = b["label_encoder"].inverse_transform([pred_idx])[0]
-        details = {}
-        if hasattr(model, "predict_proba"):
-            try:
-                proba = model.predict_proba(scaled)[0]
-                order = proba.argsort()[::-1][:3]
-                classes = b["label_encoder"].inverse_transform(order)
-                details["top"] = [
-                    {"crop": str(c), "probability": round(float(p), 4)}
-                    for c, p in zip(classes, proba[order])
-                ]
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("predict_proba failed for crop: %s", exc)
-        return {"prediction": str(crop), "details": details}
+        recommendations = _rank_classifications(model, scaled, b["label_encoder"])
+        details: dict[str, Any] = {
+            "score_type": CROP_SCORE_TYPE if recommendations else None,
+            "score_label": CROP_SCORE_LABEL if recommendations else None,
+        }
+        if recommendations:
+            # ``top`` kept for backward compatibility with the older frontend.
+            details["top"] = [
+                {"crop": r["crop"], "probability": r["score"]} for r in recommendations
+            ]
+        return {
+            "prediction": str(crop),
+            "details": details,
+            "recommendations": recommendations or None,
+            "score_type": CROP_SCORE_TYPE if recommendations else None,
+        }
 
     def predict_fertilizer(self, data: dict[str, Any]) -> dict[str, Any]:
         import numpy as np

@@ -14,7 +14,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.errors import register_handlers
 from app.logging_conf import setup_logging
-from app.routers import auth, chat, dashboard, devices, farms, health, predictions, sensors, users, voice
+from app.routers import (
+    auth,
+    chat,
+    dashboard,
+    devices,
+    farms,
+    health,
+    mlops,
+    predictions,
+    schemes,
+    sensors,
+    simulator,
+    users,
+    voice,
+    weather,
+)
 
 setup_logging()
 logger = logging.getLogger("farmiq")
@@ -50,5 +65,20 @@ app.add_middleware(
 )
 register_handlers(app)
 
-for module in (health, auth, users, farms, devices, sensors, predictions, dashboard, chat, voice):
+for module in (
+    health,
+    auth,
+    users,
+    farms,
+    devices,
+    sensors,
+    predictions,
+    dashboard,
+    chat,
+    voice,
+    weather,
+    simulator,
+    schemes,
+    mlops,
+):
     app.include_router(module.router)

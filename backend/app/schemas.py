@@ -158,6 +158,51 @@ class SensorReadingOut(SensorReadingIn):
     farm_id: Optional[str] = None
     owner_id: str
     created_at: str
+    is_demo: bool = False
+    nitrogen: Optional[float] = None
+    phosphorous: Optional[float] = None
+    potassium: Optional[float] = None
+    ph: Optional[float] = None
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Sensor simulator (DEMO mode)
+# ─────────────────────────────────────────────────────────────────────────
+
+class SimulatorRequest(BaseModel):
+    """Request to generate one simulated reading.
+
+    ``overrides`` forces exact channel values, ``fail`` marks channels as dead
+    (``["all"]`` fails everything), ``noise`` adds jitter, and ``seed`` makes the
+    output reproducible. ``persist`` (opt-in) also stores it with
+    ``is_demo = true`` — real readings are never touched.
+    """
+    overrides: dict[str, float] = Field(default_factory=dict)
+    fail: list[str] = Field(default_factory=list)
+    noise: float = Field(default=0.0, ge=0.0, le=1.0)
+    seed: Optional[int] = Field(default=None, ge=0, le=2_147_483_647)
+    persist: bool = False
+    device_id: Optional[str] = None
+
+
+class SimulatedReadingOut(BaseModel):
+    is_demo: bool = True
+    label: str
+    generated_at: str
+    seed: Optional[int] = None
+    reading: dict[str, float] = {}
+    failed_channels: list[str] = []
+    notes: list[str] = []
+    persisted: bool = False
+    record_id: Optional[str] = None
+    device_id: Optional[str] = None
+
+
+class SimulatorConfigOut(BaseModel):
+    label: str
+    channels: dict[str, dict[str, Any]]
+    failure_modes: list[str]
+    note: str
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -211,12 +256,73 @@ class IrrigationPredictionRequest(BaseModel):
     crop_type: str = Field(default="Paddy", min_length=1, max_length=50)
 
 
+class CropRecommendation(BaseModel):
+    """One ranked crop recommendation.
+
+    ``score`` is the model's own output for this crop and ``score_type`` names
+    exactly what that number is (e.g. ``"probability"``), so a ranking score is
+    never mislabelled as a probability. Nothing here is invented: values come
+    straight from the trained model's ``predict_proba``.
+    """
+    rank: int
+    crop: str
+    score: float
+    score_type: str
+    score_label: str
+
+
+class ValidationIssue(BaseModel):
+    """A single validation message (blocking error or non-blocking warning)."""
+    field: str
+    label: str
+    value: Any = None
+    unit: Optional[str] = None
+    kind: str
+    message: str
+    supported_min: Optional[float] = None
+    supported_max: Optional[float] = None
+    training_min: Optional[float] = None
+    training_max: Optional[float] = None
+
+
 class PredictionResponse(BaseModel):
+    """Consistent response shape for all four ML domains.
+
+    ``recommendations`` is populated for classification domains that expose
+    ``predict_proba`` (crop, and optionally fertilizer). ``unusual`` carries
+    valid-but-out-of-training-range warnings and ``advisory`` the standing
+    "training range ≠ field accuracy" disclosure.
+    """
     domain: str
     prediction: Any
     source: str = "model"  # "model" | "baseline"
     label: Optional[str] = None
     details: Optional[dict[str, Any]] = None
+    recommendations: Optional[list[CropRecommendation]] = None
+    score_type: Optional[str] = None
+    warnings: list[str] = []
+    unusual: list[ValidationIssue] = []
+    advisory: Optional[str] = None
+
+
+class ValidationField(BaseModel):
+    """Machine-readable range for one model input field."""
+    field: str
+    label: str
+    type: str
+    unit: Optional[str] = None
+    supported_min: Optional[float] = None
+    supported_max: Optional[float] = None
+    training_min: Optional[float] = None
+    training_max: Optional[float] = None
+    options: Optional[list[str]] = None
+
+
+class ValidationSchemaResponse(BaseModel):
+    """Ranges the frontend uses to warn *before* submitting a prediction."""
+    domain: str
+    fields: list[ValidationField]
+    advisory: str
 
 
 class PredictionHistoryItem(BaseModel):
@@ -275,6 +381,68 @@ class ChatStatusResponse(BaseModel):
     llm_configured: bool = False
     embedding_model: Optional[str] = None
     message: str = ""
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Weather auto-fill
+# ─────────────────────────────────────────────────────────────────────────
+
+class WeatherDailyRain(BaseModel):
+    date: str
+    precipitation_mm: Optional[float] = None
+    rain_mm: Optional[float] = None
+
+
+class WeatherAutofill(BaseModel):
+    """A single suggested form value, with its origin stated explicitly."""
+    value: float
+    unit: str
+    origin: str              # "current observation" | "historical accumulation"
+    label: str
+    observed_at: Optional[str] = None
+    is_cumulative: bool = False
+    note: Optional[str] = None
+
+
+class WeatherLocation(BaseModel):
+    name: Optional[str] = None
+    latitude: float
+    longitude: float
+    timezone: Optional[str] = None
+
+
+class WeatherCurrent(BaseModel):
+    observed_at: Optional[str] = None
+    temperature_c: Optional[float] = None
+    humidity_pct: Optional[float] = None
+    precipitation_mm: Optional[float] = None
+    rain_mm: Optional[float] = None
+    label: str
+
+
+class WeatherRainfall(BaseModel):
+    days: int
+    total_mm: Optional[float] = None
+    past_7_days_mm: Optional[float] = None
+    daily: list[WeatherDailyRain] = []
+    label: str
+
+
+class WeatherReport(BaseModel):
+    """Current conditions plus rainfall history/forecast, all kept separate.
+
+    Deliberately never merges the three rainfall concepts: ``current`` is the
+    observation now, ``forecast_rainfall`` rain that has not fallen yet, and
+    ``historical_rainfall`` the accumulated total already fallen.
+    """
+    source: str
+    fetched_at: str
+    location: WeatherLocation
+    current: WeatherCurrent
+    forecast_rainfall: WeatherRainfall
+    historical_rainfall: WeatherRainfall
+    autofill: dict[str, WeatherAutofill] = {}
+    notes: list[str] = []
 
 
 # ─────────────────────────────────────────────────────────────────────────

@@ -74,6 +74,17 @@ class Settings(BaseSettings):
     # Path to the standalone FarmIQ-RAG project (contains src/ and data/).
     farmiq_rag_path: str = str(DEFAULT_RAG_PROJECT)
 
+    # ── Weather (Open-Meteo, no API key required) ──────────────────────
+    # Used to auto-fill temperature / humidity / accumulated rainfall in the
+    # ML prediction forms. Open-Meteo needs no key; the base URLs are settings
+    # so a self-hosted or proxy deployment can be pointed at another host.
+    weather_enabled: bool = True
+    weather_base_url: str = "https://api.open-meteo.com/v1"
+    weather_geocoding_url: str = "https://geocoding-api.open-meteo.com/v1"
+    weather_timeout_seconds: float = 8.0
+    # How many past days of daily rainfall are summed for the accumulated total.
+    weather_history_days: int = 30
+
     # ── Device ingestion ──────────────────────────────────────────────
     sensor_ingest_token: str = ""  # optional shared secret for ESP32 devices
 
