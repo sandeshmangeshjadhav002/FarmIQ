@@ -1,0 +1,28 @@
+{
+  "numeric_features": [
+    "SoilMoisture",
+    "SoilTemperature",
+    "Temperature",
+    "Humidity",
+    "CropDays"
+  ],
+  "categorical_features": [
+    "CropType"
+  ],
+  "all_features": [
+    "SoilMoisture",
+    "SoilTemperature",
+    "Temperature",
+    "Humidity",
+    "CropDays",
+    "CropType"
+  ],
+  "target": "Irrigation",
+  "target_encoding": {
+    "0": "No irrigation",
+    "1": "Irrigate"
+  },
+  "source_primary": "https://github.com/GCEKIoTCommunity/Irrigation-Dataset",
+  "source_alternate": "https://data.mendeley.com/datasets/fpdwmm7nrb/1",
+  "rule_based_baseline": "IF SoilMoisture < 30% THEN 1 ELSE 0  (ICAR-aligned agronomic threshold)"
+}

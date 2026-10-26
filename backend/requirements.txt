@@ -1,0 +1,31 @@
+# FarmIQ backend (FastAPI + Supabase) — Python 3.14-compatible.
+# Install in a virtual environment:
+#   py -3.14 -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r requirements.txt
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+python-jose[cryptography]>=3.3
+httpx>=0.27
+# Multipart parsing for POST /api/voice/transcribe (audio upload)
+python-multipart>=0.0.9
+# Server-side text synthesis for POST /api/voice/speak — free Microsoft Edge
+# neural voices (Marathi/Hindi/English) for devices with no local voice.
+edge-tts>=6.1
+supabase>=2.7
+python-dotenv>=1.0
+email-validator>=2.0
+
+# ML adapter: loads existing sklearn encoders/scalers + optional trained models
+scikit-learn>=1.5
+numpy>=1.26
+joblib>=1.4
+# Only needed by the optional `ml/train_models.py` training script:
+pandas>=2.2
+
+# Testing
+pytest>=8.3
+pytest-asyncio>=0.23

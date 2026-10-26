@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────────────
+# Capacitor Android shell (Gradle)
+# ─────────────────────────────────────────────────────────────────────
+
+# ── Gradle ───────────────────────────────────────────────────────────
+.gradle/
+build/
+local.properties
+
+# ── Capacitor generated plugins ──────────────────────────────────────
+capacitor-cordova-android-plugins/
+
+# ── Build outputs ────────────────────────────────────────────────────
+release/
+*.apk
+*.aab
+*.idsig
+
+# ── Release signing (never commit keys) ──────────────────────────────
+key.properties
+*.jks
+*.keystore
+
+# ── Native build intermediates ───────────────────────────────────────
+.externalNativeBuild/
+.cxx/
+
+# ── Editors / OS ─────────────────────────────────────────────────────
+.idea/
+*.iml
+.DS_Store
+captures/

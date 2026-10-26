@@ -1,0 +1,28 @@
+# FarmIQ-RAG — Python dependencies
+# Install with:  pip install -r requirements.txt
+#
+# Pinned to stable versions that ship Python 3.14 wheels (verified on PyPI).
+# This RAG project is independent of the FarmIQ-ML module; use a separate
+# virtual environment to avoid clashing with the ML project's pins.
+
+# PDF text extraction
+pymupdf==2.0
+
+# Text chunking (overlapping recursive character splitter)
+langchain-text-splitters==1.1.3
+
+# Embeddings (SentenceTransformer wrapper). Pulls torch + transformers.
+sentence-transformers==6.1.0
+
+# Local vector store
+chromadb==1.5.9
+
+# LLM API client (OpenAI-compatible Chat Completions; works with OpenAI,
+# Together, Groq, OpenRouter, vLLM, etc.)
+openai==3.35.1
+
+# Environment configuration
+python-dotenv==1.2.4
+
+# Testing
+pytest==9.1.1

@@ -1,0 +1,8 @@
+{
+  "name": "Rule-Based Irrigation Baseline",
+  "description": "A transparent, agriculturally grounded baseline for irrigation prediction. Based on the widely accepted agronomic principle that irrigation is triggered when available soil moisture falls below the field capacity threshold.",
+  "rule": "IF SoilMoisture < 30.0% THEN irrigate=1 ELSE irrigate=0",
+  "threshold_pct": 30.0,
+  "rationale": "Soil moisture below 30% of field capacity is a common trigger for irrigation in Indian Kharif and Rabi crops (source: ICAR guidelines). This baseline should be exceeded by any trained ML model.",
+  "python_implementation": "def rule_based_irrigate(soil_moisture_pct):\n    return 1 if soil_moisture_pct < 30.0 else 0"
+}

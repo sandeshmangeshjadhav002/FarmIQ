@@ -1,0 +1,31 @@
+{
+  "categorical_features": [
+    "State_Name",
+    "Season",
+    "Crop"
+  ],
+  "numeric_features": [
+    "Crop_Year",
+    "Area",
+    "Annual_Rainfall",
+    "Fertilizer",
+    "Pesticide"
+  ],
+  "all_features": [
+    "State_Name",
+    "Season",
+    "Crop",
+    "Crop_Year",
+    "Area",
+    "Annual_Rainfall",
+    "Fertilizer",
+    "Pesticide"
+  ],
+  "target": "Yield_tonnes_per_ha",
+  "log_target": "log_yield",
+  "train_split": "Crop_Year <= 2013",
+  "test_split": "Crop_Year > 2013",
+  "yield_cap_percentile": 99.5,
+  "yield_cap_value": 7668.894720330142,
+  "note": "Production column excluded from features \u2014 it directly encodes the target. log_yield (log1p-transformed) is recommended as training target; inverse transform with expm1() to recover tonnes/ha."
+}

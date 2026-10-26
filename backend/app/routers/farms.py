@@ -1,0 +1,54 @@
+"""Farm CRUD endpoints (owner-scoped)."""
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Query
+
+from app import db
+from app.auth import get_current_user
+from app.schemas import FarmCreate, FarmOut, FarmUpdate
+from app.supabase_client import get_admin_client
+
+router = APIRouter()
+
+
+def _out(row: dict) -> FarmOut:
+    return FarmOut(**row)
+
+
+@router.get("/api/farms")
+def list_farms(
+    user=Depends(get_current_user),
+    client=Depends(get_admin_client),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    rows, total = db.list_farms(client, user.id, limit, offset)
+    return {"items": [r for r in rows], "total": total, "limit": limit, "offset": offset}
+
+
+@router.post("/api/farms", response_model=FarmOut, status_code=201)
+def create_farm(payload: FarmCreate, user=Depends(get_current_user), client=Depends(get_admin_client)):
+    row = db.create_farm(client, user.id, payload.model_dump())
+    return _out(row)
+
+
+@router.get("/api/farms/{farm_id}", response_model=FarmOut)
+def get_farm(farm_id: str, user=Depends(get_current_user), client=Depends(get_admin_client)):
+    return _out(db.get_farm(client, user.id, farm_id))
+
+
+@router.patch("/api/farms/{farm_id}", response_model=FarmOut)
+def update_farm(
+    farm_id: str,
+    payload: FarmUpdate,
+    user=Depends(get_current_user),
+    client=Depends(get_admin_client),
+):
+    fields = {k: v for k, v in payload.model_dump().items() if v is not None}
+    return _out(db.update_farm(client, user.id, farm_id, fields))
+
+
+@router.delete("/api/farms/{farm_id}", status_code=204)
+def delete_farm(farm_id: str, user=Depends(get_current_user), client=Depends(get_admin_client)):
+    db.delete_farm(client, user.id, farm_id)
+    return None
