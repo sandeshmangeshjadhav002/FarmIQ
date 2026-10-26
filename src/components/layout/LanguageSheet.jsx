@@ -17,7 +17,7 @@ export default function LanguageSheet({ selected, onSelect, onClose }) {
     >
       <section
         aria-label="Select language"
-        className="max-h-[76%] w-full overflow-hidden rounded-t-[28px] bg-white px-5 pb-6 shadow-2xl"
+        className="max-h-[76%] w-full overflow-hidden rounded-t-[28px] bg-white/70 px-5 pb-6 shadow-2xl backdrop-blur-2xl border-t border-white/30"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto my-3 h-1.5 w-10 rounded-full bg-[#D7DFD9]" />
@@ -42,10 +42,10 @@ export default function LanguageSheet({ selected, onSelect, onClose }) {
           {languages.map((language) => (
             <button
               key={language}
-              className={`flex h-12 items-center justify-between rounded-xl border px-4 text-left text-sm font-semibold ${
+              className={`flex h-12 items-center justify-between rounded-xl border px-4 text-left text-sm font-semibold backdrop-blur-md ${
                 selected === language
-                  ? "border-[#216B45] bg-[#EAF3EC] text-[#216B45]"
-                  : "border-[#E5EAE6] text-[#354D40]"
+                  ? "border-[#216B45] bg-[#EAF3EC]/60 text-[#216B45]"
+                  : "border-white/30 bg-white/40 text-[#354D40]"
               }`}
               onClick={() => onSelect(language)}
             >

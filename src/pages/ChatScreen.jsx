@@ -43,9 +43,9 @@ function ChatBubble({ children, sender, isError }) {
         </span>
       )}
       <div
-        className={`max-w-[276px] rounded-[18px] px-4 py-3 text-[13px] leading-[1.55] ${
+        className={`max-w-[276px] rounded-[18px] px-4 py-3 text-[13px] leading-[1.55] backdrop-blur-md ${
           isAi
-            ? `rounded-tl-md border border-[#E1E9E3] bg-white shadow-[0_3px_12px_rgba(31,57,44,.04)] ${
+            ? `rounded-tl-md border border-white/30 bg-white/40 shadow-[0_3px_12px_rgba(31,57,44,.04)] ${
                 isError ? "text-[#9B3B3B]" : "text-[#334A3D]"
               }`
             : "rounded-tr-md bg-[#216B45] text-white"
@@ -324,7 +324,7 @@ export default function ChatScreen({
   return (
     <ScreenShell active="chat" navigate={navigate}>
       {/* ── Header ── */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E6EBE7] bg-[#F7F9F5]/95 px-5 py-4 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/20 bg-white/40 px-5 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#216B45] text-white">
             <Icon name="bot" size={21} />
@@ -344,7 +344,7 @@ export default function ChatScreen({
         </div>
 
         {/* Language selector — Marathi / English only */}
-        <div className="flex items-center gap-1 rounded-full border border-[#DFE7E1] bg-white p-1">
+        <div className="flex items-center gap-1 rounded-full border border-white/30 bg-white/40 p-1 backdrop-blur-md">
           {VOICE_LANGUAGES.map((l) => (
             <button
               key={l.code}
@@ -436,7 +436,7 @@ export default function ChatScreen({
       )}
 
       {/* ── Input bar ── */}
-      <div className="sticky bottom-0 border-t border-[#E4EAE5] bg-white p-3">
+      <div className="sticky bottom-0 border-t border-white/20 bg-white/40 p-3 backdrop-blur-xl">
         <div className="flex items-end gap-2">
           {/* Microphone */}
           <button

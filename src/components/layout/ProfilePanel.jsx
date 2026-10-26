@@ -17,10 +17,10 @@ import { apiPatch } from "@/lib/apiClient";
  * @param {Function} props.onUpdate   - Called with updated user object after save.
  */
 export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
-  const [editing, setEditing]   = useState(false);
+  const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name ?? "");
-  const [saving,  setSaving]    = useState(false);
-  const [toast,   setToast]     = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -35,7 +35,9 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
     setSaving(true);
     try {
       // Persist to FastAPI → Supabase. Returns the updated profile.
-      const updated = await apiPatch("/api/users/me", { full_name: fullName.trim() });
+      const updated = await apiPatch("/api/users/me", {
+        full_name: fullName.trim(),
+      });
       onUpdate({ ...user, ...updated, full_name: fullName.trim() });
       showToast("success", "Profile updated.");
       setEditing(false);
@@ -92,7 +94,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
         role="dialog"
         aria-modal="true"
         aria-label="Profile"
-        className="absolute bottom-0 left-0 right-0 z-50 rounded-t-[28px] bg-[#F7F9F5] shadow-[0_-8px_40px_rgba(26,57,40,.18)] animate-slide-up"
+        className="absolute bottom-0 left-0 right-0 z-50 rounded-t-[28px] bg-white/70 shadow-[0_-8px_40px_rgba(26,57,40,.18)] backdrop-blur-2xl border-t border-white/30 animate-slide-up"
       >
         {/* drag handle */}
         <div className="flex justify-center pt-3 pb-1">
@@ -108,7 +110,10 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
               toast.type === "success" ? "bg-[#216B45]" : "bg-[#C0392B]"
             }`}
           >
-            <Icon name={toast.type === "success" ? "check" : "shield"} size={14} />
+            <Icon
+              name={toast.type === "success" ? "check" : "shield"}
+              size={14}
+            />
             {toast.message}
           </div>
         )}
@@ -129,7 +134,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
           </div>
 
           {/* avatar + name card */}
-          <div className="mb-5 flex items-center gap-4 rounded-[20px] border border-[#DDE8DF] bg-white p-4 shadow-[0_4px_16px_rgba(31,57,44,.06)]">
+          <div className="mb-5 flex items-center gap-4 rounded-[20px] border border-white/30 bg-white/40 p-4 shadow-[0_4px_16px_rgba(31,57,44,.06)] backdrop-blur-md">
             <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#216B45] text-xl font-extrabold text-white select-none">
               {initials}
             </div>
@@ -171,11 +176,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                 disabled={saving}
                 className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#216B45] py-2.5 text-[13px] font-bold text-white disabled:opacity-60"
               >
-                {saving ? (
-                  <Spinner />
-                ) : (
-                  <Icon name="check" size={15} />
-                )}
+                {saving ? <Spinner /> : <Icon name="check" size={15} />}
                 Save
               </button>
               <button
@@ -188,11 +189,19 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
           )}
 
           {/* info rows */}
-          <div className="mb-5 divide-y divide-[#EBF1EC] rounded-[20px] border border-[#DDE8DF] bg-white shadow-[0_4px_16px_rgba(31,57,44,.04)]">
-            <InfoRow icon="mail"    label="Email"        value={user?.email} />
-            <InfoRow icon="phone"   label="Mobile"       value={user?.mobile} />
-            <InfoRow icon="shield"  label="Role"         value={formatRole(user?.role)} />
-            <InfoRow icon="clock"   label="Member since" value={formatDate(user?.created_at)} />
+          <div className="mb-5 divide-y divide-white/20 rounded-[20px] border border-white/30 bg-white/40 shadow-[0_4px_16px_rgba(31,57,44,.04)] backdrop-blur-md">
+            <InfoRow icon="mail" label="Email" value={user?.email} />
+            <InfoRow icon="phone" label="Mobile" value={user?.mobile} />
+            <InfoRow
+              icon="shield"
+              label="Role"
+              value={formatRole(user?.role)}
+            />
+            <InfoRow
+              icon="clock"
+              label="Member since"
+              value={formatDate(user?.created_at)}
+            />
           </div>
 
           {/* logout */}
@@ -235,8 +244,19 @@ function Spinner() {
       fill="none"
       viewBox="0 0 24 24"
     >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
     </svg>
   );
 }

@@ -19,7 +19,7 @@ export default function DesktopNavigation({
   const primary = moduleCatalog.filter((item) => item.key !== "admin");
 
   return (
-    <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-64 shrink-0 flex-col overflow-hidden rounded-[24px] bg-[#17392A] text-white shadow-xl lg:flex print:hidden">
+    <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-64 shrink-0 flex-col overflow-hidden rounded-[24px] bg-[#17392A]/60 text-white shadow-xl backdrop-blur-2xl border border-white/10 lg:flex print:hidden">
       <div className="border-b border-white/10 p-5">
         <div className="text-[20px] font-extrabold">FarmIQ</div>
         <div className="text-[9px] uppercase tracking-[.14em] text-white/50">

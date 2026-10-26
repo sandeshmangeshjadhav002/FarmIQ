@@ -45,7 +45,7 @@ export default function HomeScreen({
           <Logo />
           <div className="flex items-center gap-2">
             <button
-              className="flex h-10 items-center gap-2 rounded-full border border-[#DFE7E1] bg-white px-3 text-[11px] font-bold text-[#345443]"
+              className="flex h-10 items-center gap-2 rounded-full border border-white/30 bg-white/40 px-3 text-[11px] font-bold text-[#345443] backdrop-blur-md shadow-sm"
               onClick={openLanguages}
             >
               <Icon name="language" size={17} />
@@ -89,14 +89,14 @@ export default function HomeScreen({
 
         {/* Live dashboard stats */}
         {dash && (
-          <div className="mt-5 grid grid-cols-3 gap-2 rounded-[20px] border border-[#E0E8E2] bg-white p-4">
+          <div className="mt-5 grid grid-cols-3 gap-2 rounded-[20px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm">
             <div className="text-center">
               <b className="block text-[20px] font-extrabold text-[#17392A]">
                 {dash.farms ?? 0}
               </b>
               <span className="text-[10px] text-[#7B8C82]">Farms</span>
             </div>
-            <div className="border-x border-[#E6EBE7] text-center">
+            <div className="border-x border-white/20 text-center">
               <b className="block text-[20px] font-extrabold text-[#17392A]">
                 {dash.devices_online ?? 0}
               </b>
@@ -124,7 +124,7 @@ export default function HomeScreen({
           {quickActions.map((action) => (
             <button
               key={action.title}
-              className="group min-h-[128px] rounded-[20px] border border-[#E6EBE7] bg-white p-4 text-left shadow-[0_5px_18px_rgba(31,57,44,.05)] transition hover:-translate-y-0.5 hover:shadow-md active:scale-[.98]"
+              className="group min-h-[128px] rounded-[20px] border border-white/30 bg-white/40 p-4 text-left shadow-[0_5px_18px_rgba(31,57,44,.05)] backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-md active:scale-[.98]"
               onClick={() => openModule(action.target)}
             >
               <span
@@ -143,7 +143,7 @@ export default function HomeScreen({
         </div>
 
         <button
-          className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-[#D8E5DC] bg-[#ECF4EE] p-4 text-left"
+          className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-white/40 bg-white/50 p-4 text-left backdrop-blur-md shadow-sm"
           onClick={openTools}
         >
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#216B45] text-white">

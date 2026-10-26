@@ -25,7 +25,7 @@ export default function TextInput({
 }) {
   return (
     <label
-      className={`flex h-13 items-center gap-3 rounded-2xl border border-[#DFE7E1] bg-white px-4 shadow-[0_3px_12px_rgba(31,57,44,.04)] ${className}`}
+      className={`flex h-13 items-center gap-3 rounded-2xl border border-white/30 bg-white/40 px-4 shadow-[0_3px_12px_rgba(31,57,44,.04)] backdrop-blur-md ${className}`}
     >
       <Icon name={icon} size={19} className="shrink-0 text-[#7A8E82]" />
       <input

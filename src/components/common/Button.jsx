@@ -18,7 +18,7 @@ export function PrimaryButton({ children, onClick, className = "" }) {
 export function SecondaryButton({ children, onClick }) {
   return (
     <button
-      className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#D7E2DA] bg-white px-4 text-[13px] font-bold text-[#216B45] transition active:scale-[.98]"
+      className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/40 px-4 text-[13px] font-bold text-[#216B45] backdrop-blur-md transition active:scale-[.98]"
       onClick={onClick}
     >
       {children}

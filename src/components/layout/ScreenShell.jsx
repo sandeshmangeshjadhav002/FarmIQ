@@ -18,9 +18,9 @@ import BottomNavigation from "./BottomNavigation";
 export default function ScreenShell({ children, active, navigate }) {
   return (
     <main className="
-      mx-auto flex flex-col bg-[#F7F9F5]
+      mx-auto flex flex-col bg-white/60 backdrop-blur-2xl border-x border-white/20
       w-full h-full min-h-dvh
-      lg:max-w-[430px] lg:shadow-[0_0_60px_rgba(26,57,40,.12)] lg:rounded-[30px] lg:min-h-[844px]
+      lg:max-w-[430px] lg:shadow-[0_0_60px_rgba(26,57,40,.12)] lg:rounded-[30px] lg:min-h-[844px] lg:border-t lg:border-white/30
     ">
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {children}

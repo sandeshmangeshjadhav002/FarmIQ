@@ -1,6 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
 
-import { setAuthToken, clearAuthToken, saveUser, loadUser, getAuthToken } from "@/lib/apiClient";
+import {
+  setAuthToken,
+  clearAuthToken,
+  saveUser,
+  loadUser,
+  getAuthToken,
+} from "@/lib/apiClient";
 
 import DesktopNavigation from "@/components/layout/DesktopNavigation";
 import LanguageSheet from "@/components/layout/LanguageSheet";
@@ -11,18 +17,19 @@ import ModuleScreen from "@/components/modules/ModuleScreen";
 
 // Detect if running inside Capacitor (Android / iOS native app).
 // When running as a native app we skip the desktop sidebar entirely.
-const IS_NATIVE = typeof window !== "undefined" &&
+const IS_NATIVE =
+  typeof window !== "undefined" &&
   (window.Capacitor?.isNativePlatform?.() ?? false);
 
 // Screen hierarchy for hardware back button navigation
 const BACK_MAP = {
-  home:    null,        // top — exits app
-  chat:    "home",
-  farm:    "home",
-  advice:  "home",
+  home: null, // top — exits app
+  chat: "home",
+  farm: "home",
+  advice: "home",
   history: "home",
-  more:    "home",
-  module:  "more",
+  more: "home",
+  module: "more",
 };
 
 import HomeScreen from "@/pages/HomeScreen";
@@ -44,13 +51,13 @@ import RegisterScreen from "@/pages/RegisterScreen";
  */
 export default function App() {
   // Restore session from localStorage on app start (survives Android restart)
-  const [user, setUser]             = useState(() => loadUser());
-  const [screen, setScreen]         = useState(() => {
+  const [user, setUser] = useState(() => loadUser());
+  const [screen, setScreen] = useState(() => {
     const saved = loadUser();
     return saved && getAuthToken() ? "home" : "login";
   });
-  const [language, setLanguage]           = useState("English");
-  const [languageOpen, setLanguageOpen]   = useState(false);
+  const [language, setLanguage] = useState("English");
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState("crop-recommendation");
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -74,13 +81,16 @@ export default function App() {
   }, []);
 
   /** Called by LoginScreen / RegisterScreen once auth succeeds. */
-  const handleLogin = useCallback((userData) => {
-    // Capture the Supabase access token for protected backend requests.
-    setAuthToken(userData?.access_token);
-    saveUser(userData);
-    setUser(userData);
-    navigate("home");
-  }, [navigate]);
+  const handleLogin = useCallback(
+    (userData) => {
+      // Capture the Supabase access token for protected backend requests.
+      setAuthToken(userData?.access_token);
+      saveUser(userData);
+      setUser(userData);
+      navigate("home");
+    },
+    [navigate],
+  );
 
   /** Log out — clear user data and return to login. */
   const handleLogout = useCallback(() => {
@@ -99,8 +109,14 @@ export default function App() {
       try {
         const { App: CapApp } = await import("@capacitor/app");
         listener = await CapApp.addListener("backButton", ({ canGoBack }) => {
-          if (profileOpen) { setProfileOpen(false); return; }
-          if (languageOpen) { setLanguageOpen(false); return; }
+          if (profileOpen) {
+            setProfileOpen(false);
+            return;
+          }
+          if (languageOpen) {
+            setLanguageOpen(false);
+            return;
+          }
           const prev = BACK_MAP[screen];
           if (prev) {
             setScreen(prev);
@@ -114,7 +130,9 @@ export default function App() {
         // @capacitor/app not available in web preview — ignore silently
       }
     })();
-    return () => { listener?.remove?.(); };
+    return () => {
+      listener?.remove?.();
+    };
   }, [screen, profileOpen, languageOpen]);
 
   // ── Auth screens (no desktop nav / bottom nav) ────────────────────────────
@@ -127,7 +145,13 @@ export default function App() {
 
   // ── Main app ──────────────────────────────────────────────────────────────
   return (
-    <div className={`relative min-h-dvh bg-[#E9EFEA] ${IS_NATIVE ? "" : "lg:flex lg:items-start lg:justify-center lg:gap-5 lg:px-6 lg:py-6"}`}>
+    <div
+      className={`relative min-h-dvh bg-[#E9EFEA] bg-[url('/app-bg.jpg')] bg-cover bg-center bg-fixed ${
+        IS_NATIVE
+          ? ""
+          : "lg:flex lg:items-start lg:justify-center lg:gap-5 lg:px-6 lg:py-6"
+      }`}
+    >
       {/* Sidebar only shown on desktop browser — never on native Android/iOS */}
       {!IS_NATIVE && (
         <DesktopNavigation
@@ -159,8 +183,8 @@ export default function App() {
             openModule={openModule}
           />
         )}
-        {screen === "farm"    && <FarmScreen    navigate={navigate} />}
-        {screen === "advice"  && <AdviceScreen  navigate={navigate} />}
+        {screen === "farm" && <FarmScreen navigate={navigate} />}
+        {screen === "advice" && <AdviceScreen navigate={navigate} />}
         {screen === "history" && <HistoryScreen navigate={navigate} />}
         {screen === "more" && (
           <ScreenShell active="home" navigate={navigate}>

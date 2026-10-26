@@ -18,9 +18,7 @@ export default function ModuleHub({ onBack, onOpen }) {
   const results = moduleCatalog.filter(
     (item) =>
       (group === "All" || item.group === group) &&
-      `${item.title} ${item.short}`
-        .toLowerCase()
-        .includes(query.toLowerCase())
+      `${item.title} ${item.short}`.toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -28,7 +26,7 @@ export default function ModuleHub({ onBack, onOpen }) {
       <header className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DDE6DF] bg-white text-[#3F5A4B]"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/30 bg-white/40 text-[#3F5A4B] backdrop-blur-md shadow-sm"
         >
           <ModuleIcon name="back" size={19} />
         </button>
@@ -42,7 +40,7 @@ export default function ModuleHub({ onBack, onOpen }) {
         </div>
       </header>
 
-      <label className="mt-5 flex h-12 items-center gap-3 rounded-2xl border border-[#DFE7E1] bg-white px-4">
+      <label className="mt-5 flex h-12 items-center gap-3 rounded-2xl border border-white/30 bg-white/40 px-4 backdrop-blur-md shadow-sm">
         <ModuleIcon name="search" size={18} />
         <input
           aria-label="Search FarmIQ tools"
@@ -58,10 +56,10 @@ export default function ModuleHub({ onBack, onOpen }) {
           <button
             key={item}
             onClick={() => setGroup(item)}
-            className={`shrink-0 rounded-full px-3 py-2 text-[10px] font-bold ${
+            className={`shrink-0 rounded-full px-3 py-2 text-[10px] font-bold backdrop-blur-md ${
               group === item
                 ? "bg-[#216B45] text-white"
-                : "border border-[#DDE6DF] bg-white text-[#607369]"
+                : "border border-white/30 bg-white/40 text-[#607369]"
             }`}
           >
             {item}
@@ -74,7 +72,7 @@ export default function ModuleHub({ onBack, onOpen }) {
           <button
             key={item.key}
             onClick={() => onOpen(item.key)}
-            className="flex items-center gap-3 rounded-[18px] border border-[#E2E9E4] bg-white p-4 text-left shadow-[0_4px_14px_rgba(31,57,44,.04)] transition hover:-translate-y-0.5"
+            className="flex items-center gap-3 rounded-[18px] border border-white/30 bg-white/40 p-4 text-left shadow-[0_4px_14px_rgba(31,57,44,.04)] backdrop-blur-md transition hover:-translate-y-0.5 shadow-sm"
           >
             <span
               className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${item.color}`}
