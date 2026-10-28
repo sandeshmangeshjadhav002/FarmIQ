@@ -98,6 +98,12 @@ export default function CalendarManager() {
 
       {/* Reminder list */}
       <div className="space-y-2">
+        {reminders.length === 0 && (
+          <p className="rounded-2xl border border-dashed border-[#D8E3DA] bg-white p-6 text-center text-[12px] leading-5 text-[#7B8C82]">
+            No reminders yet. Add one above to keep track of sowing, spraying and
+            harvest dates.
+          </p>
+        )}
         {reminders.map((item) => (
           <div
             key={item.id}

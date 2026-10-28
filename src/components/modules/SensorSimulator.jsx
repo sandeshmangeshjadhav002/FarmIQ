@@ -44,7 +44,9 @@ export default function SensorSimulator() {
   const devices = devicesData.data?.items ?? [];
 
   // Real (connected-sensor) view
-  const realData = useApi(mode === "real" ? "/api/sensor-readings?source=real" : null);
+  const realData = useApi(
+    mode === "real" ? "/api/sensor-readings?source=real" : null,
+  );
   const realReadings = realData.data?.items ?? [];
 
   const setOverride = (channel, value) =>
@@ -52,17 +54,21 @@ export default function SensorSimulator() {
 
   const toggleFail = (channel) =>
     setFailed((prev) =>
-      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]
+      prev.includes(channel)
+        ? prev.filter((c) => c !== channel)
+        : [...prev, channel],
     );
 
   const generate = async () => {
+    if (generating) return; // re-entrancy guard (the button is also disabled)
     setGenerating(true);
     setError(null);
     setPersistNote(null);
     try {
       const cleanOverrides = {};
       for (const [channel, value] of Object.entries(overrides)) {
-        if (value !== "" && value != null) cleanOverrides[channel] = Number(value);
+        if (value !== "" && value != null)
+          cleanOverrides[channel] = Number(value);
       }
       const body = {
         overrides: cleanOverrides,
@@ -80,8 +86,12 @@ export default function SensorSimulator() {
   };
 
   const persist = async () => {
+    if (persisting) return; // re-entrancy guard (the button is also disabled)
     if (!persistDeviceId) {
-      setPersistNote({ tone: "error", text: "Choose a device to store the demo reading against." });
+      setPersistNote({
+        tone: "error",
+        text: "Choose a device to store the demo reading against.",
+      });
       return;
     }
     setPersisting(true);
@@ -89,7 +99,8 @@ export default function SensorSimulator() {
     try {
       const cleanOverrides = {};
       for (const [channel, value] of Object.entries(overrides)) {
-        if (value !== "" && value != null) cleanOverrides[channel] = Number(value);
+        if (value !== "" && value != null)
+          cleanOverrides[channel] = Number(value);
       }
       const data = await apiPost("/api/simulator/readings", {
         overrides: cleanOverrides,
@@ -105,7 +116,10 @@ export default function SensorSimulator() {
         text: `Stored as DEMO row ${data.record_id}. It is marked is_demo and is not a hardware reading.`,
       });
     } catch (err) {
-      setPersistNote({ tone: "error", text: err.message || "Could not store the demo reading." });
+      setPersistNote({
+        tone: "error",
+        text: err.message || "Could not store the demo reading.",
+      });
     } finally {
       setPersisting(false);
     }
@@ -115,7 +129,9 @@ export default function SensorSimulator() {
     <div className="space-y-4">
       {/* Source switch */}
       <div className="flex items-center justify-between">
-        <DemoBadge status={mode === "demo" ? "Demo data" : "Connected sensors"} />
+        <DemoBadge
+          status={mode === "demo" ? "Demo data" : "Connected sensors"}
+        />
         <div className="flex rounded-xl border border-[#DDE6DF] bg-white p-0.5">
           {[
             ["demo", "Demo data"],
@@ -147,13 +163,16 @@ export default function SensorSimulator() {
               Configurable channel values
             </h2>
             <p className="text-[9px] leading-4 text-[#84938B]">
-              Leave a field blank to draw a realistic random value from the model's training range.
+              Leave a field blank to draw a realistic random value from the
+              model's training range.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(channels).map(([channel, spec]) => (
                 <label key={channel} className="block">
                   <span className="mb-1.5 flex items-baseline justify-between">
-                    <span className="text-[10px] font-bold text-[#52675B]">{channel}</span>
+                    <span className="text-[10px] font-bold text-[#52675B]">
+                      {channel}
+                    </span>
                     <span className="text-[8px] text-[#9AA79F]">
                       {spec.min}–{spec.max} {spec.unit}
                     </span>
@@ -218,7 +237,9 @@ export default function SensorSimulator() {
                   </button>
                 ))}
                 <button
-                  onClick={() => setFailed(failed.length ? [] : Object.keys(channels))}
+                  onClick={() =>
+                    setFailed(failed.length ? [] : Object.keys(channels))
+                  }
                   className="rounded-full bg-[#FCE9E5] px-2.5 py-1 text-[9px] font-extrabold text-[#A55243]"
                 >
                   {failed.length ? "Clear failures" : "Fail all"}
@@ -249,12 +270,14 @@ export default function SensorSimulator() {
                 Store this reading (optional)
               </h2>
               <p className="text-[9px] leading-4 text-[#84938B]">
-                Stored with <b>is_demo = true</b> against one of your devices. It never overwrites
-                real sensor records, and real readings never show it in the connected-sensor view.
+                Stored with <b>is_demo = true</b> against one of your devices.
+                It never overwrites real sensor records, and real readings never
+                show it in the connected-sensor view.
               </p>
               {devices.length === 0 ? (
                 <p className="text-[10px] text-[#8A6D2B]">
-                  No devices paired yet. Add one in Device Management to store demo rows.
+                  No devices paired yet. Add one in Device Management to store
+                  demo rows.
                 </p>
               ) : (
                 <div className="flex flex-wrap items-end gap-2">
@@ -266,7 +289,11 @@ export default function SensorSimulator() {
                       options={["", ...devices.map((d) => d.id)]}
                     />
                   </div>
-                  <ModuleButton secondary onClick={persist} disabled={persisting}>
+                  <ModuleButton
+                    secondary
+                    onClick={persist}
+                    disabled={persisting}
+                  >
                     {persisting ? "Storing…" : "Store as demo"}
                   </ModuleButton>
                 </div>
@@ -286,7 +313,11 @@ export default function SensorSimulator() {
           )}
         </>
       ) : (
-        <RealReadings loading={realData.loading} error={realData.error} items={realReadings} />
+        <RealReadings
+          loading={realData.loading}
+          error={realData.error}
+          items={realReadings}
+        />
       )}
     </div>
   );
@@ -297,26 +328,38 @@ function DemoReadingCard({ reading }) {
   return (
     <section className="space-y-3 rounded-[22px] border border-[#F2DCB0] bg-[#FFFBF0] p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-extrabold text-[#8A6D2B]">{reading.label}</h3>
+        <h3 className="text-[13px] font-extrabold text-[#8A6D2B]">
+          {reading.label}
+        </h3>
         <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#916112]">
           Simulated
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {entries.map(([channel, value]) => (
-          <div key={channel} className="rounded-2xl border border-[#F2DCB0] bg-white p-3">
+          <div
+            key={channel}
+            className="rounded-2xl border border-[#F2DCB0] bg-white p-3"
+          >
             <p className="text-[9px] font-bold uppercase tracking-[.06em] text-[#8A998F]">
               {channel}
             </p>
-            <p className="mt-1 text-[15px] font-extrabold text-[#213D2F]">{value}</p>
+            <p className="mt-1 text-[15px] font-extrabold text-[#213D2F]">
+              {value}
+            </p>
           </div>
         ))}
         {reading.failed_channels?.map((channel) => (
-          <div key={channel} className="rounded-2xl border border-[#F3C9C1] bg-white p-3">
+          <div
+            key={channel}
+            className="rounded-2xl border border-[#F3C9C1] bg-white p-3"
+          >
             <p className="text-[9px] font-bold uppercase tracking-[.06em] text-[#8A998F]">
               {channel}
             </p>
-            <p className="mt-1 text-[13px] font-extrabold text-[#A55243]">no signal</p>
+            <p className="mt-1 text-[13px] font-extrabold text-[#A55243]">
+              no signal
+            </p>
           </div>
         ))}
       </div>
@@ -351,7 +394,10 @@ function RealReadings({ loading, error, items }) {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="h-16 animate-pulse rounded-[20px] bg-[#E8F0EB]" />
+          <div
+            key={n}
+            className="h-16 animate-pulse rounded-[20px] bg-[#E8F0EB]"
+          />
         ))}
       </div>
     );
@@ -359,7 +405,8 @@ function RealReadings({ loading, error, items }) {
   if (error) {
     return (
       <p className="rounded-2xl bg-[#FCE9E5] p-4 text-[11px] font-semibold text-[#9D4C3E]">
-        Could not load connected-sensor readings{error.status ? ` (${error.status})` : ""}.
+        Could not load connected-sensor readings
+        {error.status ? ` (${error.status})` : ""}.
       </p>
     );
   }
@@ -367,14 +414,16 @@ function RealReadings({ loading, error, items }) {
     <section className="overflow-hidden rounded-[22px] border border-[#E0E8E2] bg-white">
       {items.length === 0 ? (
         <p className="p-6 text-center text-[12px] text-[#7B8C82]">
-          No real sensor readings yet. Readings you simulate in Demo mode are stored separately and
-          will not appear here.
+          No real sensor readings yet. Readings you simulate in Demo mode are
+          stored separately and will not appear here.
         </p>
       ) : (
         items.map((item, index) => (
           <div
             key={item.id}
-            className={`flex items-center gap-3 p-4 ${index ? "border-t border-[#EDF1EE]" : ""}`}
+            className={`flex items-center gap-3 p-4 ${
+              index ? "border-t border-[#EDF1EE]" : ""
+            }`}
           >
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E5F3F7] text-[#28778A]">
               <ModuleIcon name="device" size={18} />
@@ -384,7 +433,9 @@ function RealReadings({ loading, error, items }) {
                 {summarise(item)}
               </b>
               <span className="text-[9px] text-[#829188]">
-                {item.created_at ? new Date(item.created_at).toLocaleString() : ""}
+                {item.created_at
+                  ? new Date(item.created_at).toLocaleString()
+                  : ""}
                 {item.device_id ? ` · ${item.device_id.slice(0, 8)}` : ""}
               </span>
             </span>

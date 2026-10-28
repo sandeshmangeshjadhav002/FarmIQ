@@ -60,9 +60,11 @@ pip install -r requirements.txt
    SUPABASE_URL=https://<ref>.supabase.co
    SUPABASE_ANON_KEY=...
    SUPABASE_SERVICE_ROLE_KEY=...     # SERVER SIDE ONLY
-   SUPABASE_JWT_SECRET=...            # optional
    FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,capacitor://localhost,http://localhost
    ```
+   `TRUST_PROXY_HEADERS=true` and `ENVIRONMENT=production` are set by
+   `render.yaml`, not locally — see the deployment section of
+   `TECHNICAL_DOCUMENTATION.md`.
 
 ### 3. Run
 ```powershell

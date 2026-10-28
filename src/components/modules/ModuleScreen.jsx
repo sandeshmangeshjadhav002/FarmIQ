@@ -1,17 +1,23 @@
+import { Suspense, lazy } from "react";
 import { moduleCatalog } from "@/data/modules";
+import ScreenLoader from "@/components/common/ScreenLoader";
 import ModuleIcon from "./ModuleIcon";
-import GenericModule from "./GenericModule";
-import MlModule from "./MlModule";
-import FarmManager from "./FarmManager";
-import ImageAnalysis from "./ImageAnalysis";
-import CalendarManager from "./CalendarManager";
-import KnowledgeCenter from "./KnowledgeCenter";
-import SettingsPanel from "./SettingsPanel";
-import DeviceManager from "./DeviceManager";
-import SensorSimulator from "./SensorSimulator";
-import Schemes from "./Schemes";
-import MlopsDashboard from "./MlopsDashboard";
-import OrganicFarmingAdvisor from "./OrganicFarmingAdvisor";
+
+// Module panels are split into individual chunks. ModuleHub lists every module
+// in the catalogue, so importing them all eagerly would put the entire app in
+// the entry bundle; this way opening one module downloads only that module.
+const GenericModule = lazy(() => import("./GenericModule"));
+const MlModule = lazy(() => import("./MlModule"));
+const FarmManager = lazy(() => import("./FarmManager"));
+const ImageAnalysis = lazy(() => import("./ImageAnalysis"));
+const CalendarManager = lazy(() => import("./CalendarManager"));
+const KnowledgeCenter = lazy(() => import("./KnowledgeCenter"));
+const SettingsPanel = lazy(() => import("./SettingsPanel"));
+const DeviceManager = lazy(() => import("./DeviceManager"));
+const SensorSimulator = lazy(() => import("./SensorSimulator"));
+const Schemes = lazy(() => import("./Schemes"));
+const MlopsDashboard = lazy(() => import("./MlopsDashboard"));
+const OrganicFarmingAdvisor = lazy(() => import("./OrganicFarmingAdvisor"));
 
 /**
  * Renders the correct content component for a given module key,
@@ -95,7 +101,11 @@ export default function ModuleScreen({
         </div>
       </header>
 
-      {renderContent()}
+      {/* The header above paints immediately; only the panel itself waits for
+          its chunk. */}
+      <Suspense fallback={<ScreenLoader label="Loading module…" />}>
+        {renderContent()}
+      </Suspense>
     </div>
   );
 }

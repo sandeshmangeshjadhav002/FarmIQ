@@ -71,6 +71,10 @@ export default function RegisterScreen({ navigate, onLogin }) {
   };
 
   const handleSubmit = async () => {
+    // Re-entrancy guard — see LoginScreen: a CSS-disabled button does not stop
+    // a repeat submit, so gate the request itself.
+    if (loading) return;
+
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -95,6 +99,7 @@ export default function RegisterScreen({ navigate, onLogin }) {
       if (res.ok) {
         showToast("success", "Account created! Taking you to your dashboard…");
         setTimeout(() => onLogin(data), 2000);
+        return; // keep the button disabled until the redirect happens
       } else if (res.status === 409) {
         setErrors({ email: data.detail ?? "Email is already registered." });
       } else {
@@ -108,9 +113,8 @@ export default function RegisterScreen({ navigate, onLogin }) {
         "error",
         "Unable to connect to the server. Check your connection.",
       );
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   // ── country codes (common selection) ─────────────────────────────────────

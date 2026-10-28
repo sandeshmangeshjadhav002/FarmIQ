@@ -16,4 +16,21 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // React and its scheduler are the only vendor code that is always
+        // needed, so they get a stable long-lived chunk: app releases then
+        // invalidate just the app code. Everything else (the Capacitor voice
+        // plugins, for example) stays with the lazy chunk that actually uses
+        // it instead of being hoisted into the entry bundle.
+        manualChunks(id) {
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
+            return "react-vendor";
+          }
+          return undefined;
+        },
+      },
+    },
+  },
 });

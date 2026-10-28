@@ -57,11 +57,6 @@ class Rule:
     capacity: int
     refill_per_second: float
 
-    @property
-    def retry_hint(self) -> int:
-        """Worst-case seconds to wait for one token from empty."""
-        return max(1, math.ceil(1.0 / self.refill_per_second))
-
 
 RULE_AUTH = Rule("auth", capacity=10, refill_per_second=10 / 60)
 RULE_HEAVY = Rule("heavy", capacity=40, refill_per_second=40 / 60)

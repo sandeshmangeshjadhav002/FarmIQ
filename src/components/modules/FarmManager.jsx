@@ -48,6 +48,7 @@ export default function FarmManager() {
    * coordinate is still usable for weather.
    */
   const useMyLocation = async () => {
+    if (locating) return; // re-entrancy guard: repeat taps would race the label
     setLocating(true);
     setLocNote(null);
     try {
@@ -93,6 +94,7 @@ export default function FarmManager() {
   };
 
   const addFarm = async () => {
+    if (saving) return; // re-entrancy guard (the button is also disabled)
     if (!name.trim() || !location.trim()) {
       setFormError("Farm name and location are required.");
       return;

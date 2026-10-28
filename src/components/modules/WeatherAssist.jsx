@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { apiGet } from "@/lib/apiClient";
 import { getCurrentPosition } from "@/lib/geolocation";
@@ -37,6 +37,8 @@ export default function WeatherAssist({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastQuery, setLastQuery] = useState(null);
+  // Monotonic id of the newest weather lookup; see `load`.
+  const latestRequest = useRef(0);
 
   // Only offer the farm shortcut when a complete point was actually stored.
   const farmPoint =
@@ -60,6 +62,12 @@ export default function WeatherAssist({
 
   const load = useCallback(
     async (query) => {
+      // Two quick taps (e.g. farm point, then phone position) produce two
+      // in-flight lookups. Without this the slower, older one could land last
+      // and auto-fill the form with weather for the place the user moved away
+      // from, so only the most recent request is allowed to write state.
+      const requestId = ++latestRequest.current;
+
       setLoading(true);
       setError(null);
       try {
@@ -68,10 +76,12 @@ export default function WeatherAssist({
             ? `?lat=${query.lat}&lon=${query.lon}`
             : `?location=${encodeURIComponent(query.location)}`;
         const rep = await apiGet(`/api/weather/current${qs}`);
+        if (requestId !== latestRequest.current) return;
         setReport(rep);
         setLastQuery(query);
         applyAutofill(rep);
       } catch (err) {
+        if (requestId !== latestRequest.current) return;
         setReport(null);
         if (err.status === 503) {
           setError(
@@ -82,7 +92,7 @@ export default function WeatherAssist({
           setError(err.message || "Could not fetch weather for that location.");
         }
       } finally {
-        setLoading(false);
+        if (requestId === latestRequest.current) setLoading(false);
       }
     },
     [applyAutofill],

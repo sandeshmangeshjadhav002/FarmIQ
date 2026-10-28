@@ -1,19 +1,35 @@
-# Render Blueprint — deploys the FarmIQ backend as a Docker web service.
+# Render Blueprint — deploys FarmIQ as two services:
+#   * farmiq-api : FastAPI backend, Docker runtime, port 8001
+#   * farmiq-web : React/Vite frontend, static site
 # After connecting this repo to Render, the dashboard reads this file and
-# creates the service with the correct runtime, port, and env vars.
-# Secrets use `sync: false` — set their values in the Render dashboard
-# (Environment tab), never commit them here.
+# creates both services. Secrets use `sync: false` — set their values in the
+# Render dashboard (Environment tab), never commit them here.
 services:
+  # ── Backend ─────────────────────────────────────────────────────────────
   - type: web
     name: farmiq-api
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/health
+    # Liveness, not readiness: Render restarts a service that fails this probe,
+    # and a database outage is not fixed by restarting the container. Use
+    # /api/health/ready (503 when the DB is unreachable) for manual checks and
+    # /api/health for the aggregate view.
+    healthCheckPath: /api/health/live
     autoDeploy: true
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
+      # Turns off the permissive localhost/LAN CORS regex: in production every
+      # allowed origin must appear in FRONTEND_ORIGINS.
+      - key: ENVIRONMENT
+        value: "production"
+      # Render terminates TLS in front of the container and overwrites
+      # X-Forwarded-For, so the rate limiter can key on the real client IP.
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: LOG_LEVEL
+        value: "INFO"
       # ── Supabase (set values in dashboard) ──────────────────────────────
       - key: SUPABASE_URL
         sync: false
@@ -21,9 +37,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      # ── CORS — include the Android WebView origin + your web origin ──────
+      # ── CORS — set in the dashboard to this app's origins ───────────────
+      # e.g. https://farmiq-web.onrender.com,capacitor://localhost,http://localhost
       - key: FRONTEND_ORIGINS
-        value: "http://localhost:5173,http://127.0.0.1:5173,capacitor://localhost,http://localhost"
+        sync: false
       # ── ML/RAG asset paths (absolute, matching the Dockerfile layout) ───
       - key: FARMIQ_ML_PROCESSED_PATH
         value: "/app/FarmIQ-rag/datasets/processed"
@@ -38,3 +55,24 @@ services:
         value: "https://api.groq.com/openai/v1"
       - key: STT_MODEL
         value: "whisper-large-v3"
+
+  # ── Frontend ────────────────────────────────────────────────────────────
+  - type: web
+    name: farmiq-web
+    runtime: static
+    plan: free
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    envVars:
+      # Baked into the bundle at build time. Set in the dashboard to the
+      # backend's public URL, e.g. https://farmiq-api.onrender.com.
+      # Without it the build falls back to http://127.0.0.1:8001.
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      # Single-page app: every unknown path is served the app shell, which
+      # performs its own client-side routing.
+      - type: rewrite
+        source: /*
+        destination: /index.html

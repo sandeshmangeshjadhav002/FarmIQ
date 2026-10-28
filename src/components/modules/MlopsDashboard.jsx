@@ -19,6 +19,7 @@ export default function MlopsDashboard() {
   const [reloading, setReloading] = useState(false);
 
   const runReload = async () => {
+    if (reloading) return; // re-entrancy guard (the button is also disabled)
     setReloading(true);
     // Re-reads the stored report; a full recompute is run offline via
     // `python -m ml.evaluate` so the dashboard never blocks on training.

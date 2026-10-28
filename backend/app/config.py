@@ -35,7 +35,6 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""  # SERVER SIDE ONLY — bypasses RLS
     supabase_anon_key: str = ""
-    supabase_jwt_secret: str = ""        # optional local JWT verification fallback
 
     # ── Environment ───────────────────────────────────────────────────
     # "development" | "production". Drives the dev-only conveniences (LAN CORS

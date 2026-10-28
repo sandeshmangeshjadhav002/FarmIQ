@@ -91,6 +91,7 @@ export default function OrganicFarmingAdvisor() {
   };
 
   const submit = async (path, kind) => {
+    if (busy) return; // re-entrancy guard (the buttons are also disabled)
     if (!validate()) {
       setSubmitError(null);
       return;
@@ -121,7 +122,10 @@ export default function OrganicFarmingAdvisor() {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="h-24 animate-pulse rounded-[20px] bg-[#E8F0EB]" />
+          <div
+            key={n}
+            className="h-24 animate-pulse rounded-[20px] bg-[#E8F0EB]"
+          />
         ))}
       </div>
     );
@@ -131,7 +135,8 @@ export default function OrganicFarmingAdvisor() {
     return (
       <div className="space-y-3">
         <p className="rounded-2xl bg-[#FCE9E5] p-4 text-[11px] font-semibold text-[#9D4C3E]">
-          Could not load the farming methods{error.status ? ` (${error.status})` : ""}.
+          Could not load the farming methods
+          {error.status ? ` (${error.status})` : ""}.
         </p>
         <ModuleButton secondary onClick={refetch}>
           Try again
@@ -159,7 +164,9 @@ export default function OrganicFarmingAdvisor() {
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
             <ModuleIcon name="leaf" size={16} />
           </span>
-          <h2 className="text-[13px] font-extrabold text-[#213D2F]">Tell us about your farm</h2>
+          <h2 className="text-[13px] font-extrabold text-[#213D2F]">
+            Tell us about your farm
+          </h2>
         </div>
 
         <div className="mt-3 space-y-3">
@@ -192,7 +199,9 @@ export default function OrganicFarmingAdvisor() {
             onChange={(v) => set("area_acres", v)}
             placeholder="e.g. 2.5"
           />
-          {fieldErrors.area_acres && <FieldError text={fieldErrors.area_acres} />}
+          {fieldErrors.area_acres && (
+            <FieldError text={fieldErrors.area_acres} />
+          )}
           <Field
             label="Current fertiliser use"
             value={form.current_fertilizer}
@@ -212,9 +221,21 @@ export default function OrganicFarmingAdvisor() {
             Organic materials available on your farm
           </legend>
           <div className="mt-2 space-y-2">
-            <Check label="Cow dung / farmyard manure" checked={form.cow_dung} onChange={(v) => set("cow_dung", v)} />
-            <Check label="Compost" checked={form.compost} onChange={(v) => set("compost", v)} />
-            <Check label="Crop residues" checked={form.crop_residues} onChange={(v) => set("crop_residues", v)} />
+            <Check
+              label="Cow dung / farmyard manure"
+              checked={form.cow_dung}
+              onChange={(v) => set("cow_dung", v)}
+            />
+            <Check
+              label="Compost"
+              checked={form.compost}
+              onChange={(v) => set("compost", v)}
+            />
+            <Check
+              label="Crop residues"
+              checked={form.crop_residues}
+              onChange={(v) => set("crop_residues", v)}
+            />
           </div>
           <div className="mt-3">
             <Field
@@ -283,9 +304,13 @@ export default function OrganicFarmingAdvisor() {
             <ModuleButton
               secondary
               disabled={busy === "plan"}
-              onClick={() => submit("/api/farming-methods/transition-plan", "plan")}
+              onClick={() =>
+                submit("/api/farming-methods/transition-plan", "plan")
+              }
             >
-              {busy === "plan" ? "Preparing plan..." : "Generate transition plan"}
+              {busy === "plan"
+                ? "Preparing plan..."
+                : "Generate transition plan"}
             </ModuleButton>
           )}
         </div>
@@ -308,7 +333,9 @@ function ComparisonView({ data }) {
         <h2 className="text-[13px] font-extrabold text-[#213D2F]">
           Comparison for {data.crop}
         </h2>
-        <p className="mt-1 text-[10px] leading-5 text-[#75867C]">{data.recommendation.summary}</p>
+        <p className="mt-1 text-[10px] leading-5 text-[#75867C]">
+          {data.recommendation.summary}
+        </p>
         <p className="mt-2 rounded-xl bg-white p-3 text-[10px] leading-5 text-[#4C6355]">
           {data.recommendation.nutrient_note}
         </p>
@@ -319,10 +346,15 @@ function ComparisonView({ data }) {
 
       {data.warnings?.length > 0 && (
         <section className="rounded-[22px] border border-[#F0DFC0] bg-[#FFF8EA] p-4">
-          <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">Things to be careful about</h3>
+          <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">
+            Things to be careful about
+          </h3>
           <ul className="mt-2 space-y-1.5">
             {data.warnings.map((w, i) => (
-              <li key={i} className="flex gap-2 text-[10px] leading-5 text-[#7C6428]">
+              <li
+                key={i}
+                className="flex gap-2 text-[10px] leading-5 text-[#7C6428]"
+              >
                 <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]" />
                 {w}
               </li>
@@ -350,15 +382,21 @@ function ComparisonView({ data }) {
                 }`}
               />
               <span className="text-[10px] leading-5 text-[#5B6F63]">
-                <b>{r.resource}</b> — {r.available ? "available" : "not reported"}
-                {r.usable_for?.length > 0 && <> · usable for: {r.usable_for.join(", ")}</>}
+                <b>{r.resource}</b> —{" "}
+                {r.available ? "available" : "not reported"}
+                {r.usable_for?.length > 0 && (
+                  <> · usable for: {r.usable_for.join(", ")}</>
+                )}
               </span>
             </li>
           ))}
         </ul>
       </section>
 
-      <AlternativesList alternatives={data.organic_alternatives} crop={data.crop} />
+      <AlternativesList
+        alternatives={data.organic_alternatives}
+        crop={data.crop}
+      />
       <Cautions cautions={data.cautions} />
       <SourcesFooter sources={data.sources} disclaimer={data.disclaimer} />
     </div>
@@ -381,9 +419,16 @@ function PlanView({ plan }) {
       </section>
 
       {plan.phases.map((phase) => (
-        <section key={phase.id} className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-          <h3 className="text-[12px] font-extrabold text-[#203C2E]">{phase.title}</h3>
-          <p className="mt-1 text-[10px] leading-5 text-[#75867C]">{phase.objective}</p>
+        <section
+          key={phase.id}
+          className="rounded-[22px] border border-[#E0E8E2] bg-white p-4"
+        >
+          <h3 className="text-[12px] font-extrabold text-[#203C2E]">
+            {phase.title}
+          </h3>
+          <p className="mt-1 text-[10px] leading-5 text-[#75867C]">
+            {phase.objective}
+          </p>
           <p className="mt-1 text-[9px] font-bold uppercase tracking-[.08em] text-[#9AA79F]">
             {phase.timeframe}
           </p>
@@ -403,13 +448,16 @@ function PlanView({ plan }) {
       ))}
 
       <section className="rounded-[22px] border border-[#F0DFC0] bg-[#FFF8EA] p-4">
-        <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">Costs and resources</h3>
+        <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">
+          Costs and resources
+        </h3>
         <p className="mt-1 text-[10px] leading-5 text-[#7C6428]">
           {plan.costs_and_resources.note}
         </p>
         {plan.costs_and_resources.reported_on_farm_materials?.length > 0 && (
           <p className="mt-2 text-[10px] leading-5 text-[#7C6428]">
-            You reported: {plan.costs_and_resources.reported_on_farm_materials.join(", ")}.
+            You reported:{" "}
+            {plan.costs_and_resources.reported_on_farm_materials.join(", ")}.
           </p>
         )}
       </section>
@@ -422,7 +470,9 @@ function PlanView({ plan }) {
           {plan.decision_indicators.map((d) => (
             <li key={d.id} className="flex items-start gap-2">
               <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#7EAE8E]" />
-              <span className="text-[10px] leading-5 text-[#5B6F63]">{d.text}</span>
+              <span className="text-[10px] leading-5 text-[#5B6F63]">
+                {d.text}
+              </span>
             </li>
           ))}
         </ul>
@@ -445,20 +495,35 @@ function MethodCard({ method }) {
           <ModuleIcon name="leaf" size={17} />
         </span>
         <div className="min-w-0">
-          <h3 className="text-[13px] font-extrabold text-[#213D2F]">{method.title}</h3>
-          <p className="mt-0.5 text-[9px] leading-4 text-[#84938B]">{method.short}</p>
+          <h3 className="text-[13px] font-extrabold text-[#213D2F]">
+            {method.title}
+          </h3>
+          <p className="mt-0.5 text-[9px] leading-4 text-[#84938B]">
+            {method.short}
+          </p>
         </div>
       </div>
-      <p className="mt-2 text-[10px] leading-5 text-[#5B6F63]">{method.summary}</p>
+      <p className="mt-2 text-[10px] leading-5 text-[#5B6F63]">
+        {method.summary}
+      </p>
       {method.fit_note && (
         <p className="mt-2 rounded-xl bg-[#F4F7F3] p-2.5 text-[9px] leading-4 text-[#4C6355]">
           {method.fit_note}
         </p>
       )}
 
-      <LabeledList label="Recommended practices" block={method.recommended_practices} />
-      <Labeled label="Fertiliser & nutrition" item={method.fertilizer_and_nutrition} />
-      <Labeled label="Pest management" item={method.pest_and_disease_management} />
+      <LabeledList
+        label="Recommended practices"
+        block={method.recommended_practices}
+      />
+      <Labeled
+        label="Fertiliser & nutrition"
+        item={method.fertilizer_and_nutrition}
+      />
+      <Labeled
+        label="Pest management"
+        item={method.pest_and_disease_management}
+      />
       <CostBlock item={method.estimated_cost_per_acre} />
       <Labeled label="Labour requirement" item={method.labour_requirement} />
       <Labeled label="Water requirement" item={method.water_requirement} />
@@ -466,11 +531,19 @@ function MethodCard({ method }) {
       <LabeledList label="Limitations" block={method.limitations} />
       <Labeled label="Soil health" item={method.soil_health} />
       <Labeled label="Yield impact" item={method.yield_impact} />
-      <Labeled label="Environmental impact" item={method.environmental_impact} />
-      <Labeled label="Transition difficulty" item={method.transition_difficulty} />
+      <Labeled
+        label="Environmental impact"
+        item={method.environmental_impact}
+      />
+      <Labeled
+        label="Transition difficulty"
+        item={method.transition_difficulty}
+      />
 
       <div className="mt-3 border-t border-[#EDF1EE] pt-3">
-        <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8B82]">Sources</p>
+        <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8B82]">
+          Sources
+        </p>
         <ul className="mt-1 space-y-0.5">
           {method.sources?.map((s, i) => (
             <li key={i} className="text-[9px] leading-4 text-[#84938B]">
@@ -487,7 +560,9 @@ function AlternativesList({ alternatives, crop }) {
   if (!alternatives?.length) {
     return (
       <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-        <h3 className="text-[12px] font-extrabold text-[#203C2E]">Organic alternatives</h3>
+        <h3 className="text-[12px] font-extrabold text-[#203C2E]">
+          Organic alternatives
+        </h3>
         <p className="mt-2 text-[10px] text-[#84938B]">
           No curated alternatives apply to {crop} yet.
         </p>
@@ -500,7 +575,10 @@ function AlternativesList({ alternatives, crop }) {
         Organic alternatives for {crop}
       </h3>
       {alternatives.map((alt) => (
-        <details key={alt.id} className="rounded-[22px] border border-[#E0E8E2] bg-white">
+        <details
+          key={alt.id}
+          className="rounded-[22px] border border-[#E0E8E2] bg-white"
+        >
           <summary className="cursor-pointer list-none p-4">
             <span className="flex items-center gap-3">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
@@ -508,7 +586,9 @@ function AlternativesList({ alternatives, crop }) {
               </span>
               <span className="min-w-0 flex-1">
                 <b className="block text-[12px] text-[#294234]">{alt.name}</b>
-                <span className="mt-0.5 block text-[9px] text-[#84938B]">{alt.category}</span>
+                <span className="mt-0.5 block text-[9px] text-[#84938B]">
+                  {alt.category}
+                </span>
               </span>
             </span>
           </summary>
@@ -542,10 +622,15 @@ function Cautions({ cautions }) {
   if (!cautions?.length) return null;
   return (
     <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-      <h3 className="text-[12px] font-extrabold text-[#203C2E]">Important cautions</h3>
+      <h3 className="text-[12px] font-extrabold text-[#203C2E]">
+        Important cautions
+      </h3>
       <ul className="mt-2 space-y-1.5">
         {cautions.map((c, i) => (
-          <li key={i} className="flex gap-2 text-[10px] leading-5 text-[#5B6F63]">
+          <li
+            key={i}
+            className="flex gap-2 text-[10px] leading-5 text-[#5B6F63]"
+          >
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]" />
             {c}
           </li>
@@ -565,8 +650,8 @@ function SourcesFooter({ sources, disclaimer }) {
         Integrity: {sources?.integrity_note || sources?.content_source}
       </p>
       <p className="mt-1.5 text-[9px] leading-4 text-[#84938B]">
-        Reference content last updated: {sources?.last_updated}. Content served from:{" "}
-        {sources?.content_source}.
+        Reference content last updated: {sources?.last_updated}. Content served
+        from: {sources?.content_source}.
       </p>
       <p className="mt-1.5 text-[9px] leading-4 text-[#84938B]">{disclaimer}</p>
     </section>
@@ -618,11 +703,19 @@ function Labeled({ label, item }) {
         <StatusBadge status={item.status} />
       </div>
       {item.level && (
-        <p className="mt-1 text-[11px] font-extrabold text-[#294234]">{item.level}</p>
+        <p className="mt-1 text-[11px] font-extrabold text-[#294234]">
+          {item.level}
+        </p>
       )}
-      {item.text && <p className="mt-0.5 text-[10px] leading-5 text-[#5B6F63]">{item.text}</p>}
+      {item.text && (
+        <p className="mt-0.5 text-[10px] leading-5 text-[#5B6F63]">
+          {item.text}
+        </p>
+      )}
       {item.note && (
-        <p className="mt-1 text-[9px] italic leading-4 text-[#8A6D2B]">{item.note}</p>
+        <p className="mt-1 text-[9px] italic leading-4 text-[#8A6D2B]">
+          {item.note}
+        </p>
       )}
     </div>
   );
@@ -640,7 +733,10 @@ function LabeledList({ label, block }) {
       </div>
       <ul className="mt-1.5 space-y-1">
         {block.items.map((item, i) => (
-          <li key={i} className="flex gap-2 text-[10px] leading-5 text-[#5B6F63]">
+          <li
+            key={i}
+            className="flex gap-2 text-[10px] leading-5 text-[#5B6F63]"
+          >
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#7EAE8E]" />
             {item}
           </li>
@@ -661,10 +757,14 @@ function CostBlock({ item }) {
         <StatusBadge status={item.status} />
       </div>
       <p className="mt-1 text-[11px] font-extrabold text-[#916112]">
-        {item.value == null ? "Not estimated by FarmIQ" : `${item.value} ${item.unit}`}
+        {item.value == null
+          ? "Not estimated by FarmIQ"
+          : `${item.value} ${item.unit}`}
       </p>
       {item.note && (
-        <p className="mt-0.5 text-[9px] leading-4 text-[#8A6D2B]">{item.note}</p>
+        <p className="mt-0.5 text-[9px] leading-4 text-[#8A6D2B]">
+          {item.note}
+        </p>
       )}
     </div>
   );
@@ -692,7 +792,9 @@ function SelectInput({ label, value, onChange, options, placeholder, error }) {
   return (
     <div>
       <label className="block">
-        <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">{label}</span>
+        <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">
+          {label}
+        </span>
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}

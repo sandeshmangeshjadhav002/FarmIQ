@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback, useEffect, lazy } from "react";
 
 import {
   setAuthToken,
@@ -12,6 +12,7 @@ import DesktopNavigation from "@/components/layout/DesktopNavigation";
 import LanguageSheet from "@/components/layout/LanguageSheet";
 import ScreenShell from "@/components/layout/ScreenShell";
 import ProfilePanel from "@/components/layout/ProfilePanel";
+import ScreenLoader from "@/components/common/ScreenLoader";
 import ModuleHub from "@/components/modules/ModuleHub";
 import ModuleScreen from "@/components/modules/ModuleScreen";
 
@@ -32,13 +33,17 @@ const BACK_MAP = {
   module: "more",
 };
 
-import HomeScreen from "@/pages/HomeScreen";
-import ChatScreen from "@/pages/ChatScreen";
-import FarmScreen from "@/pages/FarmScreen";
-import AdviceScreen from "@/pages/AdviceScreen";
-import HistoryScreen from "@/pages/HistoryScreen";
-import LoginScreen from "@/pages/LoginScreen";
-import RegisterScreen from "@/pages/RegisterScreen";
+// Screens are split into their own chunks: only the screen the farmer opens is
+// downloaded, so the first paint no longer waits for every page (and, through
+// ModuleScreen, every module panel). Each is wrapped in a Suspense boundary at
+// the point of use.
+const HomeScreen = lazy(() => import("@/pages/HomeScreen"));
+const ChatScreen = lazy(() => import("@/pages/ChatScreen"));
+const FarmScreen = lazy(() => import("@/pages/FarmScreen"));
+const AdviceScreen = lazy(() => import("@/pages/AdviceScreen"));
+const HistoryScreen = lazy(() => import("@/pages/HistoryScreen"));
+const LoginScreen = lazy(() => import("@/pages/LoginScreen"));
+const RegisterScreen = lazy(() => import("@/pages/RegisterScreen"));
 
 /**
  * Root application component.
@@ -137,10 +142,18 @@ export default function App() {
 
   // ── Auth screens (no desktop nav / bottom nav) ────────────────────────────
   if (screen === "login") {
-    return <LoginScreen navigate={navigate} onLogin={handleLogin} />;
+    return (
+      <Suspense fallback={<ScreenLoader label="Loading sign-in…" />}>
+        <LoginScreen navigate={navigate} onLogin={handleLogin} />
+      </Suspense>
+    );
   }
   if (screen === "register") {
-    return <RegisterScreen navigate={navigate} onLogin={handleLogin} />;
+    return (
+      <Suspense fallback={<ScreenLoader label="Loading sign-up…" />}>
+        <RegisterScreen navigate={navigate} onLogin={handleLogin} />
+      </Suspense>
+    );
   }
 
   // ── Main app ──────────────────────────────────────────────────────────────
@@ -164,44 +177,48 @@ export default function App() {
 
       {/* Content — full width on native, capped on desktop */}
       <div className={`w-full ${IS_NATIVE ? "" : "lg:max-w-[430px]"} relative`}>
-        {screen === "home" && (
-          <HomeScreen
-            language={language}
-            navigate={navigate}
-            openLanguages={openLanguages}
-            openTools={() => navigate("more")}
-            openModule={openModule}
-            user={user}
-            onOpenProfile={() => setProfileOpen(true)}
-          />
-        )}
-        {screen === "chat" && (
-          <ChatScreen
-            language={language}
-            navigate={navigate}
-            openLanguages={openLanguages}
-            openModule={openModule}
-          />
-        )}
-        {screen === "farm" && <FarmScreen navigate={navigate} />}
-        {screen === "advice" && <AdviceScreen navigate={navigate} />}
-        {screen === "history" && <HistoryScreen navigate={navigate} />}
-        {screen === "more" && (
-          <ScreenShell active="home" navigate={navigate}>
-            <ModuleHub onBack={() => navigate("home")} onOpen={openModule} />
-          </ScreenShell>
-        )}
-        {screen === "module" && (
-          <ScreenShell active="home" navigate={navigate}>
-            <ModuleScreen
-              currentLanguage={language}
-              moduleKey={selectedModule}
-              onAsk={() => navigate("chat")}
-              onBack={() => navigate("more")}
-              onLanguage={setLanguage}
+        {/* Only the active screen is inside the boundary, so the sidebar and
+            content column stay painted while a chunk is being fetched. */}
+        <Suspense fallback={<ScreenLoader />}>
+          {screen === "home" && (
+            <HomeScreen
+              language={language}
+              navigate={navigate}
+              openLanguages={openLanguages}
+              openTools={() => navigate("more")}
+              openModule={openModule}
+              user={user}
+              onOpenProfile={() => setProfileOpen(true)}
             />
-          </ScreenShell>
-        )}
+          )}
+          {screen === "chat" && (
+            <ChatScreen
+              language={language}
+              navigate={navigate}
+              openLanguages={openLanguages}
+              openModule={openModule}
+            />
+          )}
+          {screen === "farm" && <FarmScreen navigate={navigate} />}
+          {screen === "advice" && <AdviceScreen navigate={navigate} />}
+          {screen === "history" && <HistoryScreen navigate={navigate} />}
+          {screen === "more" && (
+            <ScreenShell active="home" navigate={navigate}>
+              <ModuleHub onBack={() => navigate("home")} onOpen={openModule} />
+            </ScreenShell>
+          )}
+          {screen === "module" && (
+            <ScreenShell active="home" navigate={navigate}>
+              <ModuleScreen
+                currentLanguage={language}
+                moduleKey={selectedModule}
+                onAsk={() => navigate("chat")}
+                onBack={() => navigate("more")}
+                onLanguage={setLanguage}
+              />
+            </ScreenShell>
+          )}
+        </Suspense>
 
         {/* Language sheet — scoped inside the content column */}
         {languageOpen && (

@@ -40,6 +40,11 @@ export default function LoginScreen({ navigate, onLogin }) {
   };
 
   const handleLogin = async () => {
+    // Re-entrancy guard: the button also gets `pointer-events-none` while
+    // loading, but that does not stop a second Enter keypress on an input, so
+    // the request itself must be the thing that is gated.
+    if (loading) return;
+
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -60,6 +65,7 @@ export default function LoginScreen({ navigate, onLogin }) {
       if (res.ok) {
         showToast("success", `Welcome back, ${data.full_name}!`);
         setTimeout(() => onLogin(data), 1500);
+        return; // keep the button disabled until the redirect happens
       } else if (res.status === 401) {
         setErrors({ password: "Incorrect mobile number or password." });
       } else {
@@ -67,9 +73,8 @@ export default function LoginScreen({ navigate, onLogin }) {
       }
     } catch {
       showToast("error", "Unable to connect to the server. Check your connection.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const countryCodes = [
