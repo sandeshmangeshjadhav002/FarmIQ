@@ -1,21 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Release/default: HTTPS only. Dev cleartext lives in src/debug/res/xml. -->
 <network-security-config>
-    <!--
-      Allow cleartext (HTTP) to the FastAPI backend during development.
-      The backend runs on http:// so Android's default cleartext block must
-      be lifted. For production, serve the backend over HTTPS and remove
-      the cleartext rules below.
-    -->
-    <domain-config cleartextTrafficPermitted="true">
-        <!-- Android emulator host loopback -->
-        <domain includeSubdomains="false">10.0.2.2</domain>
-        <!-- Development LAN IP — update if your IP changes -->
-        <domain includeSubdomains="false">10.96.227.149</domain>
-        <!-- localhost for WebView internal serving -->
-        <domain includeSubdomains="false">localhost</domain>
-        <domain includeSubdomains="false">127.0.0.1</domain>
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
-    </domain-config>
+    </base-config>
 </network-security-config>
+

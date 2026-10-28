@@ -53,6 +53,12 @@ def root():
     return {"message": "FarmIQ backend is running", "version": API_VERSION}
 
 
+@router.get("/health")
+def health_simple():
+    """Dependency-free reachability probe for phone/emulator connectivity tests."""
+    return {"status": "ok", "version": API_VERSION}
+
+
 @router.get("/api/health/live")
 def liveness():
     """Liveness probe — process only, no external dependencies."""

@@ -75,3 +75,4 @@ chroma_db/
 data/processed/
 *.joblib
 *.pkl
+!.env.emulator

@@ -1,4 +1,4 @@
-# FarmIQ
+﻿# FarmIQ
 
 An AI-powered agricultural advisory platform that helps farmers with crop recommendations, irrigation scheduling, soil health monitoring, market intelligence, IoT sensor management, and more — all through a mobile-first web app.
 
@@ -215,22 +215,38 @@ Vite/React app ships as a native Android app. The native project lives in
 - An Android device (with USB debugging) **or** an emulator
 
 ### Important: the backend URL
-`127.0.0.1` does **not** work on a phone/emulator — it points at the device
-itself, not your dev machine. The API base URL is read from the `VITE_API_BASE_URL`
-env var at build time (see `src/config/api.js` and `.env.example`).
+`127.0.0.1` does **not** work on a phone/emulator - it points at the device
+itself. The URL is decided only in `src/config/api.js` from `VITE_API_BASE_URL`,
+which Vite loads per build mode:
 
-| Target | `VITE_API_BASE_URL` |
-|---|---|
-| Android emulator | `http://10.0.2.2:8001` (10.0.2.2 maps to host loopback) |
-| Physical device (same Wi-Fi) | `http://<your-LAN-IP>:8001`, e.g. `http://192.168.1.10:8001` |
-| Production | `https://api.yourdomain.com` |
+| Target | Command | Env file |
+|---|---|---|
+| Browser dev | `npm run dev` | none needed (falls back to `http://127.0.0.1:8001`) |
+| Android emulator | `npm run android:emulator` | `.env.emulator` (`http://10.0.2.2:8001`, committed) |
+| Physical device | `npm run android:device` | `.env.device.local` (gitignored): `VITE_API_BASE_URL=http://<LAN-IP>:8001` |
+| Production | `npm run build; npx cap sync android` | `.env.production.local`: `VITE_API_BASE_URL=https://<api-host>` |
 
-When using a physical device, also start the backend on all interfaces so the
-phone can reach it, and ensure the FastAPI `allow_origins` in `main.py`
-includes the origin the WebView uses (`capacitor://localhost` / `http://localhost`):
+Dev HTTP is for debug builds only: run `cap sync` with `CAPACITOR_DEV_HTTP=1`
+(PowerShell: `$env:CAPACITOR_DEV_HTTP="1"`) and build the debug APK
+(`android/app/src/debug/res/xml/network_security_config.xml` allows cleartext;
+release builds are HTTPS-only). A debug APK can send cleartext to any host -
+never distribute it.
+
+The Capacitor Android WebView origin is `https://localhost` (in the default
+`FRONTEND_ORIGINS`). In production set `ENVIRONMENT=production` and
+`FRONTEND_ORIGINS=https://<web-site>,https://localhost`.
+
+Start the backend on all interfaces (from `backend/`) and verify reachability:
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8001
+uvicorn app.main:app --host 0.0.0.0 --port 8001
+curl http://<LAN-IP>:8001/health   # also open this URL in the phone browser
+```
+
+Troubleshooting:
+- Phone cannot open `/health`: allow inbound TCP 8001 (`New-NetFirewallRule -DisplayName FarmIQ -Direction Inbound -Protocol TCP -LocalPort 8001 -Profile Private -Action Allow`), same Wi-Fi, no client isolation.
+- App shows "Cannot reach the FarmIQ server": stale/wrong URL (rebuild after changing env) or cleartext blocked (release build with an http URL).
+- CORS error in chrome://inspect: origin missing from `FRONTEND_ORIGINS`.
 ```
 
 ### Build & run on Android

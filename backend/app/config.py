@@ -1,4 +1,4 @@
-"""Application configuration loaded from environment variables.
+﻿"""Application configuration loaded from environment variables.
 
 All Supabase credentials live here and are never sent to the frontend.
 Defaults for ML asset paths point at the existing FarmIQ-rag artefacts.
@@ -31,25 +31,25 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False
     )
 
-    # ── Supabase ──────────────────────────────────────────────────────
+    # â”€â”€ Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     supabase_url: str = ""
-    supabase_service_role_key: str = ""  # SERVER SIDE ONLY — bypasses RLS
+    supabase_service_role_key: str = ""  # SERVER SIDE ONLY â€” bypasses RLS
     supabase_anon_key: str = ""
 
-    # ── Environment ───────────────────────────────────────────────────
+    # â”€â”€ Environment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # "development" | "production". Drives the dev-only conveniences (LAN CORS
     # origins). Deployments must set ENVIRONMENT=production explicitly; the
     # default favours local development.
     environment: str = "development"
 
-    # ── CORS ──────────────────────────────────────────────────────────
+    # â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     frontend_origins: str = (
-        "http://localhost:5173,http://127.0.0.1:5173,capacitor://localhost,http://localhost"
+        "http://localhost:5173,http://127.0.0.1:5173,https://localhost,capacitor://localhost,http://localhost"
     )
     # Optional explicit origin regex (takes precedence over the dev default).
     cors_origin_regex: str = ""
 
-    # ── Rate limiting ─────────────────────────────────────────────────
+    # â”€â”€ Rate limiting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # In-process token bucket (see app/rate_limit.py). Disable only for
     # trusted load testing; the automated test-suite disables it because every
     # request shares one synthetic client address.
@@ -59,19 +59,19 @@ class Settings(BaseSettings):
     # would let a client spoof the header and bypass the limiter.
     trust_proxy_headers: bool = False
 
-    # ── Observability ─────────────────────────────────────────────────
+    # â”€â”€ Observability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Preferred log level for the application logger.
     log_level: str = "INFO"
 
-    # ── ML artefacts ───────────────────────────────────────────────────
+    # â”€â”€ ML artefacts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     farmiq_ml_processed_path: str = str(DEFAULT_ML_PROCESSED)
     farmiq_ml_models_path: str = str(DEFAULT_ML_MODELS)
-    # Raw (pre-scaling) datasets — used to derive real averages for inputs the
+    # Raw (pre-scaling) datasets â€” used to derive real averages for inputs the
     # farmer did not supply. The processed/*.csv files hold scaled values, so
     # averages must never be taken from them.
     farmiq_ml_raw_path: str = str(DEFAULT_ML_RAW)
 
-    # ── Speech-to-text (server-side transcription) ─────────────────────
+    # â”€â”€ Speech-to-text (server-side transcription) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Chrome/Edge ship the Web Speech API, but it fails with a "network" error
     # when Google's speech service is unreachable, and Firefox/Safari do not
     # implement it at all. The browser records audio and posts it to
@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     stt_model: str = "whisper-large-v3"
     stt_timeout_seconds: int = 60
 
-    # ── Text-to-speech (server-side synthesis) ─────────────────────────
+    # â”€â”€ Text-to-speech (server-side synthesis) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Windows desktops and stock Android devices frequently have no Marathi
     # (mr-IN) or Hindi (hi-IN) voice installed, so the browser's
     # speechSynthesis API and the Android TextToSpeech engine stay silent on
@@ -95,11 +95,11 @@ class Settings(BaseSettings):
     tts_voice_mr: str = "mr-IN-AarohiNeural"
     tts_voice_en: str = "en-IN-NeerjaNeural"
 
-    # ── RAG assistant ──────────────────────────────────────────────────
+    # â”€â”€ RAG assistant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Path to the standalone FarmIQ-RAG project (contains src/ and data/).
     farmiq_rag_path: str = str(DEFAULT_RAG_PROJECT)
 
-    # ── Weather (Open-Meteo, no API key required) ──────────────────────
+    # â”€â”€ Weather (Open-Meteo, no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Used to auto-fill temperature / humidity / accumulated rainfall in the
     # ML prediction forms. Open-Meteo needs no key; the base URLs are settings
     # so a self-hosted or proxy deployment can be pointed at another host.
@@ -110,16 +110,16 @@ class Settings(BaseSettings):
     # only), so turning device coordinates into a place label needs a different
     # provider. Photon (Komoot's OpenStreetMap geocoder) is key-less, supports
     # reverse lookups and needs no account. It is only used to pre-fill a
-    # human-readable label — the coordinates themselves stay authoritative.
+    # human-readable label â€” the coordinates themselves stay authoritative.
     weather_reverse_url: str = "https://photon.komoot.io"
     weather_timeout_seconds: float = 8.0
     # How many past days of daily rainfall are summed for the accumulated total.
     weather_history_days: int = 30
 
-    # ── Device ingestion ──────────────────────────────────────────────
+    # â”€â”€ Device ingestion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     sensor_ingest_token: str = ""  # optional shared secret for ESP32 devices
 
-    # Derived ──────────────────────────────────────────────────────────
+    # Derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @property
     def is_production(self) -> bool:
         return self.environment.strip().lower() in {"production", "prod"}
@@ -133,7 +133,7 @@ class Settings(BaseSettings):
         """Origin regex handed to CORSMiddleware ("" means "no regex").
 
         An explicit ``CORS_ORIGIN_REGEX`` always wins. Otherwise the permissive
-        localhost/LAN pattern is returned **only outside production** — in
+        localhost/LAN pattern is returned **only outside production** â€” in
         production an origin must be listed in ``FRONTEND_ORIGINS``, so a stray
         device on the office network cannot call the API.
         """

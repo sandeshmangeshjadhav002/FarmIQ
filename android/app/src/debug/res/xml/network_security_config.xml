@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG BUILDS ONLY. Overrides src/main/res/xml/network_security_config.xml so a
+  debug APK can reach the dev FastAPI server over http:// (emulator 10.0.2.2 or
+  a changing LAN IP, which cannot be listed by CIDR). Release builds never see
+  this file and stay HTTPS-only. Risk: a debug APK will send cleartext traffic
+  to any host - never distribute it.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
