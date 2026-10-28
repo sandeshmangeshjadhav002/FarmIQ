@@ -52,3 +52,19 @@ def test_register_invalid_role_rejected(app_client):
     bad = {**REGISTER, "role": "admin", "email": "bad@example.com", "mobile": "+919111111111"}
     r = app_client.post("/api/auth/register", json=bad)
     assert r.status_code == 400
+
+
+def test_register_without_a_role_defaults_to_farmer(app_client):
+    """The signup form no longer asks for a role; the backend must supply one.
+
+    A farmer signing up cannot reasonably classify themselves at that moment,
+    so ``role`` is optional and defaults to the common case. It stays editable
+    afterwards through PATCH /api/users/me.
+    """
+    payload = {k: v for k, v in REGISTER.items() if k != "role"}
+    payload["email"] = "norole@example.com"
+    payload["mobile"] = "+919222233334"
+
+    r = app_client.post("/api/auth/register", json=payload)
+    assert r.status_code == 201, r.text
+    assert r.json()["role"] == "farmer"

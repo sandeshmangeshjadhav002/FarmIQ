@@ -144,6 +144,24 @@ export default function HomeScreen({
 
         <button
           className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-white/40 bg-white/50 p-4 text-left backdrop-blur-md shadow-sm"
+          onClick={() => openModule("organic-farming")}
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#2F7D52] text-white">
+            <Icon name="leaf" size={20} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-extrabold text-[#21412F]">
+              Organic Farming Advisor
+            </span>
+            <span className="mt-1 block text-[10px] text-[#718279]">
+              Compare conventional, organic and integrated methods
+            </span>
+          </span>
+          <Icon name="chevron" size={17} className="text-[#216B45]" />
+        </button>
+
+        <button
+          className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-white/40 bg-white/50 p-4 text-left backdrop-blur-md shadow-sm"
           onClick={openTools}
         >
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#216B45] text-white">

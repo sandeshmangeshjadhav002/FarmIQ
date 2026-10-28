@@ -22,7 +22,10 @@ class UserRegister(BaseModel):
     full_name: str = Field(min_length=2, max_length=200)
     email: EmailStr
     mobile: str = Field(min_length=8, max_length=20)
-    role: str = Field(min_length=1, max_length=50)
+    # Optional so the signup form does not have to ask a farmer to classify
+    # themselves. Defaults to the most common case; the role is editable later
+    # in the profile. The auth router still validates it against VALID_ROLES.
+    role: str = Field(default="farmer", min_length=1, max_length=50)
     password: str = Field(min_length=8, max_length=128)
 
     model_config = ConfigDict(json_schema_extra={
@@ -70,6 +73,9 @@ class AuthResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(default=None, min_length=2, max_length=200)
+    # Role is changeable here so that dropping it from the signup form does not
+    # leave "agricultural_expert" unreachable. Validated in the users router.
+    role: Optional[str] = Field(default=None, max_length=50)
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -84,6 +90,10 @@ class FarmBase(BaseModel):
     irrigation_type: str = Field(default="drip", max_length=50)
     soil_type: Optional[str] = Field(default=None, max_length=100)
     current_crop: Optional[str] = Field(default=None, max_length=100)
+    # Optional precise point. Bounds mirror the DB check constraints; both are
+    # set together (a lone latitude is rejected by the database).
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
 
 
 class FarmCreate(FarmBase):
@@ -98,6 +108,8 @@ class FarmUpdate(BaseModel):
     irrigation_type: Optional[str] = Field(default=None, max_length=50)
     soil_type: Optional[str] = Field(default=None, max_length=100)
     current_crop: Optional[str] = Field(default=None, max_length=100)
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
 
 
 class FarmOut(FarmBase):
@@ -411,6 +423,24 @@ class WeatherLocation(BaseModel):
     timezone: Optional[str] = None
 
 
+class WeatherReverseLocation(BaseModel):
+    """A place label resolved from coordinates (used to pre-fill the farm form).
+
+    ``label`` is a convenience the farmer may edit; ``latitude``/``longitude``
+    are the values that were actually resolved and remain authoritative.
+    ``source`` credits the provider, as its licence requires attribution.
+    """
+    label: str
+    village: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    postcode: Optional[str] = None
+    latitude: float
+    longitude: float
+    source: str
+
+
 class WeatherCurrent(BaseModel):
     observed_at: Optional[str] = None
     temperature_c: Optional[float] = None
@@ -443,6 +473,63 @@ class WeatherReport(BaseModel):
     historical_rainfall: WeatherRainfall
     autofill: dict[str, WeatherAutofill] = {}
     notes: list[str] = []
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Organic vs. modern farming advisor
+# ─────────────────────────────────────────────────────────────────────────
+
+class FarmResources(BaseModel):
+    """Organic materials the farmer reports as available on the farm."""
+    cow_dung: bool = False
+    compost: bool = False
+    crop_residues: bool = False
+    other: list[str] = Field(default_factory=list, max_length=20)
+
+
+class FarmingContextRequest(BaseModel):
+    """Shared request body for the compare + transition-plan endpoints.
+
+    ``preference`` is one of ``organic`` / ``modern`` / ``integrated``.
+    ``farm_id`` is optional; when supplied the backend verifies the caller owns
+    that farm before using it. ``save`` persists the result as a user-scoped
+    plan.
+    """
+    crop: str = Field(min_length=1, max_length=80)
+    location: Optional[str] = Field(default=None, max_length=200)
+    soil_type: str = Field(min_length=1, max_length=80)
+    area_acres: float = Field(gt=0, le=100_000)
+    current_fertilizer: Optional[str] = Field(default=None, max_length=300)
+    current_pesticide: Optional[str] = Field(default=None, max_length=300)
+    resources: FarmResources = Field(default_factory=FarmResources)
+    preference: str = Field(min_length=1, max_length=30)
+    farm_id: Optional[str] = Field(default=None, max_length=100)
+    save: bool = False
+
+
+class FarmingOptionsResponse(BaseModel):
+    """Options the frontend form needs, served from the curated content."""
+    crops: list[str]
+    soil_types: list[str]
+    preferences: list[dict[str, Any]]
+    metadata: dict[str, Any]
+    legend: dict[str, str]
+    definition_notes: dict[str, str]
+    cautions: list[str]
+
+
+class FarmingPlanSummary(BaseModel):
+    id: str
+    kind: str
+    crop: Optional[str] = None
+    preference: Optional[str] = None
+    farm_id: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class FarmingPlanListResponse(BaseModel):
+    total: int
+    plans: list[FarmingPlanSummary]
 
 
 # ─────────────────────────────────────────────────────────────────────────

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import platform
 import sys
 import warnings
@@ -378,12 +379,23 @@ def run(write: bool = True, reports_dir: Optional[Path] = None) -> dict[str, Any
 
     if write:
         target_dir.mkdir(parents=True, exist_ok=True)
-        (target_dir / "evaluation_report.json").write_text(
-            json.dumps(report, indent=2), encoding="utf-8"
-        )
-        (target_dir / "evaluation_report.md").write_text(_to_markdown(report), encoding="utf-8")
+        _atomic_write(target_dir / "evaluation_report.json", json.dumps(report, indent=2))
+        _atomic_write(target_dir / "evaluation_report.md", _to_markdown(report))
         logger.info("Wrote evaluation report to %s", target_dir)
     return report
+
+
+def _atomic_write(path: Path, text: str) -> None:
+    """Write via a sibling temp file + rename.
+
+    ``GET /api/mlops/evaluation?refresh=true`` can regenerate the report while
+    other requests are reading it. A plain ``write_text`` would briefly expose a
+    truncated file, which readers would report as invalid JSON; ``os.replace``
+    is atomic, so readers only ever see the old or the new complete report.
+    """
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def _to_markdown(report: dict[str, Any]) -> str:

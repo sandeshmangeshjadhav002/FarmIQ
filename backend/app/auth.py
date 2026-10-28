@@ -54,7 +54,9 @@ def get_current_user(
     try:
         resp = client.auth.get_user(token)
     except Exception as exc:  # supabase raises on invalid/expired tokens
-        logger.warning("Token verification failed: %s", exc)
+        # Log only the exception *type*: some auth errors embed the submitted
+        # token or URL in their message, which must never reach the logs.
+        logger.warning("Token verification failed (%s).", type(exc).__name__)
         raise HTTPException(status_code=401, detail="Invalid or expired token.")
 
     user = _user_attr(resp, "user")

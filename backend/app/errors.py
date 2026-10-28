@@ -73,6 +73,39 @@ class InputValidationError(AppError):
         )
 
 
+def _sanitize_validation_errors(exc: RequestValidationError) -> list[dict]:
+    """Reduce pydantic errors to JSON-safe, non-sensitive descriptors.
+
+    Two problems are solved at once:
+
+    * **Serialization** — pydantic v2 puts the offending *object* in ``ctx``
+      (e.g. ``{"error": ValueError(...)}``) and the raw value in ``input``.
+      Passing those straight to ``JSONResponse`` raises inside the handler and
+      turns a 422 into a 500.
+    * **Privacy** — ``input`` echoes the submitted value back and into logs,
+      which would leak passwords or other fields. Only the location, machine
+      ``type`` and human message are kept.
+    """
+    clean: list[dict] = []
+    for err in exc.errors():
+        item: dict = {
+            "loc": [str(part) for part in err.get("loc", ())],
+            "type": str(err.get("type", "value_error")),
+            "msg": str(err.get("msg", "Invalid value.")),
+        }
+        ctx = err.get("ctx")
+        if isinstance(ctx, dict):
+            safe_ctx = {
+                key: value
+                for key, value in ctx.items()
+                if value is None or isinstance(value, (str, int, float, bool))
+            }
+            if safe_ctx:
+                item["ctx"] = safe_ctx
+        clean.append(item)
+    return clean
+
+
 def register_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error_handler(request: Request, exc: AppError):
@@ -86,10 +119,17 @@ def register_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def _validation_handler(request: Request, exc: RequestValidationError):
-        logger.info("Validation error on %s %s: %s", request.method, request.url.path, exc.errors())
+        errors = _sanitize_validation_errors(exc)
+        # Log locations and types only — never the submitted values.
+        logger.info(
+            "Validation error on %s %s: %s",
+            request.method,
+            request.url.path,
+            [{"loc": e["loc"], "type": e["type"]} for e in errors],
+        )
         return JSONResponse(
             status_code=422,
-            content={"detail": "Validation failed.", "errors": exc.errors()},
+            content={"detail": "Validation failed.", "errors": errors},
         )
 
     @app.exception_handler(Exception)

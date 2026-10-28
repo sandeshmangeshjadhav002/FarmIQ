@@ -19,12 +19,22 @@ os.environ.setdefault("SUPABASE_URL", "https://fake.supabase.co")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "fake-service-key")
 os.environ.setdefault("SUPABASE_ANON_KEY", "fake-anon-key")
 
+# Disable the rate limiter for the suite: TestClient presents every request from
+# one synthetic address, so the per-client buckets would trip mid-run and fail
+# unrelated tests. tests/test_rate_limit.py exercises the limiter directly by
+# constructing it with the setting forced on.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.auth import get_current_user  # noqa: E402
 from app.config import get_settings  # noqa: E402
-from app.supabase_client import get_admin_client  # noqa: E402
+from app.supabase_client import (  # noqa: E402
+    get_admin_client,
+    get_login_client,
+    get_optional_admin_client,
+)
 
 
 class R:
@@ -209,6 +219,11 @@ def app_client(fake_client):
     from app.main import app
 
     app.dependency_overrides[get_admin_client] = lambda: fake_client
+    app.dependency_overrides[get_optional_admin_client] = lambda: fake_client
+    # Password sign-in runs on its own client in production (see
+    # app/supabase_client.py); the fake is stateless so the same instance is
+    # fine here.
+    app.dependency_overrides[get_login_client] = lambda: fake_client
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

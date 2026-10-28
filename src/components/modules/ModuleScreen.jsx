@@ -11,6 +11,7 @@ import DeviceManager from "./DeviceManager";
 import SensorSimulator from "./SensorSimulator";
 import Schemes from "./Schemes";
 import MlopsDashboard from "./MlopsDashboard";
+import OrganicFarmingAdvisor from "./OrganicFarmingAdvisor";
 
 /**
  * Renders the correct content component for a given module key,
@@ -55,6 +56,8 @@ export default function ModuleScreen({
         return <SensorSimulator />;
       case "schemes":
         return <Schemes />;
+      case "organic-farming":
+        return <OrganicFarmingAdvisor />;
       case "mlops":
         return <MlopsDashboard />;
       case "crop-recommendation":

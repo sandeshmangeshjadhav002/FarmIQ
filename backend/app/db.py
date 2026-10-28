@@ -280,6 +280,67 @@ def list_predictions(
 
 
 # ─────────────────────────────────────────────────────────────────────────
+# Farming methods advisor — saved plans
+#
+# The reference content (methods, alternatives) lives in dedicated tables that
+# are read through ``farming_service``; only user-created plans are written here.
+# ─────────────────────────────────────────────────────────────────────────
+
+VALID_PLAN_KINDS = ("comparison", "transition_plan")
+
+
+def insert_farming_plan(
+    client: Any,
+    owner_id: str,
+    kind: str,
+    input_data: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    """Persist a farmer's saved comparison or transition plan (owner-scoped)."""
+    if kind not in VALID_PLAN_KINDS:
+        raise ConflictError(f"Unknown plan kind '{kind}'.")
+    row = {
+        "id": str(uuid.uuid4()),
+        "owner_id": owner_id,
+        "kind": kind,
+        "crop": input_data.get("crop"),
+        "preference": input_data.get("preference"),
+        "farm_id": input_data.get("farm_id"),
+        "input": input_data,
+        "result": result,
+        "created_at": _now_iso(),
+    }
+    resp = client.table("farming_plans").insert(row).execute()
+    data = _data(resp)
+    return data[0] if isinstance(data, list) and data else row
+
+
+def list_farming_plans(
+    client: Any, owner_id: str, kind: str | None = None, limit: int = 50, offset: int = 0
+) -> tuple[list, int]:
+    q = client.table("farming_plans").select("*", count="exact").eq("owner_id", owner_id)
+    if kind:
+        q = q.eq("kind", kind)
+    resp = q.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+    return _data(resp) or [], _count(resp) or 0
+
+
+def get_farming_plan(client: Any, owner_id: str, plan_id: str) -> dict[str, Any]:
+    resp = (
+        client.table("farming_plans")
+        .select("*")
+        .eq("id", plan_id)
+        .eq("owner_id", owner_id)
+        .maybe_single()
+        .execute()
+    )
+    data = _data(resp)
+    if not data:
+        raise NotFoundError("Farming plan not found.")
+    return data
+
+
+# ─────────────────────────────────────────────────────────────────────────
 # Dashboard
 # ─────────────────────────────────────────────────────────────────────────
 

@@ -18,9 +18,26 @@ from fastapi import APIRouter, Query
 from app import weather
 from app.config import get_settings
 from app.errors import AppError
-from app.schemas import WeatherReport
+from app.schemas import WeatherReport, WeatherReverseLocation
 
 router = APIRouter()
+
+
+@router.get("/api/weather/reverse", response_model=WeatherReverseLocation)
+def reverse_location(
+    lat: float = Query(..., ge=-90, le=90, description="Latitude"),
+    lon: float = Query(..., ge=-180, le=180, description="Longitude"),
+):
+    """Resolve coordinates to a place label, to pre-fill the farm location field.
+
+    Read-only, no user data, so no authentication is required. Coordinates are
+    validated by the query schema (out-of-range values are rejected with 422).
+    A provider outage returns 503 - the frontend keeps the coordinates it
+    already has and lets the farmer type the label manually.
+    """
+    if not get_settings().weather_enabled:
+        raise AppError(503, "Location lookup is disabled on this server.")
+    return weather.reverse_geocode(lat, lon)
 
 
 @router.get("/api/weather/current", response_model=WeatherReport)

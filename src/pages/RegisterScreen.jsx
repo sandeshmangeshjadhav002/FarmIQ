@@ -9,27 +9,30 @@ import { PrimaryButton } from "@/components/common/Button";
 /**
  * Registration screen — no BottomNavigation (auth flow).
  *
+ * Only the four things the account actually needs are asked for. The role
+ * question was removed: a farmer should not have to classify themselves before
+ * they can use the app, and "Farm Manager / Agricultural Expert" are choices
+ * most people cannot answer confidently at signup. The backend defaults the
+ * role to "farmer" and it can be changed later from the profile.
+ *
  * @param {object}   props
  * @param {Function} props.navigate  - Navigate to a screen by key.
  * @param {Function} props.onLogin   - Called with user data on successful registration.
  */
 export default function RegisterScreen({ navigate, onLogin }) {
   // ── form fields ──────────────────────────────────────────────────────────
-  const [fullName,        setFullName]        = useState("");
-  const [email,           setEmail]           = useState("");
-  const [countryCode,     setCountryCode]     = useState("+91");
-  const [mobile,          setMobile]          = useState("");
-  const [password,        setPassword]        = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [role,            setRole]            = useState("");
-  const [agreed,          setAgreed]          = useState(false);
-  const [showPassword,    setShowPassword]    = useState(false);
-  const [showConfirm,     setShowConfirm]     = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // ── async state ──────────────────────────────────────────────────────────
-  const [loading,  setLoading]  = useState(false);
-  const [errors,   setErrors]   = useState({});
-  const [toast,    setToast]    = useState(null); // { type: "success"|"error", message }
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState(null); // { type: "success"|"error", message }
 
   // ── helpers ──────────────────────────────────────────────────────────────
   const showToast = (type, message) => {
@@ -40,23 +43,21 @@ export default function RegisterScreen({ navigate, onLogin }) {
   const validate = () => {
     const errs = {};
 
-    if (!fullName.trim())
-      errs.fullName = "Full name is required.";
+    if (!fullName.trim()) errs.fullName = "Full name is required.";
     else if (fullName.trim().length < 2)
       errs.fullName = "Name must be at least 2 characters.";
 
-    if (!email.trim())
-      errs.email = "Email address is required.";
-    else if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim()))
+    if (!email.trim()) errs.email = "Email address is required.";
+    else if (
+      !/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim())
+    )
       errs.email = "Please enter a valid email address (e.g. you@example.com)";
 
-    if (!mobile.trim())
-      errs.mobile = "Mobile number is required.";
+    if (!mobile.trim()) errs.mobile = "Mobile number is required.";
     else if (!/^\d{10}$/.test(mobile.trim()))
       errs.mobile = "Mobile number must be exactly 10 digits.";
 
-    if (!password)
-      errs.password = "Password is required.";
+    if (!password) errs.password = "Password is required.";
     else if (password.length < 8)
       errs.password = "Password must be at least 8 characters.";
     else if (!/(?=.*[A-Z])/.test(password))
@@ -64,16 +65,7 @@ export default function RegisterScreen({ navigate, onLogin }) {
     else if (!/(?=.*\d)/.test(password))
       errs.password = "Password must contain at least one number.";
 
-    if (!confirmPassword)
-      errs.confirmPassword = "Please confirm your password.";
-    else if (password !== confirmPassword)
-      errs.confirmPassword = "Passwords do not match.";
-
-    if (!role)
-      errs.role = "Please select your role.";
-
-    if (!agreed)
-      errs.agreed = "You must accept the Terms and Conditions.";
+    if (!agreed) errs.agreed = "You must accept the Terms and Conditions.";
 
     return errs;
   };
@@ -89,10 +81,11 @@ export default function RegisterScreen({ navigate, onLogin }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name:    fullName.trim(),
-          email:        email.trim().toLowerCase(),
-          mobile:       `${countryCode}${mobile.trim()}`,
-          role,
+          full_name: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          mobile: `${countryCode}${mobile.trim()}`,
+          // `role` is intentionally omitted — the backend defaults it to
+          // "farmer" and the profile screen lets the user change it.
           password,
         }),
       });
@@ -105,10 +98,16 @@ export default function RegisterScreen({ navigate, onLogin }) {
       } else if (res.status === 409) {
         setErrors({ email: data.detail ?? "Email is already registered." });
       } else {
-        showToast("error", data.detail ?? "Registration failed. Please try again.");
+        showToast(
+          "error",
+          data.detail ?? "Registration failed. Please try again.",
+        );
       }
     } catch {
-      showToast("error", "Unable to connect to the server. Check your connection.");
+      showToast(
+        "error",
+        "Unable to connect to the server. Check your connection.",
+      );
     } finally {
       setLoading(false);
     }
@@ -116,32 +115,26 @@ export default function RegisterScreen({ navigate, onLogin }) {
 
   // ── country codes (common selection) ─────────────────────────────────────
   const countryCodes = [
-    { code: "+91",  label: "🇮🇳 +91"  },
-    { code: "+1",   label: "🇺🇸 +1"   },
-    { code: "+44",  label: "🇬🇧 +44"  },
-    { code: "+61",  label: "🇦🇺 +61"  },
-    { code: "+27",  label: "🇿🇦 +27"  },
+    { code: "+91", label: "🇮🇳 +91" },
+    { code: "+1", label: "🇺🇸 +1" },
+    { code: "+44", label: "🇬🇧 +44" },
+    { code: "+61", label: "🇦🇺 +61" },
+    { code: "+27", label: "🇿🇦 +27" },
     { code: "+234", label: "🇳🇬 +234" },
     { code: "+254", label: "🇰🇪 +254" },
-    { code: "+55",  label: "🇧🇷 +55"  },
-    { code: "+86",  label: "🇨🇳 +86"  },
+    { code: "+55", label: "🇧🇷 +55" },
+    { code: "+86", label: "🇨🇳 +86" },
     { code: "+880", label: "🇧🇩 +880" },
-    { code: "+92",  label: "🇵🇰 +92"  },
-  ];
-
-  const roles = [
-    { value: "farmer",              label: "🌾 Farmer"             },
-    { value: "farm_manager",        label: "🏡 Farm Manager"       },
-    { value: "agricultural_expert", label: "🔬 Agricultural Expert" },
+    { code: "+92", label: "🇵🇰 +92" },
   ];
 
   // ── password strength ─────────────────────────────────────────────────────
   const getStrength = () => {
     if (!password) return 0;
     let s = 0;
-    if (password.length >= 8)          s++;
-    if (/[A-Z]/.test(password))        s++;
-    if (/\d/.test(password))           s++;
+    if (password.length >= 8) s++;
+    if (/[A-Z]/.test(password)) s++;
+    if (/\d/.test(password)) s++;
     if (/[^A-Za-z0-9]/.test(password)) s++;
     return s;
   };
@@ -165,7 +158,10 @@ export default function RegisterScreen({ navigate, onLogin }) {
           }`}
         >
           <div className="flex items-center gap-2">
-            <Icon name={toast.type === "success" ? "check" : "shield"} size={16} />
+            <Icon
+              name={toast.type === "success" ? "check" : "shield"}
+              size={16}
+            />
             {toast.message}
           </div>
         </div>
@@ -173,7 +169,6 @@ export default function RegisterScreen({ navigate, onLogin }) {
 
       {/* ── scrollable content ── */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-8 pt-6">
-
         {/* header */}
         <div className="mb-6 flex items-center justify-between">
           <Logo />
@@ -188,7 +183,9 @@ export default function RegisterScreen({ navigate, onLogin }) {
 
         {/* hero text */}
         <div className="mb-6">
-          <p className="mb-1 text-[13px] font-bold text-[#4D7A61]">Get started</p>
+          <p className="mb-1 text-[13px] font-bold text-[#4D7A61]">
+            Get started
+          </p>
           <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#17392A]">
             Create Your FarmIQ Account
           </h1>
@@ -199,7 +196,6 @@ export default function RegisterScreen({ navigate, onLogin }) {
 
         {/* ── form card ── */}
         <div className="rounded-[24px] border border-[#E6EBE7] bg-white p-5 shadow-[0_5px_24px_rgba(31,57,44,.07)]">
-
           {/* full name */}
           <Field label="Full Name" error={errors.fullName}>
             <TextInput
@@ -233,7 +229,9 @@ export default function RegisterScreen({ navigate, onLogin }) {
                   onChange={(e) => setCountryCode(e.target.value)}
                 >
                   {countryCodes.map((c) => (
-                    <option key={c.code} value={c.code}>{c.label}</option>
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
                   ))}
                 </select>
                 <Icon
@@ -244,7 +242,11 @@ export default function RegisterScreen({ navigate, onLogin }) {
               </div>
               {/* number input */}
               <label className="flex flex-1 h-13 items-center gap-3 rounded-2xl border border-[#DFE7E1] bg-white px-4 shadow-[0_3px_12px_rgba(31,57,44,.04)]">
-                <Icon name="phone" size={19} className="shrink-0 text-[#7A8E82]" />
+                <Icon
+                  name="phone"
+                  size={19}
+                  className="shrink-0 text-[#7A8E82]"
+                />
                 <input
                   aria-label="Mobile number"
                   className="min-w-0 flex-1 bg-transparent text-[14px] text-[#1E382B] outline-none placeholder:text-[#8A9A91]"
@@ -255,7 +257,9 @@ export default function RegisterScreen({ navigate, onLogin }) {
                   placeholder="9876543210"
                   type="tel"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  onChange={(e) =>
+                    setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))
+                  }
                 />
               </label>
             </div>
@@ -289,67 +293,20 @@ export default function RegisterScreen({ navigate, onLogin }) {
                       key={i}
                       className="h-1 flex-1 rounded-full transition-all"
                       style={{
-                        background: i <= strength ? strengthColors[strength] : "#E6EBE7",
+                        background:
+                          i <= strength ? strengthColors[strength] : "#E6EBE7",
                       }}
                     />
                   ))}
                 </div>
-                <p className="text-[11px] font-semibold" style={{ color: strengthColors[strength] }}>
+                <p
+                  className="text-[11px] font-semibold"
+                  style={{ color: strengthColors[strength] }}
+                >
                   {strengthLabels[strength]}
                 </p>
               </div>
             )}
-          </Field>
-
-          {/* confirm password */}
-          <Field label="Confirm Password" error={errors.confirmPassword}>
-            <div className="relative">
-              <TextInput
-                icon="lock"
-                type={showConfirm ? "text" : "password"}
-                placeholder="Re-enter your password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-              />
-              <button
-                aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A9A91]"
-                onClick={() => setShowConfirm((p) => !p)}
-                type="button"
-              >
-                <Icon name={showConfirm ? "eye-off" : "eye"} size={18} />
-              </button>
-            </div>
-          </Field>
-
-          {/* role */}
-          <Field label="Role" error={errors.role}>
-            <div className="grid grid-cols-1 gap-2">
-              {roles.map((r) => (
-                <button
-                  key={r.value}
-                  type="button"
-                  aria-pressed={role === r.value}
-                  className={`flex h-11 items-center gap-3 rounded-2xl border px-4 text-left text-[13px] font-semibold transition active:scale-[.98] ${
-                    role === r.value
-                      ? "border-[#216B45] bg-[#EBF5EF] text-[#216B45]"
-                      : "border-[#DFE7E1] bg-[#FAFBFA] text-[#4D6257]"
-                  }`}
-                  onClick={() => setRole(r.value)}
-                >
-                  <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                      role === r.value ? "border-[#216B45]" : "border-[#C4D0C8]"
-                    }`}
-                  >
-                    {role === r.value && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#216B45]" />
-                    )}
-                  </span>
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </Field>
 
           {/* terms checkbox */}
@@ -369,17 +326,26 @@ export default function RegisterScreen({ navigate, onLogin }) {
                 onClick={() => setAgreed((a) => !a)}
                 onKeyDown={(e) => e.key === " " && setAgreed((a) => !a)}
               >
-                {agreed && <Icon name="check" size={13} className="text-white" />}
+                {agreed && (
+                  <Icon name="check" size={13} className="text-white" />
+                )}
               </span>
               <span className="text-[12px] leading-5 text-[#718279]">
                 I agree to FarmIQ's{" "}
-                <span className="font-semibold text-[#216B45]">Terms and Conditions</span>{" "}
+                <span className="font-semibold text-[#216B45]">
+                  Terms and Conditions
+                </span>{" "}
                 and{" "}
-                <span className="font-semibold text-[#216B45]">Privacy Policy</span>.
+                <span className="font-semibold text-[#216B45]">
+                  Privacy Policy
+                </span>
+                .
               </span>
             </label>
             {errors.agreed && (
-              <p className="mt-1 text-[11px] font-semibold text-[#C0392B]">{errors.agreed}</p>
+              <p className="mt-1 text-[11px] font-semibold text-[#C0392B]">
+                {errors.agreed}
+              </p>
             )}
           </div>
         </div>
@@ -414,7 +380,6 @@ export default function RegisterScreen({ navigate, onLogin }) {
             Sign In
           </button>
         </p>
-
       </div>
     </main>
   );
@@ -431,7 +396,10 @@ function Field({ label, error, children }) {
       </label>
       {children}
       {error && (
-        <p role="alert" className="mt-1 text-[11px] font-semibold text-[#C0392B]">
+        <p
+          role="alert"
+          className="mt-1 text-[11px] font-semibold text-[#C0392B]"
+        >
           {error}
         </p>
       )}
@@ -451,7 +419,9 @@ function Spinner() {
     >
       <circle
         className="opacity-25"
-        cx="12" cy="12" r="10"
+        cx="12"
+        cy="12"
+        r="10"
         stroke="currentColor"
         strokeWidth="4"
       />

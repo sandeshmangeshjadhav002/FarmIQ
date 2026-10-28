@@ -41,4 +41,14 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Read storage: photo upload from gallery -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Location: fill the farm location from where the user actually is.
+         Asked for only when the "Use my current location" button is tapped, so
+         the OS dialog has visible context. COARSE is declared alongside FINE
+         because the user may grant only approximate location, and the weather
+         lookup is accurate enough without a precise fix.
+         These are optional features: the app is fully usable if denied. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

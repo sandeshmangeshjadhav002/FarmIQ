@@ -1,0 +1,657 @@
+{
+  "metadata": {
+    "title": "Organic vs. Modern Farming Advisor",
+    "version": "1.0.0",
+    "last_updated": "2026-10-28",
+    "source_note": "General agronomic guidance compiled from the class of public extension material published by ICAR, State Agricultural Universities (SAUs), Krishi Vigyan Kendras (KVKs) and State Agriculture Departments. FarmIQ does not reproduce a single document verbatim; where a specific number would depend on local conditions it is deliberately left out rather than estimated.",
+    "integrity_note": "No cost, yield, labour or water figure is generated or estimated by FarmIQ for this feature. Region-, crop- and market-specific numbers cannot be generalised honestly, so they are marked \"unavailable\" and the farmer is directed to a local, authoritative source. This is intentional, not missing data.",
+    "disclaimer": "This tool supports decisions; it does not replace a soil test, a local extension officer or professional agronomic advice. Nothing here claims or implies organic certification or eligibility for any certification scheme."
+  },
+  "legend": {
+    "guidance": "General, widely-accepted agronomic guidance. No local numeric claim is made.",
+    "unavailable": "Not held by FarmIQ: a region-, crop- and market-specific figure that must be obtained from a local authoritative source. Not estimated or invented.",
+    "verified": "Stated in a named published source and confirmed against that source at last review.",
+    "estimate": "A clearly-labelled planning estimate with its uncertainty stated. Not a measured local figure."
+  },
+  "supported_crops": [
+    "Tomato",
+    "Onion",
+    "Wheat",
+    "Paddy (Rice)",
+    "Maize",
+    "Soybean",
+    "Chickpea",
+    "Groundnut",
+    "Cotton",
+    "Sugarcane",
+    "Potato",
+    "Mustard",
+    "Bajra (Pearl millet)",
+    "Jowar (Sorghum)",
+    "Vegetables (mixed)",
+    "Fruit (mixed)"
+  ],
+  "soil_types": [
+    "Sandy",
+    "Sandy loam",
+    "Loam",
+    "Clay loam",
+    "Clay",
+    "Black (regur)",
+    "Red",
+    "Laterite",
+    "Alluvial",
+    "Saline / alkaline"
+  ],
+  "preferences": [
+    {
+      "id": "organic",
+      "title": "Organic farming",
+      "short": "Avoid synthetic fertilisers and chemical pesticides; build soil fertility with organic inputs.",
+      "note": "Organic farming here means a management choice. It is not the same as \"natural farming\". Certified organic produce additionally requires certification against a defined standard, which FarmIQ cannot verify for you."
+    },
+    {
+      "id": "modern",
+      "title": "Modern (conventional) farming",
+      "short": "Recommended fertiliser doses and approved plant-protection products, used per label.",
+      "note": "Modern farming is not the same as over-use. Correct dose, correct timing and label compliance are part of the method."
+    },
+    {
+      "id": "integrated",
+      "title": "Integrated farming",
+      "short": "Combine organic practices with judicious, approved inputs where they are genuinely needed.",
+      "note": "Integrated nutrition and pest management (INM/IPM) is the usual middle path: organic matter for soil health, and targeted approved inputs to protect yield."
+    }
+  ],
+  "definition_notes": {
+    "organic_vs_natural": "Organic farming permits certain off-farm, approved inputs (for example some mineral sources and bio-inputs) and is defined against a certification standard. \"Natural farming\" (as promoted in some Indian programmes) avoids even those and relies on on-farm preparations. They are different systems with different rules.",
+    "integrated": "Integrated farming is not a halfway compromise with no rules: it is a deliberate combination of organic practices (compost, crop rotation, bio-control) with the minimum effective use of approved fertilisers and pesticides.",
+    "certification": "A practice can be organic in method yet not certified. Certification is a separate, auditable process with its own requirements and costs. FarmIQ does not assess or claim certification eligibility."
+  },
+  "methods": [
+    {
+      "id": "conventional",
+      "title": "Conventional farming",
+      "short": "Recommended fertiliser doses and approved plant-protection products.",
+      "summary": "Nutrients are supplied mainly through manufactured fertilisers and pests are managed mainly with approved chemical pesticides, following the recommended dose and timing for the crop.",
+      "recommended_practices": {
+        "status": "guidance",
+        "items": [
+          "Follow the state/SAU recommended fertiliser dose for the crop, split across the growth stages.",
+          "Base the dose on a soil test (Soil Health Card) rather than a fixed blanket recommendation.",
+          "Use certified seed and follow the recommended sowing time and spacing.",
+          "Apply pesticides only per label, at the labelled dose, with the recommended waiting period before harvest.",
+          "Rotate crops between seasons to interrupt pest and disease cycles."
+        ]
+      },
+      "fertilizer_and_nutrition": {
+        "status": "guidance",
+        "text": "Manufactured fertilisers supply nutrients quickly and in known quantities, so the dose can be matched precisely to crop requirement. Over-application, or application without a soil test, wastes money and can harm soil and water."
+      },
+      "pest_and_disease_management": {
+        "status": "guidance",
+        "text": "Approved chemical pesticides give fast, reliable control of sudden outbreaks. Risks — resistance, harm to beneficial insects, residue, and safety for the applicator — are managed by correct dose, correct timing, rotation of modes of action and strict label compliance."
+      },
+      "estimated_cost_per_acre": {
+        "status": "unavailable",
+        "value": null,
+        "unit": "INR / acre",
+        "note": "Input costs differ by crop, season, region and market. FarmIQ does not hold verified local rates and will not invent them. Record your own last-season input bill, or ask your KVK / State Agriculture Department for current local rates."
+      },
+      "labour_requirement": {
+        "status": "guidance",
+        "level": "Moderate",
+        "text": "Labour is concentrated in land preparation, fertiliser application and spraying. Fewer weed-control passes are typically needed than in an organic-only system because herbicides and rapid nutrient supply reduce some labour."
+      },
+      "water_requirement": {
+        "status": "guidance",
+        "level": "Crop-dependent",
+        "text": "Water need is set mainly by the crop, soil and climate. Irrigation efficiency (for example drip or scheduled irrigation) usually matters more for water use than the choice between conventional and organic methods."
+      },
+      "benefits": {
+        "status": "guidance",
+        "items": [
+          "Fast, predictable supply of nutrients that can be matched to a known crop requirement.",
+          "Rapid and reliable control of pest and disease outbreaks.",
+          "Well-documented recommended practices and wide availability of inputs.",
+          "No transition period: the system is already familiar and tuned to the crop."
+        ]
+      },
+      "limitations": {
+        "status": "guidance",
+        "items": [
+          "Repeated use without a soil test tends to degrade soil organic matter and soil structure over time.",
+          "Recurring input cost each season, exposed to market price changes.",
+          "Resistance can build up in pests if the same products are used repeatedly.",
+          "Potential residue and applicator-safety concerns if the label is not followed."
+        ]
+      },
+      "soil_health": {
+        "status": "guidance",
+        "text": "Conventional systems can maintain yield while soil organic matter declines unless organic material is also returned to the field. Adding compost or crop residues alongside recommended fertiliser is a low-risk way to protect soil health without changing the whole system."
+      },
+      "yield_impact": {
+        "status": "guidance",
+        "text": "Yields are generally stable and predictable when the recommended practices are followed. This is a general characteristic of the method, not a figure for your field.",
+        "note": "FarmIQ does not predict your yield here. Use the Yield Prediction module and your own field history for that."
+      },
+      "environmental_impact": {
+        "status": "guidance",
+        "text": "Higher reliance on manufactured inputs and chemical pesticides carries more risk of nutrient runoff, greenhouse-gas emissions from fertiliser manufacture, and effects on beneficial insects and soil life — all reduced by following the recommended dose and by returning organic matter."
+      },
+      "transition_difficulty": {
+        "status": "guidance",
+        "level": "Baseline",
+        "text": "This is the starting point in this comparison; no transition is required to stay in it. Moving away from it (to organic or integrated) is what has a transition cost."
+      },
+      "sources": [
+        "Class of source: ICAR / State Agricultural University crop package of practices",
+        "Class of source: Krishi Vigyan Kendra local advisories",
+        "Class of source: State Agriculture Department recommendations"
+      ]
+    },
+    {
+      "id": "organic",
+      "title": "Organic farming",
+      "short": "No synthetic fertilisers or chemical pesticides; fertility built from organic matter.",
+      "summary": "Crop nutrition comes from on-farm and approved organic sources (manure, compost, crop residues, green manures, biofertilisers) and pests are managed mainly through cultural, mechanical and biological methods.",
+      "recommended_practices": {
+        "status": "guidance",
+        "items": [
+          "Test the soil first and plan nutrition around the soil test, not a fixed dose.",
+          "Build organic matter with farmyard manure, compost and vermicompost, applied well before sowing.",
+          "Recycle crop residues by mulching or incorporation instead of burning.",
+          "Include legumes (as a rotation crop, intercrop or green manure) to fix nitrogen and break cycles.",
+          "Use crop rotation and intercropping to disrupt pest and disease build-up.",
+          "Use approved biofertilisers and bio-pesticides where they suit the crop and soil."
+        ]
+      },
+      "fertilizer_and_nutrition": {
+        "status": "guidance",
+        "text": "Nutrients are released slowly as organic matter decomposes, so supply and crop demand can be out of step. Planning the organic-material budget in advance, and covering the peak-demand window, is the main skill in organic nutrition. Organic sources are not a kilogram-for-kilogram substitute for fertiliser."
+      },
+      "pest_and_disease_management": {
+        "status": "guidance",
+        "text": "Management leans on prevention: resistant varieties, clean seed, timely sowing, crop rotation, intercropping, trap crops, mechanical removal and encouraging natural enemies. Approved bio-pesticides (for example neem-based products and microbial preparations) are used for defined targets, and are not automatically effective against every pest."
+      },
+      "estimated_cost_per_acre": {
+        "status": "unavailable",
+        "value": null,
+        "unit": "INR / acre",
+        "note": "Organic input costs vary with whether manure and compost are on-farm or purchased, and with local labour rates. FarmIQ does not hold verified local rates. Record your own costs, or ask your KVK / State Agriculture Department."
+      },
+      "labour_requirement": {
+        "status": "guidance",
+        "level": "Higher",
+        "text": "Organic systems typically need more labour: preparing and carrying manure and compost, weeding (fewer herbicides), mulching, and scouting for pests. Where organic material is produced on the farm, some of this becomes routine farm work rather than a purchased cost."
+      },
+      "water_requirement": {
+        "status": "guidance",
+        "level": "Crop-dependent",
+        "text": "Diet is not the driver of water use here: the crop, soil and irrigation method are. Higher soil organic matter can improve water retention over time, which may reduce how often you need to irrigate, but this builds up slowly."
+      },
+      "benefits": {
+        "status": "guidance",
+        "items": [
+          "Builds soil organic matter and improves soil structure and biological activity over time.",
+          "Reduces purchased input cost where manure, compost and residues are available on-farm.",
+          "Avoids chemical pesticide residues on produce and applicator exposure to them.",
+          "Can open access to premium markets that specifically demand organically grown produce."
+        ]
+      },
+      "limitations": {
+        "status": "guidance",
+        "items": [
+          "Nutrients are released slowly and are harder to match precisely to crop demand, especially in the first years.",
+          "Yields can fall during the transition before soil biology recovers; this is not guaranteed either way.",
+          "Pest outbreaks can be harder to stop quickly without a fast-acting approved pesticide.",
+          "Requires reliable access to enough organic material and more labour.",
+          "Organic in method is not the same as certified organic; certification is a separate process."
+        ]
+      },
+      "soil_health": {
+        "status": "guidance",
+        "text": "This is the strongest argument for organic practices: returning carbon and nutrients as organic matter feeds soil life, improves structure, infiltration and water-holding capacity. Benefits accumulate over several seasons rather than appearing in one."
+      },
+      "yield_impact": {
+        "status": "guidance",
+        "text": "In the first years of transition, yield can decline before it stabilises as organic matter and soil biology recover. Long-term outcomes depend heavily on soil, water, crop choice and management. FarmIQ does not guarantee that yields stay unchanged during a transition.",
+        "note": "Not a prediction for your field. Track your own yields against your own multi-year average."
+      },
+      "environmental_impact": {
+        "status": "guidance",
+        "text": "Generally lower dependence on manufactured fertiliser and chemical pesticides, with less risk of nutrient runoff and pesticide effects on non-target species — provided organic material is sourced sustainably and not over-applied."
+      },
+      "transition_difficulty": {
+        "status": "guidance",
+        "level": "High (gradual)",
+        "text": "Moving from conventional to organic is the largest change: it needs planning, more labour, enough organic material, and tolerance for a period of uncertainty. A staged transition is usually safer than stopping all inputs at once."
+      },
+      "sources": [
+        "Class of source: ICAR / SAU package of practices and organic farming guidance",
+        "Class of source: Krishi Vigyan Kendra organic farming advisories",
+        "Class of source: State Agriculture Department organic promotion material"
+      ]
+    },
+    {
+      "id": "integrated",
+      "title": "Integrated farming",
+      "short": "Organic soil-building plus the minimum effective approved inputs.",
+      "summary": "Combines organic practices (compost, crop residues, rotation, bio-control) with judicious use of approved fertilisers and pesticides where a specific need is demonstrated — the usual approach in Integrated Nutrient Management (INM) and Integrated Pest Management (IPM).",
+      "recommended_practices": {
+        "status": "guidance",
+        "items": [
+          "Test the soil and meet part of the nutrient requirement from organic sources, the balance from recommended fertiliser.",
+          "Follow integrated pest management: scout first, use cultural and biological control, and treat with an approved product only when the threshold is crossed.",
+          "Recycle crop residues and include legumes in the rotation.",
+          "Use biofertilisers alongside, not instead of, a reduced fertiliser dose.",
+          "Keep records of inputs and pest incidence so the plan can be adjusted each season."
+        ]
+      },
+      "fertilizer_and_nutrition": {
+        "status": "guidance",
+        "text": "The organic share improves soil health while fertiliser covers the shortfall so yield is protected. The split depends on the soil test and the nutrient content of the organic material you have — it is not a fixed formula."
+      },
+      "pest_and_disease_management": {
+        "status": "guidance",
+        "text": "Prevention and biological control come first; approved pesticides are kept in reserve for genuine outbreaks, at the labelled dose and with the recommended waiting period. This reduces resistance pressure and residue while keeping a fast option available."
+      },
+      "estimated_cost_per_acre": {
+        "status": "unavailable",
+        "value": null,
+        "unit": "INR / acre",
+        "note": "The cost depends on how much fertiliser and pesticide you are able to replace with on-farm organic material. FarmIQ does not hold verified local rates; use your own records or ask your KVK / State Agriculture Department."
+      },
+      "labour_requirement": {
+        "status": "guidance",
+        "level": "Moderate",
+        "text": "More labour than a purely conventional system (for compost and scouting), generally less than a full organic conversion, because approved inputs still cover peak problems."
+      },
+      "water_requirement": {
+        "status": "guidance",
+        "level": "Crop-dependent",
+        "text": "Water use is driven by crop, soil and irrigation method. Raising organic matter helps water retention gradually, as in the organic system, without requiring the whole system to change."
+      },
+      "benefits": {
+        "status": "guidance",
+        "items": [
+          "Improves soil health while keeping a safety net for yield.",
+          "Reduces input cost where organic material is available on-farm.",
+          "Lower pesticide use than a purely conventional approach.",
+          "Usually the easiest first step if you are not ready to stop all inputs."
+        ]
+      },
+      "limitations": {
+        "status": "guidance",
+        "items": [
+          "Needs more planning and record-keeping than a single-system approach.",
+          "Simply mixing methods badly (full inputs plus organic work) can raise cost without benefit.",
+          "Some premium markets accept only fully organic produce, which integrated produce may not qualify for."
+        ]
+      },
+      "soil_health": {
+        "status": "guidance",
+        "text": "Returns organic matter to the soil while keeping the nutrient supply reliable, so soil health tends to improve without the yield risk that can accompany a sudden full conversion."
+      },
+      "yield_impact": {
+        "status": "guidance",
+        "text": "Designed specifically to hold yield close to the conventional baseline while soil health improves, since the fertiliser safety net is retained. Actual outcome still depends on soil, water and management.",
+        "note": "General characteristic of the method, not a prediction for your field."
+      },
+      "environmental_impact": {
+        "status": "guidance",
+        "text": "Lower fertiliser and pesticide use than a fully conventional approach, with better soil carbon — but still more manufactured-input dependence than a full organic system."
+      },
+      "transition_difficulty": {
+        "status": "guidance",
+        "level": "Moderate",
+        "text": "Easier to adopt than a full organic conversion because it can be started with a single step (for example replacing part of the nitrogen dose with compost and legumes) and expanded season by season."
+      },
+      "sources": [
+        "Class of source: ICAR Integrated Nutrient Management (INM) guidance",
+        "Class of source: ICAR / SAU Integrated Pest Management (IPM) guidance",
+        "Class of source: Krishi Vigyan Kendra advisories"
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "fym",
+      "name": "Farmyard manure (FYM)",
+      "category": "Manure & compost",
+      "crops": ["*"],
+      "soil_conditions": ["All soils", "Most useful on soils low in organic matter"],
+      "what_it_does": "Supplies organic matter and a broad range of nutrients slowly, feeds soil life and improves soil structure and water-holding capacity.",
+      "how_used": "Spread well-rotted manure and incorporate into the soil before sowing, so it has time to decompose before the crop needs nutrients.",
+      "limitations": "Nutrient content is low and variable, and the nutrients become available slowly. Poorly stored or fresh manure can carry weed seeds, pathogens and a strong smell, and can burn young roots.",
+      "precautions": "Use only well-decomposed manure. Do not substitute it kilogram-for-kilogram for fertiliser; work out the contribution from a soil test and adjust the fertiliser dose separately.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Actual nutrient content depends on the animal, feed, bedding, storage and maturity. FarmIQ does not state a figure. Where it matters, have the manure analysed or follow your local recommendation."
+      },
+      "sources": ["Class of source: ICAR / SAU package of practices"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "compost",
+      "name": "Mature compost",
+      "category": "Manure & compost",
+      "crops": ["*"],
+      "soil_conditions": ["All soils", "Helpful on sandy soils that dry out quickly"],
+      "what_it_does": "A stabilised source of organic matter and slow-release nutrients, produced by decomposing crop residues, animal waste and other on-farm material.",
+      "how_used": "Build a heap with mixed green and dry material, keep it moist, turn it periodically, and apply once it is dark, crumbly and earthy-smelling — immature compost can harm crops.",
+      "limitations": "Slow to release nutrients; quality depends entirely on how the heap was built and matured. Applying immature compost can tie up nitrogen and damage roots.",
+      "precautions": "Do not apply immature or mouldy compost. Do not assume the nutrient content; assess it and adjust nutrition accordingly.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nutrient content varies with feedstock and maturity and is not stated here. Rely on a test or your local recommendation."
+      },
+      "sources": ["Class of source: ICAR / SAU package of practices"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "vermicompost",
+      "name": "Vermicompost",
+      "category": "Manure & compost",
+      "crops": ["*"],
+      "soil_conditions": ["All soils", "Useful for nursery and vegetable beds"],
+      "what_it_does": "Worm-processed organic matter that is finer, richer in microbial activity and usually faster-acting than ordinary compost.",
+      "how_used": "Apply as a soil amendment before sowing, or as a top-dressing around plants. It can also enrich nursery mixes.",
+      "limitations": "Produced in smaller quantities than farmyard manure, so it is best treated as a targeted input rather than a bulk soil amendment.",
+      "precautions": "Store in the shade and keep it moist but not waterlogged. Do not rely on it alone to meet the full nutrient requirement of a demanding crop.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nutrient content depends on the feedstock and the worms' processing, and is not stated here."
+      },
+      "sources": ["Class of source: ICAR / SAU package of practices"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "residue_mulch",
+      "name": "Crop-residue recycling and mulching",
+      "category": "Crop residue",
+      "crops": ["*"],
+      "soil_conditions": ["All soils", "Particularly useful on light soils prone to moisture loss"],
+      "what_it_does": "Returns carbon and nutrients to the field and, as a surface mulch, reduces evaporation, moderates soil temperature and suppresses weeds.",
+      "how_used": "Instead of burning, retain or incorporate residues; where pests or disease are a concern, chop and incorporate rather than leaving a mat on the surface.",
+      "limitations": "Residues from a diseased crop can carry the problem into the next season. A heavy surface mat can delay soil warming and the first irrigation.",
+      "precautions": "Do not recycle residues from a crop that was heavily diseased or infested. Never burn residues — it destroys the organic matter and nutrients you are trying to return.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nutrient content depends on the crop, its stage and how the residue is managed."
+      },
+      "sources": ["Class of source: ICAR / SAU crop residue management guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "green_manure",
+      "name": "Green manuring",
+      "category": "Legumes & rotation",
+      "crops": ["Paddy (Rice)", "Maize", "Wheat", "Sugarcane", "Vegetables (mixed)", "*"],
+      "soil_conditions": ["All soils", "Valuable on soils low in nitrogen"],
+      "what_it_does": "A quick-growing legume is grown and ploughed back into the soil while green, adding organic matter and biologically fixed nitrogen.",
+      "how_used": "Sow a suitable legume (for example sunhemp or dhaincha) before the main crop, then incorporate it into the soil while still tender, ahead of sowing.",
+      "limitations": "Occupies the field for a period between crops and needs water and management for the green-manure crop itself.",
+      "precautions": "Choose a species suited to your season and water availability. Incorporate at the right tender stage — too late and decomposition is slow.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nitrogen contribution depends on the species, biomass and growing conditions."
+      },
+      "sources": ["Class of source: ICAR / SAU package of practices"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "cover_crops",
+      "name": "Legume cover crops",
+      "category": "Legumes & rotation",
+      "crops": ["*"],
+      "soil_conditions": ["All soils", "Useful in orchards and between rows"],
+      "what_it_does": "Covers bare soil between main crops or rows, fixing nitrogen, protecting against erosion and suppressing weeds.",
+      "how_used": "Sow a suited legume as a cover between seasons or in inter-row spaces; manage it to avoid competing with the main crop for water and light.",
+      "limitations": "Can compete with the main crop for water and nutrients if not managed, and needs seed of a suitable species.",
+      "precautions": "Keep the cover from smothering young main crops. In water-scarce periods, weigh the water used by the cover against its benefits.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nitrogen contribution varies with species and biomass."
+      },
+      "sources": ["Class of source: ICAR / SAU agronomy guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "crop_rotation",
+      "name": "Crop rotation",
+      "category": "Legumes & rotation",
+      "crops": ["*"],
+      "soil_conditions": ["All soils"],
+      "what_it_does": "Varying crops in sequence breaks pest and disease cycles, balances nutrient use and reduces the build-up of crop-specific problems.",
+      "how_used": "Plan a rotation that alternates cereals with legumes and avoids growing the same family in the same field in consecutive seasons.",
+      "limitations": "Needs planning and may mean growing a crop that is less profitable in a single season to protect the next.",
+      "precautions": "Check that the rotation crops suit your soil, water and market. Avoid a sequence that shares the same pest or disease.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Effect on nutrients depends on the crops chosen and how residues are managed."
+      },
+      "sources": ["Class of source: ICAR / SAU crop rotation guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "intercropping",
+      "name": "Intercropping",
+      "category": "Legumes & rotation",
+      "crops": ["*"],
+      "soil_conditions": ["All soils"],
+      "what_it_does": "Growing two or more crops together uses space and light better, spreads risk and can reduce pest incidence on the main crop.",
+      "how_used": "Pair a main crop with a compatible companion, keeping row proportions and spacing suited to both so neither is crowded.",
+      "limitations": "Requires careful choice of compatible crops and spacing, and makes mechanised operations and harvesting more complex.",
+      "precautions": "Do not pair crops that compete strongly for water, light or nutrients, or that share the same major pest.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nutrient effect depends on the crops paired and their proportions."
+      },
+      "sources": ["Class of source: ICAR / SAU cropping systems guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "neem",
+      "name": "Neem-based products",
+      "category": "Bio-pesticide",
+      "crops": ["*"],
+      "soil_conditions": ["All soils"],
+      "what_it_does": "Neem-based preparations act mainly as antifeedants and growth disruptors, reducing feeding and development of several soft-bodied pests rather than killing on contact.",
+      "how_used": "Applied as a spray at the recommended concentration and timing, often as part of a scouting-based programme rather than a routine calendar spray.",
+      "limitations": "Slower-acting than chemical pesticides, not effective against every pest, and sensitive to sunlight so timing of application matters.",
+      "precautions": "Follow the label. Do not treat it as a universal solution, and do not assume it is harmless to all beneficial insects. Correct identification of the pest first is essential.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Neem preparations are used for pest management, not as a nutrient source."
+      },
+      "sources": ["Class of source: ICAR / SAU plant protection guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "biopesticides",
+      "name": "Verified bio-pesticides",
+      "category": "Bio-pesticide",
+      "crops": ["*"],
+      "soil_conditions": ["All soils"],
+      "what_it_does": "Microbial or botanical preparations used against specific pests or diseases, typically as part of integrated pest management.",
+      "how_used": "Choose a product registered for your target pest and crop, and apply at the recommended stage and dose; efficacy depends on correct target and conditions.",
+      "limitations": "Each product works against a narrow set of targets and can be sensitive to heat, sunlight and storage conditions.",
+      "precautions": "Use only products approved/registered for your country and crop. Match the product to the identified pest — an unverified product may do nothing. Follow label precautions.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Bio-pesticides are for pest management, not nutrition."
+      },
+      "sources": ["Class of source: ICAR / SAU plant protection guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "rhizobium",
+      "name": "Rhizobium biofertiliser",
+      "category": "Biofertiliser",
+      "crops": ["Chickpea", "Soybean", "Groundnut", "Vegetables (mixed)"],
+      "soil_conditions": ["Soils where the matching legume is grown"],
+      "what_it_does": "A bacterium that forms nodules on legume roots and fixes atmospheric nitrogen for the plant.",
+      "how_used": "Used as a seed treatment for the matching legume, applied so the bacteria reach the seed before sowing and are not exposed to heat or direct sun.",
+      "limitations": "Specific to the legume species; ineffective on non-legumes, and less effective where the soil already has an established population or is stressed.",
+      "precautions": "Match the Rhizobium strain to the legume. Store cool and dry, and never mix with chemical seed-treatment chemicals that would kill the bacteria.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Nitrogen fixation depends on the legume, the strain, soil conditions and nodulation."
+      },
+      "sources": ["Class of source: ICAR / SAU biofertiliser guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "azotobacter",
+      "name": "Azotobacter biofertiliser",
+      "category": "Biofertiliser",
+      "crops": ["Wheat", "Maize", "Cotton", "Vegetables (mixed)", "Onion", "Potato"],
+      "soil_conditions": ["Non-legume crops", "Neutral to alkaline soils"],
+      "what_it_does": "A free-living bacterium that fixes nitrogen without needing a host legume, and can also support root growth.",
+      "how_used": "Applied as a seed or seedling treatment, or with manure near the root zone, for non-legume crops.",
+      "limitations": "Fixes less nitrogen than a legume symbiosis and its effect can be inconsistent; it supplements rather than replaces a nutrition plan.",
+      "precautions": "Store cool and dry, keep out of direct sun, and do not mix with chemical treatments that kill the bacteria.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Contribution depends on soil and crop conditions and is not stated here."
+      },
+      "sources": ["Class of source: ICAR / SAU biofertiliser guidance"],
+      "last_updated": "2026-10-28"
+    },
+    {
+      "id": "psb",
+      "name": "Phosphate-solubilising micro-organisms (PSM/PSB)",
+      "category": "Biofertiliser",
+      "crops": ["*"],
+      "soil_conditions": ["Soils with low available phosphorus", "Commonly used on neutral to alkaline soils"],
+      "what_it_does": "Micro-organisms that release a portion of the phosphorus already fixed in the soil, making some of it available to the crop.",
+      "how_used": "Applied as a seed treatment, seedling dip or with compost/manure near the root zone.",
+      "limitations": "Releases only a fraction of soil phosphorus; it does not add phosphorus, so where soil phosphorus is very low it supplements rather than replaces a phosphorus input.",
+      "precautions": "Keep away from direct sun and chemical treatments that would kill the micro-organisms. Confirm the product is a verified one for your region.",
+      "nutrient_content": {
+        "status": "unavailable",
+        "note": "Effect depends on soil phosphorus, the strain and conditions."
+      },
+      "sources": ["Class of source: ICAR / SAU biofertiliser guidance"],
+      "last_updated": "2026-10-28"
+    }
+  ],
+  "transition_framework": {
+    "note": "A gradual, crop-specific path. It is a planning template, not a guarantee. Yields may change during a transition; monitor and adjust.",
+    "phases": [
+      {
+        "id": "assessment",
+        "title": "1. Assess your current practice",
+        "objective": "Establish an honest baseline so any change can be measured.",
+        "timeframe": "Before the transition begins",
+        "steps": [
+          { "text": "List your current fertiliser and pesticide use for the last one to two seasons for this crop.", "status": "guidance" },
+          { "text": "Record your own yields and input costs for the same seasons to compare against later.", "status": "guidance" },
+          { "text": "Note the resources already on the farm (cattle, compost pit, crop residues) and their likely quantity.", "status": "guidance" },
+          { "text": "Note the main pest and disease problems you actually face, and when they occur.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "soil_test",
+        "title": "2. Get a soil test",
+        "objective": "Base the nutrition plan on measured soil status, not assumption.",
+        "timeframe": "Before applying any nutrient plan",
+        "steps": [
+          { "text": "Sample the field properly and send it for a standard soil test (for example a Soil Health Card test).", "status": "guidance" },
+          { "text": "Use the reported pH, electrical conductivity and available nitrogen, phosphorus, potassium and organic carbon to set the nutrient plan.", "status": "guidance" },
+          { "text": "Repeat the test periodically so soil organic matter and nutrient trends can be tracked.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "first_practices",
+        "title": "3. Introduce the easiest practices first",
+        "objective": "Start with low-risk changes that rarely threaten yield.",
+        "timeframe": "First season",
+        "steps": [
+          { "text": "Return crop residues to the field and stop burning them.", "status": "guidance" },
+          { "text": "Include a legume in the rotation or as an intercrop for the season.", "status": "guidance" },
+          { "text": "Begin scouting for pests before treating, and treat only when a threshold is crossed.", "status": "guidance" },
+          { "text": "Keep using the recommended fertiliser dose until the soil test and organic plan justify a change.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "organic_matter",
+        "title": "4. Improve soil organic matter",
+        "objective": "Build the soil's capacity to supply nutrients and hold water.",
+        "timeframe": "Several seasons",
+        "steps": [
+          { "text": "Set up reliable compost production and, where possible, vermicompost.", "status": "guidance" },
+          { "text": "Apply well-decomposed manure or compost ahead of sowing, in the quantity your plan and soil test support.", "status": "guidance" },
+          { "text": "Grow a green-manure or cover crop where the season allows.", "status": "guidance" },
+          { "text": "Track soil organic carbon from periodic tests as the indicator that this is working.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "inm_ipm",
+        "title": "5. Move to integrated nutrition and pest management",
+        "objective": "Substitute where it is safe, and keep a safety net where it is not.",
+        "timeframe": "From the second season onwards",
+        "steps": [
+          { "text": "Meet part of the nutrient requirement from organic sources and the balance from a reduced, soil-test-based fertiliser dose.", "status": "guidance" },
+          { "text": "Use biofertilisers matched to the crop alongside, not instead of, the nutrition plan.", "status": "guidance" },
+          { "text": "Keep approved pesticides in reserve for genuine outbreaks, at the labelled dose and waiting period.", "status": "guidance" },
+          { "text": "Only remove an input when monitoring shows the crop can manage without it.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "monitoring",
+        "title": "6. Monitor crop and soil",
+        "objective": "Decide from evidence, not from expectation.",
+        "timeframe": "Every season",
+        "steps": [
+          { "text": "Record yield for each field and compare it with your own baseline.", "status": "guidance" },
+          { "text": "Record input costs and any change in pest or disease pressure.", "status": "guidance" },
+          { "text": "Repeat soil tests periodically and watch the organic carbon and nutrient trend.", "status": "guidance" },
+          { "text": "Note any nutrient-deficiency symptoms early and address them before they reduce yield.", "status": "guidance" }
+        ]
+      },
+      {
+        "id": "costs_resources",
+        "title": "7. Plan costs and resources",
+        "objective": "Make sure the plan is affordable and the inputs are actually available.",
+        "timeframe": "Before each season",
+        "steps": [
+          { "text": "Estimate your own costs from last season's records rather than from a generic figure.", "status": "guidance" },
+          { "text": "Confirm that enough manure, compost and labour will be available for the planned changes.", "status": "guidance" },
+          { "text": "Where local cost or yield data is needed, obtain it from your KVK / State Agriculture Department — FarmIQ does not estimate it.", "status": "unavailable" }
+        ]
+      },
+      {
+        "id": "decision",
+        "title": "8. Decide whether to continue or adjust",
+        "objective": "Use explicit indicators to keep, modify or slow the plan.",
+        "timeframe": "After each season",
+        "steps": [
+          { "text": "Consider continuing if yield is stable against your baseline, input cost is not rising, and soil organic carbon is improving.", "status": "guidance" },
+          { "text": "Consider adjusting if yield has fallen sharply, a nutrient deficiency persists, or pest pressure has risen.", "status": "guidance" },
+          { "text": "Consider slowing the transition if organic material or labour turns out to be short.", "status": "guidance" },
+          { "text": "Return to the recommended dose for any nutrient the soil test shows is short, rather than accepting a yield loss.", "status": "guidance" }
+        ]
+      }
+    ]
+  },
+  "decision_indicators": [
+    { "id": "soil_organic_carbon", "text": "Trend in soil organic carbon from periodic soil tests.", "status": "guidance" },
+    { "id": "yield_vs_baseline", "text": "Yield compared with your own multi-season average for the same crop and field.", "status": "guidance" },
+    { "id": "input_cost", "text": "Total input cost compared with your own last-season record.", "status": "guidance" },
+    { "id": "pest_pressure", "text": "Pest and disease incidence compared with your baseline seasons.", "status": "guidance" },
+    { "id": "nutrient_balance", "text": "Whether the soil test shows any nutrient falling short of the crop requirement.", "status": "guidance" },
+    { "id": "resource_availability", "text": "Whether enough organic material and labour were actually available.", "status": "guidance" }
+  ],
+  "cautions": [
+    "Organic matter is not a kilogram-for-kilogram substitute for fertiliser: nutrient availability, nutrient content, application timing and soil-test results must all be considered before reducing any fertiliser dose.",
+    "Reducing synthetic inputs too quickly can cause nutrient-deficiency symptoms and yield loss. Change one input at a time and monitor.",
+    "Stopping pesticide use abruptly during a pest outbreak can allow rapid, costly damage. Keep an approved option available and use IPM thresholds.",
+    "Not every biological input is effective for every crop or every pest. Match the organism or product to the identified problem.",
+    "Do not recycle residues from a heavily diseased or infested crop, and never burn residues.",
+    "A method that is organic in practice is not automatically certified organic. Certification has separate, auditable requirements that FarmIQ cannot verify.",
+    "Where the soil test shows a nutrient is short, correct it — organic or mineral — rather than accepting a yield loss in the name of the method.",
+    "Seek local professional agricultural advice (KVK / State Agriculture Department / extension officer) before making large changes, especially on a whole-farm scale."
+  ]
+}

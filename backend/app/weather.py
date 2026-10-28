@@ -22,6 +22,7 @@ Nothing is fabricated: every number returned comes from the live API response.
 from __future__ import annotations
 
 import logging
+import threading
 from datetime import date, datetime, timezone
 from typing import Any, Optional
 
@@ -57,8 +58,39 @@ class WeatherUnavailableError(AppError):
 # Low-level calls
 # ─────────────────────────────────────────────────────────────────────────
 
+# A pooled client per timeout value. The previous implementation constructed a
+# new ``httpx.Client`` for every lookup, which meant a full DNS resolve + TCP +
+# TLS handshake to Open-Meteo on every prediction-form auto-fill. httpx clients
+# are thread-safe, so the pooled client is shared across the request threadpool.
+_clients: dict[float, httpx.Client] = {}
+_clients_lock = threading.Lock()
+
+
 def _client(timeout: float) -> httpx.Client:
-    return httpx.Client(timeout=timeout, headers={"User-Agent": "FarmIQ/2.0"})
+    """Shared, connection-pooled HTTP client for the weather providers.
+
+    Callers must NOT use this as a context manager: exiting an ``httpx.Client``
+    context closes it, which would kill the pool for every later request.
+    """
+    client = _clients.get(timeout)
+    if client is None:
+        with _clients_lock:
+            client = _clients.get(timeout)
+            if client is None:
+                client = httpx.Client(timeout=timeout, headers={"User-Agent": "FarmIQ/2.0"})
+                _clients[timeout] = client
+    return client
+
+
+def close_clients() -> None:
+    """Close every pooled client (called from the app shutdown hook)."""
+    with _clients_lock:
+        for client in _clients.values():
+            try:
+                client.close()
+            except Exception:  # noqa: BLE001 - shutdown must not raise
+                pass
+        _clients.clear()
 
 
 def geocode(location: str) -> dict[str, Any]:
@@ -67,12 +99,11 @@ def geocode(location: str) -> dict[str, Any]:
     url = f"{settings.weather_geocoding_url.rstrip('/')}/search"
     params = {"name": location, "count": 1, "language": "en", "format": "json"}
     try:
-        with _client(settings.weather_timeout_seconds) as client:
-            resp = client.get(url, params=params)
-            resp.raise_for_status()
-            payload = resp.json()
+        resp = _client(settings.weather_timeout_seconds).get(url, params=params)
+        resp.raise_for_status()
+        payload = resp.json()
     except httpx.HTTPError as exc:
-        logger.warning("Geocoding failed for '%s': %s", location, exc)
+        logger.warning("Geocoding failed for '%s': %s", location, type(exc).__name__)
         raise WeatherUnavailableError(
             "Could not reach the location lookup service. Enter coordinates or "
             "type the values manually."
@@ -92,6 +123,79 @@ def geocode(location: str) -> dict[str, Any]:
     }
 
 
+def _place_label(props: dict[str, Any]) -> str:
+    """Build a short "village, district, state, country" label from Photon props.
+
+    Photon returns a flat property bag whose keys depend on what OpenStreetMap
+    knows about the point. A farm is usually near a settlement, so the
+    settlement name is preferred, then the administrative area. Duplicates are
+    dropped (a village and its district often share a name) and the label is
+    capped at four parts so it stays readable in a form field.
+    """
+    candidates = [
+        props.get("name") or props.get("locality"),
+        props.get("district") or props.get("city") or props.get("county"),
+        props.get("state"),
+        props.get("country"),
+    ]
+    parts: list[str] = []
+    for value in candidates:
+        text = str(value).strip() if value else ""
+        if text and text.lower() not in {p.lower() for p in parts}:
+            parts.append(text)
+    return ", ".join(parts)
+
+
+def reverse_geocode(latitude: float, longitude: float) -> dict[str, Any]:
+    """Resolve coordinates to a human-readable place label via Photon.
+
+    Used to *pre-fill* the farm's location field after the device supplies a
+    GPS fix. The coordinates remain the authoritative value — this label is a
+    convenience the farmer can edit, so a wrong or vague result is harmless.
+
+    Photon is key-less but not anonymous: its usage policy asks clients to
+    identify themselves, which ``_client`` does via the User-Agent header.
+    """
+    settings = get_settings()
+    url = f"{settings.weather_reverse_url.rstrip('/')}/reverse"
+    params = {"lat": latitude, "lon": longitude, "limit": 1, "lang": "en"}
+    try:
+        resp = _client(settings.weather_timeout_seconds).get(url, params=params)
+        resp.raise_for_status()
+        payload = resp.json()
+    except httpx.HTTPError as exc:
+        logger.warning("Reverse geocoding failed for (%s,%s): %s", latitude, longitude, type(exc).__name__)
+        raise WeatherUnavailableError(
+            "Could not look up a place name for these coordinates. You can type "
+            "the location name yourself — the coordinates are still saved."
+        ) from exc
+    except ValueError as exc:  # malformed JSON
+        logger.warning("Reverse geocode response was not JSON: %s", exc)
+        raise WeatherUnavailableError(
+            "The location service returned an unreadable response."
+        ) from exc
+
+    features = payload.get("features") or []
+    if not features:
+        raise AppError(404, "No place name could be found for these coordinates.")
+    props = features[0].get("properties") or {}
+    label = _place_label(props)
+    if not label:
+        raise AppError(404, "No place name could be found for these coordinates.")
+
+    return {
+        "label": label,
+        "village": props.get("locality") or props.get("district") or props.get("city"),
+        "district": props.get("district") or props.get("county"),
+        "state": props.get("state"),
+        "country": props.get("country"),
+        "postcode": props.get("postcode"),
+        "latitude": latitude,
+        "longitude": longitude,
+        "source": "Photon (OpenStreetMap contributors, ODbL)",
+    }
+
+
 def fetch_weather(latitude: float, longitude: float, *, days: int = 7) -> dict[str, Any]:
     """Current observation + daily rainfall history/forecast for a coordinate."""
     settings = get_settings()
@@ -107,12 +211,11 @@ def fetch_weather(latitude: float, longitude: float, *, days: int = 7) -> dict[s
         "timezone": "auto",
     }
     try:
-        with _client(settings.weather_timeout_seconds) as client:
-            resp = client.get(url, params=params)
-            resp.raise_for_status()
-            payload = resp.json()
+        resp = _client(settings.weather_timeout_seconds).get(url, params=params)
+        resp.raise_for_status()
+        payload = resp.json()
     except httpx.HTTPError as exc:
-        logger.warning("Weather fetch failed for (%s,%s): %s", latitude, longitude, exc)
+        logger.warning("Weather fetch failed for (%s,%s): %s", latitude, longitude, type(exc).__name__)
         raise WeatherUnavailableError(
             "The weather service is unavailable right now. Weather auto-fill is "
             "off — you can still enter values manually."

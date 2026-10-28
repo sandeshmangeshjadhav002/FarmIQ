@@ -15,6 +15,20 @@ def _out(row: dict) -> FarmOut:
     return FarmOut(**row)
 
 
+def _coord_fields(payload: FarmCreate) -> dict:
+    """Payload for insert, with unknown coordinates omitted rather than sent as NULL.
+
+    Migration 0004 adds the latitude/longitude columns. Until it is applied, an
+    insert carrying those keys would be rejected ("column not found"), so an
+    unknown point is left out entirely — it then defaults to NULL either way.
+    """
+    data = payload.model_dump()
+    for key in ("latitude", "longitude"):
+        if data.get(key) is None:
+            data.pop(key, None)
+    return data
+
+
 @router.get("/api/farms")
 def list_farms(
     user=Depends(get_current_user),
@@ -28,7 +42,7 @@ def list_farms(
 
 @router.post("/api/farms", response_model=FarmOut, status_code=201)
 def create_farm(payload: FarmCreate, user=Depends(get_current_user), client=Depends(get_admin_client)):
-    row = db.create_farm(client, user.id, payload.model_dump())
+    row = db.create_farm(client, user.id, _coord_fields(payload))
     return _out(row)
 
 

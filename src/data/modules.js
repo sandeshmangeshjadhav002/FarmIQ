@@ -28,6 +28,14 @@ export const moduleCatalog = [
     icon: "flask",
   },
   {
+    key: "organic-farming",
+    title: "Organic Farming Advisor",
+    short: "Compare conventional, organic and integrated methods",
+    group: "Plan",
+    color: "bg-[#E6F3E8] text-[#216B45]",
+    icon: "leaf",
+  },
+  {
     key: "irrigation",
     title: "Smart Irrigation",
     short: "Water at the right time and amount",

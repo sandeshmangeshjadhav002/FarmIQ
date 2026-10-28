@@ -5,7 +5,14 @@ import { apiPost } from "@/lib/apiClient";
 import useApi from "@/hooks/useApi";
 import ModuleIcon from "./ModuleIcon";
 import WeatherAssist from "./WeatherAssist";
-import { DemoBadge, Field, ModuleButton, SelectField, MiniChart, Metric } from "./ModuleShared";
+import {
+  DemoBadge,
+  Field,
+  ModuleButton,
+  SelectField,
+  MiniChart,
+  Metric,
+} from "./ModuleShared";
 
 /**
  * Live prediction module for the four ML-backed modules:
@@ -32,7 +39,7 @@ export default function MlModule({ moduleKey, onAsk }) {
   const demo = moduleConfigs[moduleKey] ?? moduleConfigs.reports;
 
   const [values, setValues] = useState(() =>
-    Object.fromEntries((config?.fields ?? []).map((f) => [f.key, f.default]))
+    Object.fromEntries((config?.fields ?? []).map((f) => [f.key, f.default])),
   );
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -41,11 +48,20 @@ export default function MlModule({ moduleKey, onAsk }) {
 
   // Real ranges from the backend (training-derived). Failure is non-fatal: the
   // form still submits and the backend enforces the same rules.
-  const { data: schema } = useApi(config ? `/api/predictions/schema/${config.domain}` : null);
+  const { data: schema } = useApi(
+    config ? `/api/predictions/schema/${config.domain}` : null,
+  );
+
+  // The most recent farm, so the weather panel can offer a one-tap location
+  // from the farm's own saved coordinates. Requires auth; when that call fails
+  // (signed out, or no farms) this stays empty and the weather panel simply
+  // falls back to the phone position / typed place name.
+  const { data: farmsData } = useApi("/api/farms");
+  const farm = farmsData?.items?.[0] ?? null;
 
   const liveIssues = useMemo(
     () => evaluateLocally(config, schema, values),
-    [config, schema, values]
+    [config, schema, values],
   );
 
   if (!config) return null;
@@ -71,7 +87,8 @@ export default function MlModule({ moduleKey, onAsk }) {
     try {
       const payload = {};
       for (const f of config.fields) {
-        payload[f.key] = f.type === "number" ? Number(values[f.key]) : values[f.key];
+        payload[f.key] =
+          f.type === "number" ? Number(values[f.key]) : values[f.key];
       }
       const data = await apiPost(config.endpoint, payload);
       setResult(data);
@@ -86,7 +103,7 @@ export default function MlModule({ moduleKey, onAsk }) {
       } else if (err.status === 501) {
         setError(
           "No trained model for this domain yet. A backend admin must run `python -m ml.train_models`. " +
-            (err.message || "")
+            (err.message || ""),
         );
       } else if (err.status === 401) {
         setError("Your session expired. Please sign in again.");
@@ -98,26 +115,38 @@ export default function MlModule({ moduleKey, onAsk }) {
     }
   };
 
-  const invalidByField = Object.fromEntries(liveIssues.invalid.map((i) => [i.field, i]));
-  const unusualByField = Object.fromEntries(liveIssues.unusual.map((i) => [i.field, i]));
+  const invalidByField = Object.fromEntries(
+    liveIssues.invalid.map((i) => [i.field, i]),
+  );
+  const unusualByField = Object.fromEntries(
+    liveIssues.unusual.map((i) => [i.field, i]),
+  );
   const weatherMap = WEATHER_MAP[moduleKey] ?? {};
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <DemoBadge status="Live prediction" />
-        <span className="text-[9px] font-semibold text-[#829188]">FastAPI · {config.endpoint}</span>
+        <span className="text-[9px] font-semibold text-[#829188]">
+          FastAPI · {config.endpoint}
+        </span>
       </div>
 
       {/* ── Weather auto-fill (optional) ───────────────────────────── */}
       {Object.keys(weatherMap).length > 0 && (
-        <WeatherAssist fieldMap={weatherMap} onAutofill={handleAutofill} />
+        <WeatherAssist
+          fieldMap={weatherMap}
+          onAutofill={handleAutofill}
+          farm={farm}
+        />
       )}
 
       {/* ── Input form ─────────────────────────────────────────────── */}
       <section className="space-y-3 rounded-[22px] border border-[#DCE6DF] bg-white p-4">
         <div className="flex items-center gap-2">
-          <span className={`grid h-8 w-8 place-items-center rounded-xl ${info?.color}`}>
+          <span
+            className={`grid h-8 w-8 place-items-center rounded-xl ${info?.color}`}
+          >
             <ModuleIcon name={info?.icon} size={16} />
           </span>
           <h2 className="text-[14px] font-extrabold text-[#213D2F]">
@@ -153,7 +182,10 @@ export default function MlModule({ moduleKey, onAsk }) {
         </div>
 
         <div className="flex gap-2">
-          <ModuleButton onClick={handlePredict} disabled={loading || liveIssues.invalid.length > 0}>
+          <ModuleButton
+            onClick={handlePredict}
+            disabled={loading || liveIssues.invalid.length > 0}
+          >
             <ModuleIcon name={loading ? "sparkles" : "check"} size={16} />
             {loading ? "Predicting…" : "Get prediction"}
           </ModuleButton>
@@ -165,15 +197,16 @@ export default function MlModule({ moduleKey, onAsk }) {
         {liveIssues.invalid.length > 0 && (
           <p className="rounded-xl bg-[#FCE9E5] p-3 text-[10px] font-semibold leading-5 text-[#9D4C3E]">
             {liveIssues.invalid.length} field
-            {liveIssues.invalid.length > 1 ? "s need" : " needs"} attention before a prediction can
-            run. Values are never changed for you.
+            {liveIssues.invalid.length > 1 ? "s need" : " needs"} attention
+            before a prediction can run. Values are never changed for you.
           </p>
         )}
         {liveIssues.invalid.length === 0 && liveIssues.unusual.length > 0 && (
           <p className="rounded-xl bg-[#FFF5DE] p-3 text-[10px] font-semibold leading-5 text-[#8A6D2B]">
             {liveIssues.unusual.length} value
-            {liveIssues.unusual.length > 1 ? "s are" : " is"} valid but outside the training data
-            range. The prediction will still run, but it extrapolates.
+            {liveIssues.unusual.length > 1 ? "s are" : " is"} valid but outside
+            the training data range. The prediction will still run, but it
+            extrapolates.
           </p>
         )}
       </section>
@@ -190,7 +223,10 @@ export default function MlModule({ moduleKey, onAsk }) {
             Rejected by the server
           </p>
           {serverIssues.errors.map((e, i) => (
-            <p key={`${e.field}-${i}`} className="text-[10px] leading-5 text-[#9D4C3E]">
+            <p
+              key={`${e.field}-${i}`}
+              className="text-[10px] leading-5 text-[#9D4C3E]"
+            >
               • {e.message || `${e.label ?? e.field}: ${e.kind}`}
             </p>
           ))}
@@ -201,9 +237,13 @@ export default function MlModule({ moduleKey, onAsk }) {
       {result && (
         <section className="space-y-3 rounded-[22px] border border-[#CDEBDA] bg-[#EAF6EF] p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-[14px] font-extrabold text-[#1D4A33]">Prediction</h3>
+            <h3 className="text-[14px] font-extrabold text-[#1D4A33]">
+              Prediction
+            </h3>
             <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#216B45]">
-              {result.source === "baseline" ? "Rule-based baseline" : "ML model"}
+              {result.source === "baseline"
+                ? "Rule-based baseline"
+                : "ML model"}
             </span>
           </div>
           <p className="text-[26px] font-extrabold tracking-[-.03em] text-[#17392A]">
@@ -224,7 +264,9 @@ export default function MlModule({ moduleKey, onAsk }) {
             </ul>
           )}
           {result.advisory && (
-            <p className="text-[9px] leading-5 text-[#5C7A67]">{result.advisory}</p>
+            <p className="text-[9px] leading-5 text-[#5C7A67]">
+              {result.advisory}
+            </p>
           )}
         </section>
       )}
@@ -238,8 +280,12 @@ export default function MlModule({ moduleKey, onAsk }) {
             ))}
           </div>
           <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-            <h2 className="text-[16px] font-extrabold text-[#203C2E]">{demo.title}</h2>
-            <p className="mt-1 text-[11px] leading-5 text-[#75867C]">{demo.detail}</p>
+            <h2 className="text-[16px] font-extrabold text-[#203C2E]">
+              {demo.title}
+            </h2>
+            <p className="mt-1 text-[11px] leading-5 text-[#75867C]">
+              {demo.detail}
+            </p>
             <div className="mt-4">
               <MiniChart />
             </div>
@@ -248,13 +294,19 @@ export default function MlModule({ moduleKey, onAsk }) {
             {demo.rows.map(([name, value, note], index) => (
               <div
                 key={name}
-                className={`flex items-center gap-3 p-4 ${index ? "border-t border-[#EDF1EE]" : ""}`}
+                className={`flex items-center gap-3 p-4 ${
+                  index ? "border-t border-[#EDF1EE]" : ""
+                }`}
               >
                 <span className="min-w-0 flex-1">
                   <b className="block text-[12px] text-[#294234]">{name}</b>
-                  <span className="mt-1 block text-[9px] text-[#84938B]">{note}</span>
+                  <span className="mt-1 block text-[9px] text-[#84938B]">
+                    {note}
+                  </span>
                 </span>
-                <span className="text-right text-[11px] font-extrabold text-[#426653]">{value}</span>
+                <span className="text-right text-[11px] font-extrabold text-[#426653]">
+                  {value}
+                </span>
               </div>
             ))}
           </section>
@@ -267,17 +319,27 @@ export default function MlModule({ moduleKey, onAsk }) {
 /** Inline per-field validation hint. */
 function FieldHint({ invalid, unusual, spec }) {
   if (invalid) {
-    return <p className="text-[9px] font-semibold leading-4 text-[#A55243]">{invalid.message}</p>;
+    return (
+      <p className="text-[9px] font-semibold leading-4 text-[#A55243]">
+        {invalid.message}
+      </p>
+    );
   }
   if (unusual) {
-    return <p className="text-[9px] font-semibold leading-4 text-[#8A6D2B]">{unusual.message}</p>;
+    return (
+      <p className="text-[9px] font-semibold leading-4 text-[#8A6D2B]">
+        {unusual.message}
+      </p>
+    );
   }
   if (spec?.type === "number" && spec.supported_min != null) {
     return (
       <p className="text-[9px] leading-4 text-[#9AA79F]">
         {fmtNum(spec.supported_min)}–{fmtNum(spec.supported_max)} {spec.unit}
         {spec.training_min != null
-          ? ` · trained on ${fmtNum(spec.training_min)}–${fmtNum(spec.training_max)}`
+          ? ` · trained on ${fmtNum(spec.training_min)}–${fmtNum(
+              spec.training_max,
+            )}`
           : ""}
       </p>
     );
@@ -319,7 +381,10 @@ function Recommendations({ result }) {
       </div>
       <div className="grid grid-cols-3 gap-2">
         {items.map((r) => (
-          <div key={`${r.rank}-${r.crop}`} className="rounded-2xl border border-[#CDEBDA] bg-white p-3">
+          <div
+            key={`${r.rank}-${r.crop}`}
+            className="rounded-2xl border border-[#CDEBDA] bg-white p-3"
+          >
             <div className="flex items-center justify-between">
               <span className="grid h-5 w-5 place-items-center rounded-full bg-[#E8F3EA] text-[9px] font-extrabold text-[#216B45]">
                 {r.rank}
@@ -334,20 +399,23 @@ function Recommendations({ result }) {
             <p className="mt-1 text-[15px] font-extrabold text-[#216B45]">
               {formatScore(r)}
             </p>
-            <p className="mt-0.5 text-[8px] leading-3 text-[#84938B]">{r.score_label}</p>
+            <p className="mt-0.5 text-[8px] leading-3 text-[#84938B]">
+              {r.score_label}
+            </p>
           </div>
         ))}
       </div>
       {items.length < 3 && (
         <p className="text-[9px] leading-4 text-[#8A6D2B]">
-          Only {items.length} recommendation{items.length > 1 ? "s" : ""} returned — the model does
-          not expose a ranked score for any further classes.
+          Only {items.length} recommendation{items.length > 1 ? "s" : ""}{" "}
+          returned — the model does not expose a ranked score for any further
+          classes.
         </p>
       )}
       {scoreLabel && (
         <p className="text-[9px] leading-4 text-[#5C7A67]">
-          "{scoreType}" is the {scoreLabel.toLowerCase()}. It is the model's own output, not the
-          probability that this crop will succeed in your field.
+          "{scoreType}" is the {scoreLabel.toLowerCase()}. It is the model's own
+          output, not the probability that this crop will succeed in your field.
         </p>
       )}
     </div>
@@ -376,7 +444,9 @@ function evaluateLocally(config, schema, values) {
   const unusual = [];
   if (!config || !schema?.fields) return { invalid, unusual };
 
-  const specByField = Object.fromEntries(schema.fields.map((s) => [s.field, s]));
+  const specByField = Object.fromEntries(
+    schema.fields.map((s) => [s.field, s]),
+  );
 
   for (const f of config.fields) {
     const spec = specByField[f.key];
@@ -385,10 +455,16 @@ function evaluateLocally(config, schema, values) {
     if (spec?.type === "category") {
       const options = spec.options ?? [];
       if (raw == null || String(raw).trim() === "") {
-        invalid.push({ field: f.key, label: f.label, message: `${f.label} is required.` });
+        invalid.push({
+          field: f.key,
+          label: f.label,
+          message: `${f.label} is required.`,
+        });
       } else if (
         options.length > 0 &&
-        !options.some((o) => o.toLowerCase() === String(raw).trim().toLowerCase())
+        !options.some(
+          (o) => o.toLowerCase() === String(raw).trim().toLowerCase(),
+        )
       ) {
         unusual.push({
           field: f.key,
@@ -405,14 +481,20 @@ function evaluateLocally(config, schema, values) {
 
     const num = Number(raw);
     if (raw === "" || raw == null || Number.isNaN(num)) {
-      invalid.push({ field: f.key, label: f.label, message: `${f.label} must be a number.` });
+      invalid.push({
+        field: f.key,
+        label: f.label,
+        message: `${f.label} must be a number.`,
+      });
       continue;
     }
     if (spec.supported_min != null && num < spec.supported_min) {
       invalid.push({
         field: f.key,
         label: f.label,
-        message: `${f.label} must be at least ${fmtNum(spec.supported_min)} ${spec.unit}.`,
+        message: `${f.label} must be at least ${fmtNum(spec.supported_min)} ${
+          spec.unit
+        }.`,
       });
       continue;
     }
@@ -420,7 +502,9 @@ function evaluateLocally(config, schema, values) {
       invalid.push({
         field: f.key,
         label: f.label,
-        message: `${f.label} must be at most ${fmtNum(spec.supported_max)} ${spec.unit}.`,
+        message: `${f.label} must be at most ${fmtNum(spec.supported_max)} ${
+          spec.unit
+        }.`,
       });
       continue;
     }
@@ -431,8 +515,12 @@ function evaluateLocally(config, schema, values) {
         field: f.key,
         label: f.label,
         message:
-          `${f.label} = ${fmtNum(num)} ${spec.unit} is valid but outside the training range ` +
-          `(${fmtNum(spec.training_min)}–${fmtNum(spec.training_max)} ${spec.unit}).`,
+          `${f.label} = ${fmtNum(num)} ${
+            spec.unit
+          } is valid but outside the training range ` +
+          `(${fmtNum(spec.training_min)}–${fmtNum(spec.training_max)} ${
+            spec.unit
+          }).`,
       });
     }
   }
@@ -450,7 +538,12 @@ const DOMAIN_CONFIG = {
       { key: "N", label: "Nitrogen (N) kg/ha", type: "number", default: 90 },
       { key: "P", label: "Phosphorus (P) kg/ha", type: "number", default: 40 },
       { key: "K", label: "Potassium (K) kg/ha", type: "number", default: 40 },
-      { key: "temperature", label: "Temperature °C", type: "number", default: 25 },
+      {
+        key: "temperature",
+        label: "Temperature °C",
+        type: "number",
+        default: 25,
+      },
       { key: "humidity", label: "Humidity %", type: "number", default: 80 },
       { key: "ph", label: "Soil pH", type: "number", default: 6.5 },
       { key: "rainfall", label: "Rainfall mm", type: "number", default: 200 },
@@ -461,12 +554,32 @@ const DOMAIN_CONFIG = {
     endpoint: "/api/predictions/fertilizer",
     label: "Fertilizer",
     fields: [
-      { key: "temparature", label: "Temperature °C", type: "number", default: 26 },
+      {
+        key: "temparature",
+        label: "Temperature °C",
+        type: "number",
+        default: 26,
+      },
       { key: "humidity", label: "Humidity %", type: "number", default: 60 },
-      { key: "moisture", label: "Soil moisture %", type: "number", default: 40 },
+      {
+        key: "moisture",
+        label: "Soil moisture %",
+        type: "number",
+        default: 40,
+      },
       { key: "nitrogen", label: "Nitrogen kg/ha", type: "number", default: 80 },
-      { key: "potassium", label: "Potassium kg/ha", type: "number", default: 20 },
-      { key: "phosphorous", label: "Phosphorous kg/ha", type: "number", default: 30 },
+      {
+        key: "potassium",
+        label: "Potassium kg/ha",
+        type: "number",
+        default: 20,
+      },
+      {
+        key: "phosphorous",
+        label: "Phosphorous kg/ha",
+        type: "number",
+        default: 30,
+      },
       {
         key: "soil_type",
         label: "Soil type",
@@ -479,7 +592,19 @@ const DOMAIN_CONFIG = {
         label: "Crop type",
         type: "select",
         default: "Wheat",
-        options: ["Wheat", "Maize", "Paddy", "Cotton", "Ground Nuts", "Sugarcane", "Barley", "Oil seeds", "Pulses", "Millets", "Tobacco"],
+        options: [
+          "Wheat",
+          "Maize",
+          "Paddy",
+          "Cotton",
+          "Ground Nuts",
+          "Sugarcane",
+          "Barley",
+          "Oil seeds",
+          "Pulses",
+          "Millets",
+          "Tobacco",
+        ],
       },
     ],
   },
@@ -488,12 +613,38 @@ const DOMAIN_CONFIG = {
     endpoint: "/api/predictions/irrigation",
     label: "Irrigation",
     fields: [
-      { key: "soil_moisture", label: "Soil moisture (raw 0–2000)", type: "number", default: 20 },
-      { key: "soil_temperature", label: "Soil temperature °C", type: "number", default: 25 },
-      { key: "temperature", label: "Air temperature °C", type: "number", default: 28 },
+      {
+        key: "soil_moisture",
+        label: "Soil moisture (raw 0–2000)",
+        type: "number",
+        default: 20,
+      },
+      {
+        key: "soil_temperature",
+        label: "Soil temperature °C",
+        type: "number",
+        default: 25,
+      },
+      {
+        key: "temperature",
+        label: "Air temperature °C",
+        type: "number",
+        default: 28,
+      },
       { key: "humidity", label: "Humidity %", type: "number", default: 65 },
-      { key: "crop_days", label: "Days since planting", type: "number", default: 10 },
-      { key: "crop_type", label: "Crop type", type: "select", default: "Paddy", options: ["Paddy", "Ground Nuts"] },
+      {
+        key: "crop_days",
+        label: "Days since planting",
+        type: "number",
+        default: 10,
+      },
+      {
+        key: "crop_type",
+        label: "Crop type",
+        type: "select",
+        default: "Paddy",
+        options: ["Paddy", "Ground Nuts"],
+      },
     ],
   },
   yield: {
@@ -501,13 +652,34 @@ const DOMAIN_CONFIG = {
     endpoint: "/api/predictions/yield",
     label: "Yield",
     fields: [
-      { key: "state_name", label: "State", type: "text", default: "Maharashtra" },
-      { key: "season", label: "Season", type: "select", default: "Kharif", options: ["Kharif", "Rabi", "Whole Year", "Summer", "Winter", "Autumn"] },
+      {
+        key: "state_name",
+        label: "State",
+        type: "text",
+        default: "Maharashtra",
+      },
+      {
+        key: "season",
+        label: "Season",
+        type: "select",
+        default: "Kharif",
+        options: ["Kharif", "Rabi", "Whole Year", "Summer", "Winter", "Autumn"],
+      },
       { key: "crop", label: "Crop", type: "text", default: "Rice" },
       { key: "crop_year", label: "Crop year", type: "number", default: 2018 },
       { key: "area", label: "Area (hectares)", type: "number", default: 1.0 },
-      { key: "annual_rainfall", label: "Annual rainfall mm", type: "number", default: 1000 },
-      { key: "fertilizer", label: "Fertilizer kg", type: "number", default: 50 },
+      {
+        key: "annual_rainfall",
+        label: "Annual rainfall mm",
+        type: "number",
+        default: 1000,
+      },
+      {
+        key: "fertilizer",
+        label: "Fertilizer kg",
+        type: "number",
+        default: 50,
+      },
       { key: "pesticide", label: "Pesticide kg", type: "number", default: 5 },
     ],
   },
@@ -521,7 +693,11 @@ const DOMAIN_CONFIG = {
  * the other would be misleading, so no auto-fill is offered there.
  */
 const WEATHER_MAP = {
-  "crop-recommendation": { temperature: "temperature", humidity: "humidity", rainfall: "rainfall" },
+  "crop-recommendation": {
+    temperature: "temperature",
+    humidity: "humidity",
+    rainfall: "rainfall",
+  },
   fertilizer: { temparature: "temperature", humidity: "humidity" },
   irrigation: { temperature: "temperature", humidity: "humidity" },
 };

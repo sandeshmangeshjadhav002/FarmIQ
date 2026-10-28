@@ -1,4 +1,5 @@
 """Farm CRUD + ownership tests."""
+import pytest
 
 
 def _auth(fake_client, uid="u1"):
@@ -45,3 +46,63 @@ def test_farm_not_owned_returns_404(app_client, fake_client):
 
 def test_protected_route_requires_token(app_client):
     assert app_client.get("/api/farms").status_code == 401
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Coordinates — the point the farm form gets from the device
+# ─────────────────────────────────────────────────────────────────────────
+
+def _coords(**extra):
+    return {"name": "GPS Farm", "location": "Nashik", **extra}
+
+
+def test_farm_stores_and_returns_the_device_coordinates(app_client, fake_client):
+    h = _auth(fake_client)
+    r = app_client.post(
+        "/api/farms",
+        json=_coords(latitude=19.9975, longitude=73.7898),
+        headers=h,
+    )
+    assert r.status_code == 201, r.text
+    farm = r.json()
+    assert farm["latitude"] == pytest.approx(19.9975)
+    assert farm["longitude"] == pytest.approx(73.7898)
+
+    # The stored point must survive a round-trip — weather reads it back.
+    fid = farm["id"]
+    got = app_client.get(f"/api/farms/{fid}", headers=h).json()
+    assert got["latitude"] == pytest.approx(19.9975)
+    assert got["longitude"] == pytest.approx(73.7898)
+
+
+def test_farm_coordinates_can_be_added_later(app_client, fake_client):
+    """The point is optional: type a name first, refine with GPS later."""
+    h = _auth(fake_client)
+    fid = app_client.post("/api/farms", json=_coords(), headers=h).json()["id"]
+
+    upd = app_client.patch(
+        f"/api/farms/{fid}",
+        json={"latitude": 18.5204, "longitude": 73.8567},
+        headers=h,
+    )
+    assert upd.status_code == 200, upd.text
+    assert upd.json()["latitude"] == pytest.approx(18.5204)
+    assert upd.json()["longitude"] == pytest.approx(73.8567)
+
+
+def test_farm_without_coordinates_is_still_a_valid_farm(app_client, fake_client):
+    h = _auth(fake_client)
+    r = app_client.post("/api/farms", json=_coords(), headers=h)
+    assert r.status_code == 201, r.text
+    assert r.json()["latitude"] is None
+    assert r.json()["longitude"] is None
+
+
+def test_farm_rejects_out_of_range_coordinates(app_client, fake_client):
+    h = _auth(fake_client)
+    for bad in (
+        {"latitude": 123.0, "longitude": 73.0},
+        {"latitude": 19.0, "longitude": -181.0},
+    ):
+        r = app_client.post("/api/farms", json=_coords(**bad), headers=h)
+        assert r.status_code == 422, r.text

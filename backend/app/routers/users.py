@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends
 
 from app import db
 from app.auth import get_current_user
-from app.schemas import UserProfile, UserUpdate
+from app.errors import AppError
+from app.schemas import VALID_ROLES, UserProfile, UserUpdate
 from app.supabase_client import get_admin_client
 
 router = APIRouter()
@@ -30,6 +31,8 @@ def me(user=Depends(get_current_user)):
 @router.patch("/api/users/me", response_model=UserProfile)
 def update_me(payload: UserUpdate, user=Depends(get_current_user), client=Depends(get_admin_client)):
     fields = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if "role" in fields and fields["role"] not in VALID_ROLES:
+        raise AppError(400, f"role must be one of: {', '.join(sorted(VALID_ROLES))}.")
     if not fields:
         return _to_profile(user.profile)
     return _to_profile(db.update_profile(client, user.id, fields))

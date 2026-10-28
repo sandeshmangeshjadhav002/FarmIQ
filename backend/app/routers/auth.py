@@ -16,7 +16,7 @@ from app import db
 from app.config import VALID_ROLES
 from app.errors import AppError, ConflictError
 from app.schemas import AuthResponse, UserLogin, UserRegister
-from app.supabase_client import get_admin_client
+from app.supabase_client import get_admin_client, get_login_client
 
 logger = logging.getLogger("farmiq.auth.router")
 router = APIRouter()
@@ -44,7 +44,11 @@ def _profile_to_auth(profile: dict, access_token: str, refresh_token: str) -> Au
 
 
 @router.post("/api/auth/register", response_model=AuthResponse, status_code=201)
-def register(payload: UserRegister, client=Depends(get_admin_client)):
+def register(
+    payload: UserRegister,
+    client=Depends(get_admin_client),
+    login_client=Depends(get_login_client),
+):
     if payload.role not in VALID_ROLES:
         raise AppError(400, f"role must be one of: {', '.join(sorted(VALID_ROLES))}.")
 
@@ -87,36 +91,46 @@ def register(payload: UserRegister, client=Depends(get_admin_client)):
         logger.error("create_profile failed: %s", exc)
         raise AppError(500, "Profile creation failed.") from exc
 
-    access_token, refresh_token = _sign_in(client, payload.email, payload.password)
+    access_token, refresh_token = _sign_in(login_client, payload.email, payload.password)
     profile = db.get_profile(client, uid)
     return _profile_to_auth(profile, access_token, refresh_token)
 
 
 @router.post("/api/auth/login", response_model=AuthResponse)
-def login(payload: UserLogin, client=Depends(get_admin_client)):
+def login(
+    payload: UserLogin,
+    client=Depends(get_admin_client),
+    login_client=Depends(get_login_client),
+):
     profile = db.get_profile_by_mobile(client, payload.mobile)
     if not profile:
         raise AppError(401, "Incorrect mobile number or password.")
-    access_token, refresh_token = _sign_in(client, profile["email"], payload.password)
+    access_token, refresh_token = _sign_in(login_client, profile["email"], payload.password)
     return _profile_to_auth(profile, access_token, refresh_token)
 
 
 def _find_profile_by_email(client, email: str):
-    import logging as _log  # noqa
     try:
         resp = client.table("profiles").select("id").eq("email", email.lower()).limit(1).execute()
         rows = getattr(resp, "data", None) or []
         return rows[0] if rows else None
     except Exception as exc:  # noqa: BLE001
-        logger.warning("email lookup failed: %s", exc)
+        logger.warning("email lookup failed: %s", type(exc).__name__)
         return None
 
 
-def _sign_in(client, email: str, password: str) -> tuple[str, str]:
+def _sign_in(login_client, email: str, password: str) -> tuple[str, str]:
+    """Exchange credentials for a session on a throwaway client.
+
+    ``sign_in_with_password`` rewrites the client's ``Authorization`` header to
+    the user's token, so this must never run on the shared service-role client
+    (see ``app/supabase_client.py``).
+    """
     try:
-        resp = client.auth.sign_in_with_password({"email": email, "password": password})
+        resp = login_client.auth.sign_in_with_password({"email": email, "password": password})
     except Exception as exc:  # noqa: BLE001
-        logger.info("sign_in failed for %s: %s", email, exc)
+        # Log the failure without the credential material.
+        logger.info("sign_in failed (%s).", type(exc).__name__)
         raise AppError(401, "Incorrect mobile number or password.") from exc
     session = _attr(resp, "session")
     access_token = _attr(session, "access_token", "")

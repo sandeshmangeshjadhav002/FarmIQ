@@ -2,12 +2,21 @@ import { useState } from "react";
 import Icon from "@/components/common/Icon";
 import { apiPatch } from "@/lib/apiClient";
 
+/** Roles the backend accepts (mirrors VALID_ROLES in backend/app/schemas.py). */
+const ROLE_OPTIONS = [
+  { value: "farmer", label: "Farmer" },
+  { value: "farm_manager", label: "Farm Manager" },
+  { value: "agricultural_expert", label: "Agricultural Expert" },
+];
+
 /**
  * ProfilePanel — a slide-up sheet showing logged-in user info.
  *
  * Features:
  *  - Displays full name, email, mobile, role, and member-since date.
- *  - Edit mode lets the user update their full name.
+ *  - Edit mode lets the user update their full name and role. Role is editable
+ *    here because the signup form no longer asks for it (everyone starts as
+ *    "farmer"), so this is the only way to become a Farm Manager or Expert.
  *  - Logout button at the bottom.
  *
  * @param {object}   props
@@ -19,6 +28,7 @@ import { apiPatch } from "@/lib/apiClient";
 export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name ?? "");
+  const [role, setRole] = useState(user?.role ?? "farmer");
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -34,16 +44,18 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
     }
     setSaving(true);
     try {
-      // Persist to FastAPI → Supabase. Returns the updated profile.
-      const updated = await apiPatch("/api/users/me", {
-        full_name: fullName.trim(),
-      });
-      onUpdate({ ...user, ...updated, full_name: fullName.trim() });
+      // Persist to FastAPI → Supabase. Returns the updated profile. Only the
+      // changed fields are sent so an unchanged role is never re-submitted.
+      const payload = { full_name: fullName.trim() };
+      if (role !== user?.role) payload.role = role;
+      const updated = await apiPatch("/api/users/me", payload);
+      onUpdate({ ...user, ...updated, full_name: fullName.trim(), role });
       showToast("success", "Profile updated.");
       setEditing(false);
     } catch (err) {
       showToast("error", err.message || "Could not update profile. Reverting.");
       setFullName(user?.full_name ?? "");
+      setRole(user?.role ?? "farmer");
     } finally {
       setSaving(false);
     }
@@ -51,12 +63,13 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
 
   const handleCancel = () => {
     setFullName(user?.full_name ?? "");
+    setRole(user?.role ?? "farmer");
     setEditing(false);
   };
 
   /** Format a role key like "farm_manager" → "Farm Manager" */
-  const formatRole = (role = "") =>
-    role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatRole = (value = "") =>
+    value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   /** Format ISO date to readable string */
   const formatDate = (iso = "") => {
@@ -192,11 +205,43 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
           <div className="mb-5 divide-y divide-white/20 rounded-[20px] border border-white/30 bg-white/40 shadow-[0_4px_16px_rgba(31,57,44,.04)] backdrop-blur-md">
             <InfoRow icon="mail" label="Email" value={user?.email} />
             <InfoRow icon="phone" label="Mobile" value={user?.mobile} />
-            <InfoRow
-              icon="shield"
-              label="Role"
-              value={formatRole(user?.role)}
-            />
+            {editing ? (
+              <div className="flex items-center gap-3 px-4 py-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EBF4EE] text-[#4D7A61]">
+                  <Icon name="shield" size={15} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <label
+                    htmlFor="profile-role"
+                    className="text-[10px] font-bold uppercase tracking-[.08em] text-[#8A9E92]"
+                  >
+                    Role
+                  </label>
+                  <select
+                    id="profile-role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-[#DDE8DF] bg-white px-2 py-1.5 text-[13px] font-semibold text-[#1D382A] outline-none focus:border-[#216B45]"
+                  >
+                    {ROLE_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[9px] leading-4 text-[#8A9E92]">
+                    Everyone starts as Farmer. Change this if you manage farms
+                    or advise farmers.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <InfoRow
+                icon="shield"
+                label="Role"
+                value={formatRole(user?.role)}
+              />
+            )}
             <InfoRow
               icon="clock"
               label="Member since"

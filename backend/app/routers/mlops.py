@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -33,21 +34,16 @@ router = APIRouter()
 
 _REPORT_JSON = Path(__file__).resolve().parent.parent.parent / "ml" / "reports" / "evaluation_report.json"
 
+# ``?refresh=true`` runs a full evaluation of every domain, which loads the
+# models and the held-out splits. That is far too expensive to let concurrent
+# requests duplicate, so only one recompute may be in flight per process.
+_REFRESH_LOCK = threading.Lock()
 
-def _load_report(refresh: bool) -> dict[str, Any]:
-    if refresh or not _REPORT_JSON.exists():
-        try:
-            from ml import evaluate
-            return evaluate.run(write=True)
-        except Exception as exc:  # noqa: BLE001 - surface a clear, honest error
-            logger.exception("Evaluation run failed")
-            raise AppError(
-                503,
-                "Model evaluation is unavailable: the models or datasets could "
-                f"not be evaluated ({type(exc).__name__}). Run `python -m ml.evaluate` "
-                "from the backend/ directory to see the full error.",
-            )
 
+def _read_report() -> dict[str, Any] | None:
+    """Return the stored report, or ``None`` when it has not been generated."""
+    if not _REPORT_JSON.exists():
+        return None
     try:
         with open(_REPORT_JSON, "r", encoding="utf-8") as fh:
             return json.load(fh)
@@ -57,6 +53,47 @@ def _load_report(refresh: bool) -> dict[str, Any]:
             f"The stored evaluation report is not valid JSON ({exc}). Run "
             "`python -m ml.evaluate` to regenerate it.",
         )
+
+
+def _recompute() -> dict[str, Any]:
+    try:
+        from ml import evaluate
+        return evaluate.run(write=True)
+    except Exception as exc:  # noqa: BLE001 - surface a clear, honest error
+        logger.exception("Evaluation run failed")
+        raise AppError(
+            503,
+            "Model evaluation is unavailable: the models or datasets could "
+            f"not be evaluated ({type(exc).__name__}). Run `python -m ml.evaluate` "
+            "from the backend/ directory to see the full error.",
+        )
+
+
+def _load_report(refresh: bool) -> dict[str, Any]:
+    if not refresh:
+        report = _read_report()
+        if report is not None:
+            return report
+        # No stored report yet: generate one, once, under the lock.
+
+    if refresh and _REFRESH_LOCK.acquire(blocking=False):
+        try:
+            return _recompute()
+        finally:
+            _REFRESH_LOCK.release()
+
+    if refresh:
+        # Another request is already recomputing. Never stack a second full
+        # evaluation — serve the stored report, or wait for the one in flight.
+        report = _read_report()
+        if report is not None:
+            return report
+
+    with _REFRESH_LOCK:
+        report = _read_report()
+        if report is not None:
+            return report
+        return _recompute()
 
 
 @router.get("/api/mlops/evaluation")
