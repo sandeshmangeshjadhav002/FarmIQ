@@ -16,6 +16,7 @@ from app.errors import register_handlers
 from app.logging_conf import setup_logging
 from app.rate_limit import RateLimitMiddleware
 from app.routers import (
+    alerts,
     auth,
     chat,
     dashboard,
@@ -106,5 +107,6 @@ for module in (
     farming,
     drought,
     demo,
+    alerts,
 ):
     app.include_router(module.router)
