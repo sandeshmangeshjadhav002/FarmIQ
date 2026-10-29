@@ -633,3 +633,203 @@ class SpeechRequest(BaseModel):
     """
     text: str = Field(min_length=1, max_length=2000)
     language: str = Field(default="mr", pattern=r"^(mr|en)$")
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Drought Management & Water Conservation
+# ─────────────────────────────────────────────────────────────────────────
+
+DROUGHT_URGENCY = ("critical", "high", "moderate", "low")
+DROUGHT_CATEGORIES = (
+    "sowing_decision",
+    "water_conservation",
+    "irrigation_management",
+    "crop_alternatives",
+    "dry_spell_management",
+    "financial_planning",
+)
+
+
+class DroughtAssessmentRequest(BaseModel):
+    """Input form for drought management assessment.
+
+    All numeric fields are optional because a farmer may not have access to
+    instruments. The backend uses whatever is supplied and states clearly which
+    fields were missing.
+    """
+    # Farm context
+    location: str = Field(min_length=1, max_length=200)
+    crop: str = Field(min_length=1, max_length=80)
+    growth_stage: str = Field(min_length=1, max_length=80)
+    soil_type: str = Field(min_length=1, max_length=80)
+    area_value: float = Field(gt=0, le=100_000)
+    area_unit: str = Field(default="acres", max_length=20)
+
+    # Sowing / crop timeline
+    sowing_date: Optional[str] = Field(
+        default=None, max_length=20,
+        description="ISO date YYYY-MM-DD, or approximate 'Early June'",
+    )
+    sowing_status: str = Field(
+        default="already_sown",
+        description="'not_yet_sown' | 'already_sown' | 'germination' | 'tillering'",
+        max_length=30,
+    )
+
+    # Water situation
+    recent_rainfall_mm: Optional[float] = Field(default=None, ge=0, le=3000,
+        description="Rainfall in mm over the past 2–3 weeks (farmer-observed)",
+    )
+    water_availability: str = Field(
+        default="limited",
+        description="'none' | 'limited' | 'moderate' | 'good'",
+        max_length=20,
+    )
+    irrigation_type: str = Field(
+        default="none",
+        description="'none' | 'canal' | 'borewell' | 'drip' | 'sprinkler' | 'other'",
+        max_length=30,
+    )
+    irrigation_hours_available: Optional[float] = Field(
+        default=None, ge=0, le=24,
+        description="Approximate irrigation hours available per day",
+    )
+
+    # Budget
+    budget_inr: Optional[float] = Field(
+        default=None, ge=0,
+        description="Approximate available budget in INR (optional)",
+    )
+
+    # Fetch weather forecast from Open-Meteo?
+    fetch_weather: bool = Field(
+        default=True,
+        description="Whether to auto-fetch weather forecast for the location",
+    )
+
+    # Persist result?
+    save: bool = False
+    farm_id: Optional[str] = Field(default=None, max_length=100)
+
+
+class DroughtRecommendationItem(BaseModel):
+    """One actionable recommendation in a category."""
+    action: str
+    reason: str
+    urgency: str                           # critical | high | moderate | low
+    materials: list[str] = []
+    estimated_cost_inr: Optional[str] = None   # always a text range, never a figure
+    expected_benefits: list[str] = []
+    limitations: list[str] = []
+    source: Optional[str] = None           # publication or guideline cited
+
+
+class DroughtCategory(BaseModel):
+    """A grouped set of recommendations under one thematic category."""
+    category: str                          # one of DROUGHT_CATEGORIES
+    category_label: str
+    urgency: str                           # highest urgency among items
+    items: list[DroughtRecommendationItem] = []
+
+
+class DroughtWeatherSummary(BaseModel):
+    """Snapshot of weather used in the assessment (never invents data)."""
+    fetched: bool = False
+    location_resolved: Optional[str] = None
+    current_temp_c: Optional[float] = None
+    current_humidity_pct: Optional[float] = None
+    historical_rain_mm: Optional[float] = None   # past 30 days observed total
+    historical_days: Optional[int] = None
+    forecast_rain_7d_mm: Optional[float] = None  # next 7 days forecast sum
+    forecast_note: str = (
+        "Forecast rainfall is not confirmed. Do not act on forecast data alone."
+    )
+    fetch_error: Optional[str] = None
+    data_as_of: Optional[str] = None
+
+
+class DroughtAssessmentResponse(BaseModel):
+    """Full drought assessment response."""
+    crop: str
+    growth_stage: str
+    location: str
+    soil_type: str
+    area_value: float
+    area_unit: str
+    sowing_status: str
+    water_availability: str
+    irrigation_type: str
+
+    # Overall severity assessment
+    drought_severity: str          # "none" | "mild" | "moderate" | "severe" | "extreme"
+    drought_severity_reason: str
+
+    # Weather snapshot (may be partial or missing)
+    weather: DroughtWeatherSummary
+
+    # Categorised recommendations
+    categories: list[DroughtCategory] = []
+
+    # RAG-sourced context (advisory text, not executable instructions)
+    rag_context: Optional[str] = None
+    rag_sources: list[dict[str, Any]] = []
+    rag_status: str = "not_attempted"
+
+    # Caveats
+    disclaimers: list[str] = []
+    data_gaps: list[str] = []            # fields that were missing / assumed
+
+    # If saved
+    saved_assessment_id: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class DroughtHistoryItem(BaseModel):
+    id: str
+    owner_id: str
+    location: Optional[str] = None
+    crop: Optional[str] = None
+    growth_stage: Optional[str] = None
+    soil_type: Optional[str] = None
+    area_value: Optional[float] = None
+    area_unit: Optional[str] = None
+    created_at: str
+
+
+class DroughtHistoryResponse(BaseModel):
+    total: int
+    items: list[DroughtHistoryItem] = []
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Alerts & Notifications
+# ─────────────────────────────────────────────────────────────────────────
+
+class AlertOut(BaseModel):
+    id: str
+    kind: str
+    priority: str
+    title: str
+    body: Optional[str] = None
+    # ``reason`` carries the supporting evidence behind the alert.
+    reason: Optional[str] = None
+    subject_id: Optional[str] = None
+    is_read: bool = False
+    # True when the alert was raised from simulated (DEMO) readings.
+    is_demo: bool = False
+    created_at: str
+    updated_at: Optional[str] = None
+
+
+class AlertListResponse(BaseModel):
+    total: int
+    unread: int
+    items: list[AlertOut] = []
+
+
+class AlertReadRequest(BaseModel):
+    is_read: bool = True
+
+
+class AlertBulkReadResponse(BaseModel):
+    updated: int

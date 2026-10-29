@@ -1,7 +1,7 @@
 """FarmIQ FastAPI application entrypoint.
 
 Run from the backend/ directory:
-    uvicorn app.main:app --reload --port 8000
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 """
 from __future__ import annotations
 
@@ -19,7 +19,9 @@ from app.routers import (
     auth,
     chat,
     dashboard,
+    demo,
     devices,
+    drought,
     farms,
     farming,
     health,
@@ -102,5 +104,7 @@ for module in (
     schemes,
     mlops,
     farming,
+    drought,
+    demo,
 ):
     app.include_router(module.router)

@@ -368,3 +368,198 @@ def dashboard_summary(client: Any, owner_id: str) -> dict[str, Any]:
         "predictions": predictions,
         "latest_reading": latest,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Drought assessments
+# ─────────────────────────────────────────────────────────────────────────
+
+def insert_drought_assessment(
+    client: Any,
+    owner_id: str,
+    input_data: dict[str, Any],
+    result: dict[str, Any],
+    weather_snapshot: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Persist a drought assessment result (owner-scoped)."""
+    row = {
+        "id": str(uuid.uuid4()),
+        "owner_id": owner_id,
+        "farm_id": input_data.get("farm_id"),
+        "location": input_data.get("location"),
+        "crop": input_data.get("crop"),
+        "growth_stage": input_data.get("growth_stage"),
+        "soil_type": input_data.get("soil_type"),
+        "area_value": input_data.get("area_value"),
+        "area_unit": input_data.get("area_unit", "acres"),
+        "input": input_data,
+        "result": result,
+        "weather_snapshot": weather_snapshot,
+        "created_at": _now_iso(),
+    }
+    resp = client.table("drought_assessments").insert(row).execute()
+    data = _data(resp)
+    return data[0] if isinstance(data, list) and data else row
+
+
+def list_drought_assessments(
+    client: Any,
+    owner_id: str,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list, int]:
+    resp = (
+        client.table("drought_assessments")
+        .select("id, owner_id, location, crop, growth_stage, soil_type, area_value, area_unit, created_at", count="exact")
+        .eq("owner_id", owner_id)
+        .order("created_at", desc=True)
+        .range(offset, offset + limit - 1)
+        .execute()
+    )
+    return _data(resp) or [], _count(resp) or 0
+
+
+def get_drought_assessment(client: Any, owner_id: str, assessment_id: str) -> dict[str, Any]:
+    resp = (
+        client.table("drought_assessments")
+        .select("*")
+        .eq("id", assessment_id)
+        .eq("owner_id", owner_id)
+        .maybe_single()
+        .execute()
+    )
+    data = _data(resp)
+    if not data:
+        raise NotFoundError("Drought assessment not found.")
+    return data
+
+
+def get_latest_drought_assessment(client: Any, owner_id: str) -> dict[str, Any] | None:
+    """Most recent saved drought assessment (full row), or None.
+
+    Unlike ``list_drought_assessments`` this keeps the ``result``/``weather``
+    payload, which the alerts module needs to read severity and forecast rain.
+    """
+    resp = (
+        client.table("drought_assessments")
+        .select("*")
+        .eq("owner_id", owner_id)
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    rows = _data(resp) or []
+    return rows[0] if rows else None
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Alerts
+#
+# Alerts are always owner-scoped. ``dedup_key`` is unique per owner, so
+# refreshing re-uses the existing row instead of inserting a duplicate — the
+# guarantee the Alerts module depends on.
+# ─────────────────────────────────────────────────────────────────────────
+
+# Content fields compared on refresh: when nothing changed the row is left
+# untouched, so ``updated_at`` keeps meaning "when this alert last changed".
+_ALERT_CONTENT_FIELDS = ("kind", "priority", "title", "body", "reason", "subject_id", "is_demo")
+
+
+def upsert_alert(client: Any, owner_id: str, draft: dict[str, Any]) -> dict[str, Any]:
+    """Insert a new alert or refresh the existing one with the same dedup key.
+
+    Read state is preserved on refresh: re-deriving an alert must not silently
+    mark it unread again.
+    """
+    dedup_key = draft["dedup_key"]
+    existing_resp = (
+        client.table("alerts")
+        .select("*")
+        .eq("owner_id", owner_id)
+        .eq("dedup_key", dedup_key)
+        .limit(1)
+        .execute()
+    )
+    existing = (_data(existing_resp) or [None])[0]
+
+    content = {field: draft.get(field) for field in _ALERT_CONTENT_FIELDS}
+
+    if existing:
+        if all(existing.get(k) == v for k, v in content.items()):
+            return existing  # nothing changed — avoid a no-op write
+        fields = {**content, "updated_at": _now_iso()}
+        resp = (
+            client.table("alerts")
+            .update(fields)
+            .eq("id", existing["id"])
+            .eq("owner_id", owner_id)
+            .execute()
+        )
+        rows = _data(resp) or []
+        return rows[0] if rows else {**existing, **fields}
+
+    row = {
+        "id": str(uuid.uuid4()),
+        "owner_id": owner_id,
+        **content,
+        "dedup_key": dedup_key,
+        "is_read": False,
+        "created_at": _now_iso(),
+        "updated_at": _now_iso(),
+    }
+    resp = client.table("alerts").insert(row).execute()
+    data = _data(resp)
+    return data[0] if isinstance(data, list) and data else row
+
+
+def list_alerts(
+    client: Any,
+    owner_id: str,
+    unread_only: bool = False,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list, int]:
+    q = client.table("alerts").select("*", count="exact").eq("owner_id", owner_id)
+    if unread_only:
+        q = q.eq("is_read", False)
+    resp = q.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+    return _data(resp) or [], _count(resp) or 0
+
+
+def count_unread_alerts(client: Any, owner_id: str) -> int:
+    resp = (
+        client.table("alerts")
+        .select("id", count="exact")
+        .eq("owner_id", owner_id)
+        .eq("is_read", False)
+        .execute()
+    )
+    return _count(resp) or 0
+
+
+def set_alert_read(
+    client: Any, owner_id: str, alert_id: str, is_read: bool
+) -> dict[str, Any]:
+    resp = (
+        client.table("alerts")
+        .update({"is_read": is_read, "updated_at": _now_iso()})
+        .eq("id", alert_id)
+        .eq("owner_id", owner_id)
+        .execute()
+    )
+    rows = _data(resp) or []
+    if not rows:
+        raise NotFoundError("Alert not found.")
+    return rows[0]
+
+
+def mark_all_alerts_read(client: Any, owner_id: str) -> int:
+    """Mark every unread alert as read; returns how many changed."""
+    resp = (
+        client.table("alerts")
+        .update({"is_read": True, "updated_at": _now_iso()})
+        .eq("owner_id", owner_id)
+        .eq("is_read", False)
+        .execute()
+    )
+    return len(_data(resp) or [])
