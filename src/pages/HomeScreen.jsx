@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import Icon from "@/components/common/Icon";
 import Logo from "@/components/common/Logo";
 import { PrimaryButton } from "@/components/common/Button";
@@ -5,6 +6,8 @@ import TextInput from "@/components/common/TextInput";
 import ScreenShell from "@/components/layout/ScreenShell";
 import { quickActions } from "@/data/modules";
 import useApi from "@/hooks/useApi";
+
+const FarmActionPlan = lazy(() => import("@/components/modules/FarmActionPlan"));
 
 /**
  * Home screen — welcome hero, quick action cards, explore-all button.
@@ -159,6 +162,21 @@ export default function HomeScreen({
           </span>
           <Icon name="chevron" size={17} className="text-[#216B45]" />
         </button>
+
+        {/* ── Farm Action Plan ─────────────────────────────────────── */}
+        <div className="mt-7">
+          <Suspense
+            fallback={
+              <div className="space-y-2">
+                {[1, 2].map((n) => (
+                  <div key={n} className="h-24 animate-pulse rounded-[20px] bg-[#E8F0EB]" />
+                ))}
+              </div>
+            }
+          >
+            <FarmActionPlan openModule={openModule} />
+          </Suspense>
+        </div>
 
         <button
           className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-white/40 bg-white/50 p-4 text-left backdrop-blur-md shadow-sm"

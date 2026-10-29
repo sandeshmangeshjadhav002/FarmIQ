@@ -36,6 +36,14 @@ export const moduleCatalog = [
     icon: "leaf",
   },
   {
+    key: "drought-management",
+    title: "Drought Management",
+    short: "Water conservation and dry-spell guidance",
+    group: "Plan",
+    color: "bg-[#E5F3F7] text-[#28778A]",
+    icon: "drought",
+  },
+  {
     key: "irrigation",
     title: "Smart Irrigation",
     short: "Water at the right time and amount",
@@ -156,6 +164,14 @@ export const moduleCatalog = [
     icon: "model",
   },
   {
+    key: "hackathon-demo",
+    title: "Hackathon Demo Mode",
+    short: "Interactive synthetic farm for judges",
+    group: "Administration",
+    color: "bg-[#FFF8EA] text-[#8A6D2B]",
+    icon: "sparkles",
+  },
+  {
     key: "admin",
     title: "Administration & Roles",
     short: "Users, permissions and audit activity",
@@ -269,20 +285,6 @@ export const moduleConfigs = {
       ["Nashik APMC", "₹2,450", "Reported 10:00 AM"],
       ["Pune Market", "₹2,380", "Reported yesterday"],
       ["Mumbai APMC", "₹2,610", "Reported yesterday"],
-    ],
-  },
-  alerts: {
-    title: "Recent alerts",
-    detail: "Choose which alerts should send a phone notification.",
-    metrics: [
-      ["New", "3", "Needs review"],
-      ["Weather", "1", "This week"],
-      ["Sensors", "2", "This week"],
-    ],
-    rows: [
-      ["Heavy rain watch", "Tomorrow evening", "Weather alert"],
-      ["Tank sensor offline", "18 minutes ago", "Sensor alert"],
-      ["Tomato price +8%", "Today", "Market alert"],
     ],
   },
   reports: {

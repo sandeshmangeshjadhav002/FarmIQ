@@ -399,6 +399,8 @@ function ComparisonView({ data }) {
       />
       <Cautions cautions={data.cautions} />
       <SourcesFooter sources={data.sources} disclaimer={data.disclaimer} />
+      {/* ── Side-by-side comparison dashboard ───────────────────── */}
+      <ComparisonDashboard methods={data.methods} crop={data.crop} />
     </div>
   );
 }
@@ -840,4 +842,150 @@ export function mapServerErrors(errors) {
     if (key && !out[key]) out[key] = e.message || e.msg || "Invalid value.";
   }
   return out;
+}
+
+// ── Comparison Dashboard — side-by-side table ────────────────────────────────
+
+function ComparisonDashboard({ methods, crop }) {
+  const [selected, setSelected] = useState(null);
+  if (!methods?.length) return null;
+
+  const ROWS = [
+    {
+      key: "estimated_cost_per_acre",
+      label: "Estimated cost / acre",
+      render: (m) => {
+        const c = m.estimated_cost_per_acre;
+        if (!c) return <Unavail />;
+        return c.value != null
+          ? <span className="font-bold text-[#916112]">{c.value} {c.unit}</span>
+          : <Unavail note={c.note} />;
+      },
+    },
+    {
+      key: "labour_requirement",
+      label: "Labour",
+      render: (m) => <TextOrUnavail item={m.labour_requirement} />,
+    },
+    {
+      key: "water_requirement",
+      label: "Water",
+      render: (m) => <TextOrUnavail item={m.water_requirement} />,
+    },
+    {
+      key: "soil_health",
+      label: "Soil health",
+      render: (m) => <TextOrUnavail item={m.soil_health} />,
+    },
+    {
+      key: "yield_impact",
+      label: "Yield impact",
+      render: (m) => <TextOrUnavail item={m.yield_impact} />,
+    },
+    {
+      key: "environmental_impact",
+      label: "Environment",
+      render: (m) => <TextOrUnavail item={m.environmental_impact} />,
+    },
+    {
+      key: "transition_difficulty",
+      label: "Transition",
+      render: (m) => <TextOrUnavail item={m.transition_difficulty} />,
+    },
+  ];
+
+  const METHOD_COLORS = [
+    "bg-[#E6F3E8] text-[#216B45] border-[#B6D9C2]",
+    "bg-[#E5F3F7] text-[#28778A] border-[#B0D5E0]",
+    "bg-[#EAF1DE] text-[#657638] border-[#C2D498]",
+  ];
+
+  return (
+    <div className="space-y-3">
+      <h3 className="text-[13px] font-extrabold text-[#1D382A]">
+        Side-by-side comparison — {crop}
+      </h3>
+
+      {/* Comparison table */}
+      <div className="overflow-x-auto rounded-[22px] border border-[#E0E8E2] bg-white">
+        <table className="w-full min-w-[420px] text-left">
+          <thead>
+            <tr className="border-b border-[#EDF1EE]">
+              <th className="p-3 text-[9px] font-bold uppercase tracking-[.08em] text-[#7A8B82] w-28">
+                Feature
+              </th>
+              {methods.map((m, i) => (
+                <th
+                  key={m.id}
+                  className={`p-3 text-[10px] font-extrabold rounded-t-sm border-b-2 ${METHOD_COLORS[i % 3]}`}
+                >
+                  {m.title}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {ROWS.map((row) => (
+              <tr key={row.key} className="border-b border-[#F0F4F1] last:border-0">
+                <td className="p-3 text-[9px] font-bold text-[#7A8B82] align-top">
+                  {row.label}
+                </td>
+                {methods.map((m) => (
+                  <td key={m.id} className="p-3 text-[10px] text-[#5B6F63] align-top">
+                    {row.render(m)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Select a method */}
+      <p className="text-[10px] text-[#6D8377] font-semibold">
+        Select a plan to view its full details:
+      </p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {methods.map((m, i) => (
+          <button
+            key={m.id}
+            onClick={() => setSelected(selected === m.id ? null : m.id)}
+            className={`rounded-[22px] border p-4 text-left transition active:scale-[.98] ${
+              selected === m.id
+                ? "border-[#216B45] bg-[#E6F3E8] shadow"
+                : "border-[#E0E8E2] bg-white hover:border-[#9CC9AD]"
+            }`}
+          >
+            <p className={`text-[11px] font-extrabold ${METHOD_COLORS[i % 3].split(" ")[1]}`}>
+              {m.title}
+            </p>
+            <p className="mt-1 text-[9px] text-[#84938B] leading-4">{m.short}</p>
+            {m.fit_note && (
+              <p className="mt-1.5 text-[9px] italic text-[#5B6F63] leading-4">{m.fit_note}</p>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {selected && (
+        <MethodCard method={methods.find((m) => m.id === selected)} />
+      )}
+    </div>
+  );
+}
+
+function Unavail({ note }) {
+  return (
+    <span className="text-[9px] italic text-[#916112]">
+      Not estimated
+      {note ? ` — ${note}` : ""}
+    </span>
+  );
+}
+
+function TextOrUnavail({ item }) {
+  if (!item) return <Unavail />;
+  if (item.text) return <span>{item.text}</span>;
+  if (item.level) return <span className="font-bold">{item.level}</span>;
+  return <Unavail note={item.note} />;
 }

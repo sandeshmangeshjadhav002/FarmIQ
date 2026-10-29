@@ -18,6 +18,9 @@ const SensorSimulator = lazy(() => import("./SensorSimulator"));
 const Schemes = lazy(() => import("./Schemes"));
 const MlopsDashboard = lazy(() => import("./MlopsDashboard"));
 const OrganicFarmingAdvisor = lazy(() => import("./OrganicFarmingAdvisor"));
+const DroughtAdvisor = lazy(() => import("./DroughtAdvisor"));
+const HackathonDemo = lazy(() => import("./HackathonDemo"));
+const AlertsPanel = lazy(() => import("./AlertsPanel"));
 
 /**
  * Renders the correct content component for a given module key,
@@ -64,6 +67,12 @@ export default function ModuleScreen({
         return <Schemes />;
       case "organic-farming":
         return <OrganicFarmingAdvisor />;
+      case "drought-management":
+        return <DroughtAdvisor />;
+      case "hackathon-demo":
+        return <HackathonDemo />;
+      case "alerts":
+        return <AlertsPanel />;
       case "mlops":
         return <MlopsDashboard />;
       case "crop-recommendation":
