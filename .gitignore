@@ -76,3 +76,5 @@ data/processed/
 *.joblib
 *.pkl
 !.env.emulator
+!.env.device.local
+!.env.production

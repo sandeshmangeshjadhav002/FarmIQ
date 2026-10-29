@@ -1,4 +1,4 @@
-﻿"""Application configuration loaded from environment variables.
+"""Application configuration loaded from environment variables.
 
 All Supabase credentials live here and are never sent to the frontend.
 Defaults for ML asset paths point at the existing FarmIQ-rag artefacts.
@@ -44,7 +44,8 @@ class Settings(BaseSettings):
 
     # â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     frontend_origins: str = (
-        "http://localhost:5173,http://127.0.0.1:5173,https://localhost,capacitor://localhost,http://localhost"
+        "http://localhost:5173,http://127.0.0.1:5173,http://[::1]:5173,"
+        "https://localhost,capacitor://localhost,http://localhost"
     )
     # Optional explicit origin regex (takes precedence over the dev default).
     cors_origin_regex: str = ""

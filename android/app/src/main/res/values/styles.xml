@@ -9,10 +9,24 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!--
+          Dark status-bar icons (clock, battery, wifi show as dark/black).
+          FarmIQ uses a light background (#E9EFEA); without this flag the
+          default icons are white and invisible against that colour.
+          Requires API 23+; minSdkVersion is 24 so this is always applied.
+        -->
+        <item name="android:windowLightStatusBar">true</item>
+        <!--
+          Keep the status bar transparent so the WebView background shows
+          through (correct edge-to-edge appearance).  On Android 15+
+          (targetSdkVersion ≥ 35) the OS enforces transparency anyway; this
+          item covers older devices that support edge-to-edge optionally.
+        -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 

@@ -1,4 +1,4 @@
-﻿# Render Blueprint — deploys FarmIQ as two services:
+# Render Blueprint — deploys FarmIQ as two services:
 #   * farmiq-api : FastAPI backend, Docker runtime, port 8001
 #   * farmiq-web : React/Vite frontend, static site
 # After connecting this repo to Render, the dashboard reads this file and
@@ -38,7 +38,9 @@ services:
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       # ── CORS — set in the dashboard to this app's origins ───────────────
-      # e.g. https://farmiq-web.onrender.com,https://localhost (Capacitor Android WebView origin)
+      # Set to your frontend URL(s) — e.g.:
+      #   https://farmiq-web.onrender.com,https://localhost,capacitor://localhost
+      # https://localhost and capacitor://localhost are required for the Android APK.
       - key: FRONTEND_ORIGINS
         sync: false
       # ── ML/RAG asset paths (absolute, matching the Dockerfile layout) ───
@@ -65,9 +67,10 @@ services:
     staticPublishPath: ./dist
     autoDeploy: true
     envVars:
-      # Baked into the bundle at build time. Set in the dashboard to the
-      # backend's public URL, e.g. https://farmiq-api.onrender.com.
-      # Without it the build falls back to http://127.0.0.1:8001.
+      # Baked into the bundle at build time.
+      # Backend is deployed at: https://farmiq-api-hpss.onrender.com
+      # Set this in the Render dashboard → farmiq-web → Environment:
+      #   VITE_API_BASE_URL = https://farmiq-api-hpss.onrender.com
       - key: VITE_API_BASE_URL
         sync: false
     routes:

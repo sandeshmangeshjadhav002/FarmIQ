@@ -16,6 +16,22 @@ const config: CapacitorConfig = {
     // (android/app/src/debug/res/xml/network_security_config.xml).
     allowMixedContent: allowDevHttp,
   },
+  plugins: {
+    StatusBar: {
+      // Dark icons (clock, battery, wifi drawn in dark/black).
+      // FarmIQ has a light background (#E9EFEA); light (white) icons would
+      // be invisible — this is the root cause of the "mixed" appearance.
+      // Mirrors the android:windowLightStatusBar theme attribute so the
+      // setting is already correct before JS executes (no icon-colour flash).
+      style: "DARK",
+
+      // The WebView draws behind the transparent status bar (edge-to-edge).
+      // On Android 15+ (targetSdkVersion ≥ 35) this is OS-enforced regardless.
+      // On older devices this keeps the layout consistent.
+      // CSS env(safe-area-inset-top) in index.css then offsets the content.
+      overlaysWebView: true,
+    },
+  },
 };
 
 export default config;

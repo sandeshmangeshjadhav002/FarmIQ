@@ -106,6 +106,30 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // ── Android status bar ───────────────────────────────────────────────────
+  // Configure icon colour and overlay mode once on mount. The theme attribute
+  // android:windowLightStatusBar already sets dark icons at the native layer,
+  // but calling the plugin here keeps the setting correct after orientation
+  // changes or any Capacitor lifecycle event that might reset the window flags.
+  useEffect(() => {
+    if (!IS_NATIVE) return;
+    (async () => {
+      try {
+        const { StatusBar, Style } = await import("@capacitor/status-bar");
+        // Dark icons (clock, battery, wifi are drawn dark/black).
+        // FarmIQ has a light background (#E9EFEA) — white icons disappear.
+        await StatusBar.setStyle({ style: Style.Dark });
+        // Keep the WebView drawing behind the transparent status bar.
+        // On Android 15+ (targetSdkVersion ≥ 35) this is OS-enforced;
+        // on older devices it ensures the same edge-to-edge layout so that
+        // the CSS env(safe-area-inset-top) compensation in index.css works.
+        await StatusBar.setOverlaysWebView({ overlay: true });
+      } catch {
+        // @capacitor/status-bar unavailable in the web/desktop context — ignore.
+      }
+    })();
+  }, []); // Run once on mount; theme attr covers the launch-screen window flags.
+
   // ── Android hardware back button ──────────────────────────────────────────
   useEffect(() => {
     if (!IS_NATIVE) return;
