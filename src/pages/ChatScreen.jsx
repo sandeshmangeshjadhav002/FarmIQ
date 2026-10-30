@@ -322,7 +322,7 @@ export default function ChatScreen({
   const statusColor = listening ? "#F5A623" : sending ? "#B0BEB5" : "#4BAA6E";
 
   return (
-    <ScreenShell active="chat" navigate={navigate}>
+    <ScreenShell active="advisor" navigate={navigate}>
       {/* ── Header ── */}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/20 bg-white/40 px-5 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-3">

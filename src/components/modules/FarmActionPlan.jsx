@@ -5,11 +5,17 @@
  *   - Overall summary badge
  *   - Prioritised action cards (critical → high → moderate → low)
  *   - Farm conditions strip (weather + sensor)
+ *   - What the plan could not assess (missing sensor / weather / crop / location)
  *
  * Used on the HomeScreen. Entirely data-driven — shows meaningful empty states.
+ *
+ * Nothing is computed here and no model is called: the plan is built once on
+ * the backend from data the app already has, so opening Home does not run every
+ * ML model.
  */
 import { useState } from "react";
 import useApi from "@/hooks/useApi";
+import { moduleByKey } from "@/data/modules";
 import ModuleIcon from "./ModuleIcon";
 
 const PRIORITY_CONFIG = {
@@ -55,16 +61,35 @@ const CATEGORY_ICON = {
   data_quality: "signal",
 };
 
+/**
+ * Which existing tool explains or acts on each action category.
+ *
+ * "weather" is deliberately absent: there is no weather module to open, and
+ * sending the farmer somewhere unrelated would be worse than no link.
+ */
+const CATEGORY_MODULE = {
+  irrigation: "irrigation",
+  soil: "soil",
+  fertilizer: "fertilizer",
+  data_quality: "devices",
+};
+
 function fmt(val, unit = "") {
   if (val == null) return "—";
   return `${typeof val === "number" ? val.toFixed(1) : val}${unit}`;
 }
 
 // ── Action Card ───────────────────────────────────────────────────────────────
-function ActionCard({ action }) {
+function ActionCard({ action, onOpen }) {
   const [open, setOpen] = useState(false);
   const cfg = PRIORITY_CONFIG[action.priority] ?? PRIORITY_CONFIG.low;
   const icon = CATEGORY_ICON[action.category] ?? "check";
+  const moduleKey = CATEGORY_MODULE[action.category];
+  const target = moduleKey ? moduleByKey(moduleKey) : null;
+  const hasDetails =
+    action.warnings?.length > 0 ||
+    action.assumptions?.length > 0 ||
+    Object.keys(action.supporting_data || {}).length > 0;
 
   return (
     <div className={`rounded-[20px] border p-4 ${cfg.bg} ${cfg.border}`}>
@@ -94,15 +119,13 @@ function ActionCard({ action }) {
         </div>
       </div>
 
-      {/* Expandable details */}
-      {(action.warnings?.length > 0 ||
-        action.assumptions?.length > 0 ||
-        Object.keys(action.supporting_data || {}).length > 0) && (
+      {/* Expandable evidence */}
+      {hasDetails && (
         <button
           onClick={() => setOpen(!open)}
           className={`mt-2 text-[9px] font-bold ${cfg.text} hover:underline`}
         >
-          {open ? "Hide details ▲" : "Show details ▼"}
+          {open ? "Hide evidence ▲" : "Why this? Show evidence ▼"}
         </button>
       )}
 
@@ -110,7 +133,8 @@ function ActionCard({ action }) {
         <div className="mt-2 space-y-1.5 border-t border-white/40 pt-2">
           {Object.entries(action.supporting_data || {}).map(([k, v]) => (
             <p key={k} className="text-[9px] text-[#5A6F63]">
-              <span className="font-bold">{k.replace(/_/g, " ")}:</span> {String(v)}
+              <span className="font-bold">{k.replace(/_/g, " ")}:</span>{" "}
+              {String(v)}
             </p>
           ))}
           {action.warnings?.map((w, i) => (
@@ -125,6 +149,59 @@ function ActionCard({ action }) {
           ))}
         </div>
       )}
+
+      {/* Deep link into the tool that owns this recommendation */}
+      {target && (
+        <button
+          onClick={() => onOpen?.(moduleKey)}
+          className={`mt-2.5 inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-3 py-2 text-[10px] font-bold ${cfg.text}`}
+        >
+          <ModuleIcon name={target.icon} size={13} />
+          Open {target.title}
+          <ModuleIcon name="arrow" size={13} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Missing information ───────────────────────────────────────────────────────
+/**
+ * What the plan could not assess, stated plainly.
+ *
+ * The decision engine reports which inputs it actually had; naming the gaps
+ * stops an incomplete plan from reading like a complete one.
+ */
+function MissingInformation({ inputs }) {
+  if (!inputs) return null;
+  const gaps = [];
+  if (inputs.sensor_available === false)
+    gaps.push(
+      "No sensor readings — irrigation advice uses weather and crop stage only.",
+    );
+  if (inputs.weather_available === false)
+    gaps.push(
+      "No weather data — heat, frost and heavy-rain risks were not assessed.",
+    );
+  if (!inputs.crop)
+    gaps.push("No current crop set — crop-specific steps are limited.");
+  if (!inputs.location)
+    gaps.push("Farm location not set — local weather may be unavailable.");
+
+  if (gaps.length === 0) return null;
+
+  return (
+    <div className="rounded-[18px] border border-[#E8DFC6] bg-[#FFFBF0] p-3.5">
+      <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#8A6D2B]">
+        What this plan could not assess
+      </p>
+      <ul className="mt-1.5 space-y-1">
+        {gaps.map((gap) => (
+          <li key={gap} className="text-[10px] leading-5 text-[#7A6A43]">
+            • {gap}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -193,10 +270,18 @@ function CondTile({ icon, label, value, note, warn = false, demo = false }) {
           {label}
         </span>
       </div>
-      <p className={`text-[18px] font-extrabold tracking-tight ${warn ? "text-[#D99A2B]" : "text-[#1D3A2B]"}`}>
+      <p
+        className={`text-[18px] font-extrabold tracking-tight ${
+          warn ? "text-[#D99A2B]" : "text-[#1D3A2B]"
+        }`}
+      >
         {value}
       </p>
-      <p className={`text-[8px] mt-0.5 ${demo ? "text-[#D99A2B]" : "text-[#9AA79F]"}`}>
+      <p
+        className={`text-[8px] mt-0.5 ${
+          demo ? "text-[#D99A2B]" : "text-[#9AA79F]"
+        }`}
+      >
         {demo ? "Demo / simulated" : note}
       </p>
     </div>
@@ -204,18 +289,19 @@ function CondTile({ icon, label, value, note, warn = false, demo = false }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function FarmActionPlan({ openModule, isDemo = false }) {
-  const url = isDemo ? "/api/demo/plan" : "/api/dashboard/plan";
-  const { data, loading, error, refetch } = useApi(
-    isDemo ? null : "/api/dashboard/plan"
-  );
+export default function FarmActionPlan({ openModule }) {
+  const { data, loading, error, refetch } = useApi("/api/dashboard/plan");
+  const [expanded, setExpanded] = useState(false);
 
   if (loading) {
     return (
       <div className="space-y-3">
         <div className="h-5 w-48 animate-pulse rounded-full bg-[#E8F0EB]" />
         {[1, 2].map((n) => (
-          <div key={n} className="h-24 animate-pulse rounded-[20px] bg-[#E8F0EB]" />
+          <div
+            key={n}
+            className="h-24 animate-pulse rounded-[20px] bg-[#E8F0EB]"
+          />
         ))}
       </div>
     );
@@ -237,8 +323,8 @@ export default function FarmActionPlan({ openModule, isDemo = false }) {
   if (!data) return null;
 
   const actions = data.actions ?? [];
-  const topActions = actions.slice(0, 5); // show top 5 on home screen
-  const hasMore = actions.length > 5;
+  const visibleActions = expanded ? actions : actions.slice(0, 5);
+  const hiddenCount = actions.length - visibleActions.length;
 
   return (
     <div className="space-y-3">
@@ -285,28 +371,34 @@ export default function FarmActionPlan({ openModule, isDemo = false }) {
         </div>
       )}
 
-      {/* Action cards */}
-      {topActions.map((action, i) => (
-        <ActionCard key={`${action.category}-${i}`} action={action} />
+      {/* Action cards — most important first */}
+      {visibleActions.map((action, i) => (
+        <ActionCard
+          key={`${action.category}-${i}`}
+          action={action}
+          onOpen={openModule}
+        />
       ))}
 
-      {hasMore && (
+      {hiddenCount > 0 && (
         <button
-          onClick={() => openModule?.("advice")}
+          onClick={() => setExpanded(true)}
           className="w-full rounded-[20px] border border-[#DDE6DF] bg-white/60 py-3 text-[11px] font-bold text-[#216B45] hover:bg-white transition"
         >
-          View {actions.length - 5} more recommendations →
+          Show {hiddenCount} more action{hiddenCount > 1 ? "s" : ""} ↓
         </button>
       )}
 
+      {/* What the plan could not assess */}
+      <MissingInformation inputs={data.data_inputs} />
+
       {data.generated_at && (
         <p className="text-[9px] text-[#9AA79F] text-right">
-          Plan generated: {new Date(data.generated_at).toLocaleTimeString("en-IN", {
+          Plan generated:{" "}
+          {new Date(data.generated_at).toLocaleTimeString("en-IN", {
             hour: "2-digit",
             minute: "2-digit",
           })}
-          {data.data_inputs?.sensor_available === false && " · No sensor data"}
-          {data.data_inputs?.weather_available === false && " · No weather"}
         </p>
       )}
     </div>

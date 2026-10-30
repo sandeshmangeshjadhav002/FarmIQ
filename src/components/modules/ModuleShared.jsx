@@ -99,26 +99,3 @@ export function Metric({ label, value, note, tone = "" }) {
   );
 }
 
-/**
- * Simple bar chart placeholder used in module summary sections.
- */
-export function MiniChart({ values = [40, 55, 48, 68, 62, 74, 80] }) {
-  return (
-    <div className="flex h-24 items-end gap-2 rounded-2xl bg-[#F4F7F3] p-3">
-      {values.map((value, index) => (
-        <div
-          key={index}
-          className="flex flex-1 flex-col items-center justify-end gap-1"
-        >
-          <div
-            className="w-full rounded-t-md bg-[#7EAE8E]"
-            style={{ height: `${value}%` }}
-          />
-          <span className="text-[7px] font-semibold text-[#86958D]">
-            {index + 1}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}

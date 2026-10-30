@@ -16,6 +16,7 @@ from app.errors import register_handlers
 from app.logging_conf import setup_logging
 from app.rate_limit import RateLimitMiddleware
 from app.routers import (
+    agent,
     alerts,
     auth,
     chat,
@@ -100,6 +101,7 @@ for module in (
     dashboard,
     chat,
     voice,
+    agent,
     weather,
     simulator,
     schemes,

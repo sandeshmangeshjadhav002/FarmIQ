@@ -163,6 +163,9 @@ class SensorReadingIn(BaseModel):
     # Raw capacitive SoilMoisture (0–2000) used by the irrigation model is also
     # accepted via the dedicated field below.
     soil_moisture_raw: Optional[float] = Field(default=None, ge=0, le=2000)
+    # Barometric pressure (hPa) from BME680-type air nodes. Optional because a
+    # soil-only probe does not measure it.
+    pressure: Optional[float] = Field(default=None, ge=300, le=1100)
 
 
 class SensorReadingOut(SensorReadingIn):
@@ -382,6 +385,9 @@ class ChatResponse(BaseModel):
     retrieval_message: str = ""
     llm_used: bool = False
     ml_context_provided: bool = False
+    # True when the farmer's own farm details (name, location, soil, crop,
+    # latest sensor reading) were supplied to the assistant as background.
+    farm_context_provided: bool = False
     warnings: list[str] = []
 
 
@@ -391,6 +397,10 @@ class ChatStatusResponse(BaseModel):
     indexed: bool = False
     index_chunks: int = 0
     llm_configured: bool = False
+    # Which provider/model generates answers (e.g. "huggingface" +
+    # "meta-llama/Llama-3.1-8B-Instruct"). Never contains credentials.
+    llm_provider: Optional[str] = None
+    llm_model: Optional[str] = None
     embedding_model: Optional[str] = None
     message: str = ""
 
@@ -833,3 +843,84 @@ class AlertReadRequest(BaseModel):
 
 class AlertBulkReadResponse(BaseModel):
     updated: int
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Unified AI agent  (POST /api/agent/chat, GET /api/agent/context)
+# ─────────────────────────────────────────────────────────────────────────
+
+# The agent speaks the same languages as the voice assistant.
+SUPPORTED_AGENT_LANGUAGES = SUPPORTED_VOICE_LANGUAGES
+
+
+class AgentChatRequest(BaseModel):
+    """Request body for POST /api/agent/chat.
+
+    ``message``  – the farmer's question (Marathi or English).
+    ``language`` – BCP-47 code: "mr" (Marathi) or "en" (English).
+    ``farm_id``  – optional; omitted, the caller's newest farm is used.
+    ``history``  – optional recent turns (``{"role", "text"}``) so a follow-up
+                   such as "what about tomorrow?" keeps its subject.
+    """
+    message: str = Field(min_length=1, max_length=2000)
+    language: str = Field(default="en", pattern=r"^(mr|en)$")
+    farm_id: Optional[str] = Field(default=None, max_length=100)
+    history: Optional[list[dict[str, Any]]] = Field(default=None, max_length=20)
+
+
+class AgentChatResponse(BaseModel):
+    """Response from POST /api/agent/chat.
+
+    ``answer``      – short, farmer-friendly text (structured sections rendered).
+    ``sections``    – the same answer as Situation / Observation /
+                      Recommendation / Reason / Warning, so the UI can lay it out
+                      without re-parsing the text.
+    ``explanation`` – optional natural-language explanation from the assistant,
+                      grounded in the values the tools returned.
+    ``intent``      – the deterministically routed intent.
+    ``tools_used``  – the tools actually called for this question.
+    ``context``     – the farm / sensor / weather / ML evidence behind the answer.
+    ``conflicts``   – where two sources disagreed (each with its evidence).
+    ``uncertainty`` – caveats the farmer should weigh.
+    ``missing``     – what was absent, so the answer never hides a data gap.
+    ``freshness``   – per-source timestamp of the data used.
+    ``llm_used``    – whether the assistant actually generated prose.
+    ``sources``     – knowledge-base citations, when the assistant was used.
+    ``fallback``    – True when the reply is only the "here is what I can help
+                      with" text because nothing about this farm answered the
+                      question and the assistant was unavailable.
+    """
+    answer: str = ""
+    sections: dict[str, Any] = {}
+    explanation: Optional[str] = None
+    language: str = "en"
+    intent: str = "unknown"
+    intent_label: Optional[str] = None
+    tools_used: list[str] = []
+    context: dict[str, Any] = {}
+    conflicts: list[dict[str, Any]] = []
+    uncertainty: list[str] = []
+    missing: list[str] = []
+    freshness: dict[str, Any] = {}
+    llm_used: bool = False
+    sources: list[dict[str, Any]] = []
+    fallback: bool = False
+    cached: bool = False
+
+
+class AgentContextResponse(BaseModel):
+    """Response from GET /api/agent/context.
+
+    The complete, structured context of the caller's own farm. Every section
+    carries its own source and timestamp, and ``missing`` lists what is absent.
+    """
+    owner_id: str
+    generated_at: str
+    farm: Optional[dict[str, Any]] = None
+    profile: Optional[dict[str, Any]] = None
+    sensors: Optional[dict[str, Any]] = None
+    weather: Optional[dict[str, Any]] = None
+    ml: dict[str, Any] = {}
+    llm_context: Optional[dict[str, Any]] = None
+    missing: list[str] = []
+    warnings: list[str] = []

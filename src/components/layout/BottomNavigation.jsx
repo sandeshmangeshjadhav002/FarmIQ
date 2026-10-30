@@ -16,7 +16,7 @@ import { navItems } from "@/data/modules";
 export default function BottomNavigation({ active, navigate }) {
   return (
     <nav
-      className="sticky bottom-0 z-20 mt-auto grid grid-cols-4 border-t border-white/20 bg-white/40 px-2 pt-1 backdrop-blur-xl"
+      className="sticky bottom-0 z-20 mt-auto grid grid-cols-5 border-t border-white/20 bg-white/40 px-2 pt-1 backdrop-blur-xl"
       style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}
     >
       {navItems.map((item) => {

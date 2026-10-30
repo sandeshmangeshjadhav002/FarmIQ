@@ -258,6 +258,15 @@ def test_invalid_channels_helper():
     assert alerts_service.invalid_channels({}) == []
 
 
+def test_implausible_pressure_is_flagged():
+    """A BME680 outside 300–1100 hPa is a fault, not weather."""
+    assert alerts_service.invalid_channels({"pressure": 1008.3}) == []
+    assert alerts_service.invalid_channels({"pressure": 1200.0}) == ["pressure"]
+    assert alerts_service.invalid_channels({"pressure": 12.0}) == ["pressure"]
+    # A node without a pressure sensor reports nothing, which is not a fault.
+    assert alerts_service.invalid_channels({"temperature": 28.4}) == []
+
+
 # ─────────────────────────────────────────────────────────────────────────
 # API
 # ─────────────────────────────────────────────────────────────────────────

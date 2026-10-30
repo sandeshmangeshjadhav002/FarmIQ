@@ -44,6 +44,7 @@ import httpx
 from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
 
 from app import db, rag_service, tts_service, voice_engine
+from app.ai_context import build_farm_context
 from app.auth import get_current_user
 from app.config import get_settings
 from app.errors import AppError
@@ -112,7 +113,12 @@ def voice_chat(
     # "I did not understand", so an unfamiliar Marathi question is still
     # answered (in Marathi).
     if result.get("intent") == "unknown":
-        result = _answer_with_assistant(payload.message, result, payload.history)
+        result = _answer_with_assistant(
+            payload.message,
+            result,
+            payload.history,
+            farm_context=build_farm_context(farm, latest_sensor),
+        )
 
     # Persist prediction when the engine actually called a model (best-effort).
     if result.get("prediction") and not result.get("follow_up"):
@@ -140,7 +146,10 @@ def voice_chat(
 
 
 def _answer_with_assistant(
-    message: str, fallback: dict, history: list[dict] | None = None
+    message: str,
+    fallback: dict,
+    history: list[dict] | None = None,
+    farm_context: dict | None = None,
 ) -> dict:
     """Answer an unrouted question with the RAG assistant.
 
@@ -151,10 +160,20 @@ def _answer_with_assistant(
     *history* is the optional recent conversation, so a follow-up such as
     "which medicine should I use for it?" can be resolved against the subject
     of the previous turn.
+
+    *farm_context* is the farm and latest reading already loaded by the caller,
+    so the assistant can answer about this farmer's own land. It is built with
+    :func:`app.ai_context.build_farm_context`, which copies only real database
+    values.
     """
     lang = fallback.get("language", "en")
     try:
-        answer = rag_service.answer_question(message, language=lang, history=history)
+        answer = rag_service.answer_question(
+            message,
+            language=lang,
+            history=history,
+            farm_context=farm_context,
+        )
     except RagUnavailableError as exc:
         logger.warning("Assistant unavailable; returning guidance instead: %s", exc)
         return fallback

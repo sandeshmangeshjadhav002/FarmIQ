@@ -847,7 +847,6 @@ export function mapServerErrors(errors) {
 // ── Comparison Dashboard — side-by-side table ────────────────────────────────
 
 function ComparisonDashboard({ methods, crop }) {
-  const [selected, setSelected] = useState(null);
   if (!methods?.length) return null;
 
   const ROWS = [
@@ -857,9 +856,13 @@ function ComparisonDashboard({ methods, crop }) {
       render: (m) => {
         const c = m.estimated_cost_per_acre;
         if (!c) return <Unavail />;
-        return c.value != null
-          ? <span className="font-bold text-[#916112]">{c.value} {c.unit}</span>
-          : <Unavail note={c.note} />;
+        return c.value != null ? (
+          <span className="font-bold text-[#916112]">
+            {c.value} {c.unit}
+          </span>
+        ) : (
+          <Unavail note={c.note} />
+        );
       },
     },
     {
@@ -917,7 +920,9 @@ function ComparisonDashboard({ methods, crop }) {
               {methods.map((m, i) => (
                 <th
                   key={m.id}
-                  className={`p-3 text-[10px] font-extrabold rounded-t-sm border-b-2 ${METHOD_COLORS[i % 3]}`}
+                  className={`p-3 text-[10px] font-extrabold rounded-t-sm border-b-2 ${
+                    METHOD_COLORS[i % 3]
+                  }`}
                 >
                   {m.title}
                 </th>
@@ -926,12 +931,18 @@ function ComparisonDashboard({ methods, crop }) {
           </thead>
           <tbody>
             {ROWS.map((row) => (
-              <tr key={row.key} className="border-b border-[#F0F4F1] last:border-0">
+              <tr
+                key={row.key}
+                className="border-b border-[#F0F4F1] last:border-0"
+              >
                 <td className="p-3 text-[9px] font-bold text-[#7A8B82] align-top">
                   {row.label}
                 </td>
                 {methods.map((m) => (
-                  <td key={m.id} className="p-3 text-[10px] text-[#5B6F63] align-top">
+                  <td
+                    key={m.id}
+                    className="p-3 text-[10px] text-[#5B6F63] align-top"
+                  >
                     {row.render(m)}
                   </td>
                 ))}
@@ -940,36 +951,6 @@ function ComparisonDashboard({ methods, crop }) {
           </tbody>
         </table>
       </div>
-
-      {/* Select a method */}
-      <p className="text-[10px] text-[#6D8377] font-semibold">
-        Select a plan to view its full details:
-      </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {methods.map((m, i) => (
-          <button
-            key={m.id}
-            onClick={() => setSelected(selected === m.id ? null : m.id)}
-            className={`rounded-[22px] border p-4 text-left transition active:scale-[.98] ${
-              selected === m.id
-                ? "border-[#216B45] bg-[#E6F3E8] shadow"
-                : "border-[#E0E8E2] bg-white hover:border-[#9CC9AD]"
-            }`}
-          >
-            <p className={`text-[11px] font-extrabold ${METHOD_COLORS[i % 3].split(" ")[1]}`}>
-              {m.title}
-            </p>
-            <p className="mt-1 text-[9px] text-[#84938B] leading-4">{m.short}</p>
-            {m.fit_note && (
-              <p className="mt-1.5 text-[9px] italic text-[#5B6F63] leading-4">{m.fit_note}</p>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {selected && (
-        <MethodCard method={methods.find((m) => m.id === selected)} />
-      )}
     </div>
   );
 }

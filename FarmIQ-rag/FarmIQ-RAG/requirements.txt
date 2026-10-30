@@ -21,6 +21,11 @@ chromadb==1.5.9
 # Together, Groq, OpenRouter, vLLM, etc.)
 openai==3.35.1
 
+# Hugging Face Inference Providers client (huggingface_hub.InferenceClient).
+# Selected when LLM_PROVIDER=huggingface; also used to verify that HF_MODEL_ID
+# is served by a live inference provider.
+huggingface_hub>=0.27
+
 # Environment configuration
 python-dotenv==1.2.4
 

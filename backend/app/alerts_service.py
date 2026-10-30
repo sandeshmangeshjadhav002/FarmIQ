@@ -58,6 +58,9 @@ PHYSICAL_BOUNDS: dict[str, tuple[float, float]] = {
     "soil_moisture_raw": (0.0, 2000.0),
     "soil_temperature": (-20.0, 60.0),
     "temperature": (-20.0, 60.0),
+    # BME680-type air nodes. Sea level is ~1013 hPa; the widest ever recorded
+    # surface pressure is ~1084 hPa, so anything outside 300–1100 is a fault.
+    "pressure": (300.0, 1100.0),
     "nitrogen": (0.0, 500.0),
     "phosphorous": (0.0, 500.0),
     "potassium": (0.0, 600.0),

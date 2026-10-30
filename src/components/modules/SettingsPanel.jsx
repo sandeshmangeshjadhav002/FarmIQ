@@ -20,7 +20,12 @@ export default function SettingsPanel({ currentLanguage, onLanguage }) {
 
   /** Derive initials from a full name string. */
   const initials = (name = "") =>
-    name.trim().split(/\s+/).map((w) => w[0]?.toUpperCase() ?? "").slice(0, 2).join("");
+    name
+      .trim()
+      .split(/\s+/)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .slice(0, 2)
+      .join("");
 
   const formatRole = (role = "") =>
     role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -37,7 +42,9 @@ export default function SettingsPanel({ currentLanguage, onLanguage }) {
             {initials(displayName)}
           </span>
           <div>
-            <h2 className="text-[14px] font-extrabold text-[#213D2F]">{displayName}</h2>
+            <h2 className="text-[14px] font-extrabold text-[#213D2F]">
+              {displayName}
+            </h2>
             <p className="text-[10px] text-[#7D8E84]">{displayRole}</p>
           </div>
         </div>
@@ -46,10 +53,6 @@ export default function SettingsPanel({ currentLanguage, onLanguage }) {
       {/* Language */}
       <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
         <h2 className="text-[14px] font-extrabold text-[#213D2F]">Language</h2>
-        <p className="mt-1 text-[10px] text-[#7D8E84]">
-          Translated examples: English, हिन्दी and मराठी. Other languages are
-          layout-ready.
-        </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {settingsLanguages.map(([label, value]) => (
             <button
@@ -95,18 +98,6 @@ export default function SettingsPanel({ currentLanguage, onLanguage }) {
             />
           </span>
         </button>
-      </section>
-
-      {/* Translation examples */}
-      <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-        <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-          Translated interface examples
-        </h2>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[9px] font-bold">
-          <span className="rounded-xl bg-[#F3F6F2] p-3">Ask FarmIQ</span>
-          <span className="rounded-xl bg-[#F3F6F2] p-3">FarmIQ से पूछें</span>
-          <span className="rounded-xl bg-[#F3F6F2] p-3">FarmIQ ला विचारा</span>
-        </div>
       </section>
     </div>
   );

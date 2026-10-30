@@ -1,18 +1,12 @@
 import { useMemo, useState } from "react";
 
-import { moduleCatalog, moduleConfigs } from "@/data/modules";
+import { moduleCatalog } from "@/data/modules";
 import { apiPost } from "@/lib/apiClient";
 import useApi from "@/hooks/useApi";
 import ModuleIcon from "./ModuleIcon";
 import WeatherAssist from "./WeatherAssist";
-import {
-  DemoBadge,
-  Field,
-  ModuleButton,
-  SelectField,
-  MiniChart,
-  Metric,
-} from "./ModuleShared";
+import PredictionExplanation from "./PredictionExplanation";
+import { DemoBadge, Field, ModuleButton, SelectField } from "./ModuleShared";
 
 /**
  * Live prediction module for the four ML-backed modules:
@@ -28,21 +22,21 @@ import {
  *   3. Top-3 crop recommendations, using the model's own probability output and
  *      labelling the score type honestly.
  *
- * The existing static demo content is kept below so the original UI is preserved.
- *
  * @param {string}   props.moduleKey - One of the four ML module keys.
  * @param {Function} props.onAsk     - Navigate to the chat/assistant screen.
  */
 export default function MlModule({ moduleKey, onAsk }) {
   const config = DOMAIN_CONFIG[moduleKey];
   const info = moduleCatalog.find((item) => item.key === moduleKey);
-  const demo = moduleConfigs[moduleKey] ?? moduleConfigs.reports;
 
   const [values, setValues] = useState(() =>
     Object.fromEntries((config?.fields ?? []).map((f) => [f.key, f.default])),
   );
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  // The exact inputs that produced `result`, kept so the explanation describes
+  // the prediction that was actually made — not edits made afterwards.
+  const [resultInput, setResultInput] = useState(null);
   const [error, setError] = useState(null);
   const [serverIssues, setServerIssues] = useState(null); // { errors, warnings, advisory }
 
@@ -91,6 +85,7 @@ export default function MlModule({ moduleKey, onAsk }) {
           f.type === "number" ? Number(values[f.key]) : values[f.key];
       }
       const data = await apiPost(config.endpoint, payload);
+      setResultInput(payload);
       setResult(data);
     } catch (err) {
       if (err.status === 422 && err.data?.errors) {
@@ -102,8 +97,7 @@ export default function MlModule({ moduleKey, onAsk }) {
         setError(err.message || "Some inputs failed validation.");
       } else if (err.status === 501) {
         setError(
-          "No trained model for this domain yet. A backend admin must run `python -m ml.train_models`. " +
-            (err.message || ""),
+          "This prediction isn't available yet. Please try again later.",
         );
       } else if (err.status === 401) {
         setError("Your session expired. Please sign in again.");
@@ -125,12 +119,7 @@ export default function MlModule({ moduleKey, onAsk }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <DemoBadge status="Live prediction" />
-        <span className="text-[9px] font-semibold text-[#829188]">
-          FastAPI · {config.endpoint}
-        </span>
-      </div>
+      <DemoBadge status="Live prediction" />
 
       {/* ── Weather auto-fill (optional) ───────────────────────────── */}
       {Object.keys(weatherMap).length > 0 && (
@@ -204,9 +193,8 @@ export default function MlModule({ moduleKey, onAsk }) {
         {liveIssues.invalid.length === 0 && liveIssues.unusual.length > 0 && (
           <p className="rounded-xl bg-[#FFF5DE] p-3 text-[10px] font-semibold leading-5 text-[#8A6D2B]">
             {liveIssues.unusual.length} value
-            {liveIssues.unusual.length > 1 ? "s are" : " is"} valid but outside
-            the training data range. The prediction will still run, but it
-            extrapolates.
+            {liveIssues.unusual.length > 1 ? "s are" : " is"} outside the normal
+            range for this crop. The prediction will still run.
           </p>
         )}
       </section>
@@ -220,7 +208,7 @@ export default function MlModule({ moduleKey, onAsk }) {
       {serverIssues?.errors?.length > 0 && (
         <section className="space-y-1 rounded-2xl bg-[#FCE9E5] p-4">
           <p className="text-[10px] font-extrabold uppercase tracking-[.06em] text-[#9D4C3E]">
-            Rejected by the server
+            Please fix these
           </p>
           {serverIssues.errors.map((e, i) => (
             <p
@@ -242,8 +230,8 @@ export default function MlModule({ moduleKey, onAsk }) {
             </h3>
             <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#216B45]">
               {result.source === "baseline"
-                ? "Rule-based baseline"
-                : "ML model"}
+                ? "General estimate"
+                : "Model estimate"}
             </span>
           </div>
           <p className="text-[26px] font-extrabold tracking-[-.03em] text-[#17392A]">
@@ -271,46 +259,15 @@ export default function MlModule({ moduleKey, onAsk }) {
         </section>
       )}
 
-      {/* ── Preserved static demo content ──────────────────────────── */}
-      {demo && (
-        <>
-          <div className="grid grid-cols-3 gap-2">
-            {demo.metrics.map(([label, value, note]) => (
-              <Metric key={label} label={label} value={value} note={note} />
-            ))}
-          </div>
-          <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-            <h2 className="text-[16px] font-extrabold text-[#203C2E]">
-              {demo.title}
-            </h2>
-            <p className="mt-1 text-[11px] leading-5 text-[#75867C]">
-              {demo.detail}
-            </p>
-            <div className="mt-4">
-              <MiniChart />
-            </div>
-          </section>
-          <section className="overflow-hidden rounded-[22px] border border-[#E0E8E2] bg-white">
-            {demo.rows.map(([name, value, note], index) => (
-              <div
-                key={name}
-                className={`flex items-center gap-3 p-4 ${
-                  index ? "border-t border-[#EDF1EE]" : ""
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <b className="block text-[12px] text-[#294234]">{name}</b>
-                  <span className="mt-1 block text-[9px] text-[#84938B]">
-                    {note}
-                  </span>
-                </span>
-                <span className="text-right text-[11px] font-extrabold text-[#426653]">
-                  {value}
-                </span>
-              </div>
-            ))}
-          </section>
-        </>
+      {/* ── Plain-language explanation (AI; never blocks the result) ── */}
+      {result && (
+        <PredictionExplanation
+          farmName={farm?.name}
+          input={resultInput}
+          moduleKey={moduleKey}
+          onAsk={() => onAsk?.()}
+          result={result}
+        />
       )}
     </div>
   );
@@ -336,11 +293,6 @@ function FieldHint({ invalid, unusual, spec }) {
     return (
       <p className="text-[9px] leading-4 text-[#9AA79F]">
         {fmtNum(spec.supported_min)}–{fmtNum(spec.supported_max)} {spec.unit}
-        {spec.training_min != null
-          ? ` · trained on ${fmtNum(spec.training_min)}–${fmtNum(
-              spec.training_max,
-            )}`
-          : ""}
       </p>
     );
   }
@@ -361,24 +313,13 @@ function Recommendations({ result }) {
           crop: t.crop,
           score: t.probability,
           score_type: "probability",
-          score_label: "Model probability (RandomForest class-vote fraction)",
         }));
-
-  const scoreType = items[0]?.score_type;
-  const scoreLabel = items[0]?.score_label;
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h4 className="text-[11px] font-extrabold text-[#1D4A33]">
-          Top {items.length} crop recommendation{items.length > 1 ? "s" : ""}
-        </h4>
-        {scoreType && (
-          <span className="rounded-full bg-white px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.06em] text-[#216B45]">
-            score: {scoreType}
-          </span>
-        )}
-      </div>
+      <h4 className="text-[11px] font-extrabold text-[#1D4A33]">
+        Top {items.length} crop recommendation{items.length > 1 ? "s" : ""}
+      </h4>
       <div className="grid grid-cols-3 gap-2">
         {items.map((r) => (
           <div
@@ -399,25 +340,19 @@ function Recommendations({ result }) {
             <p className="mt-1 text-[15px] font-extrabold text-[#216B45]">
               {formatScore(r)}
             </p>
-            <p className="mt-0.5 text-[8px] leading-3 text-[#84938B]">
-              {r.score_label}
-            </p>
           </div>
         ))}
       </div>
       {items.length < 3 && (
         <p className="text-[9px] leading-4 text-[#8A6D2B]">
           Only {items.length} recommendation{items.length > 1 ? "s" : ""}{" "}
-          returned — the model does not expose a ranked score for any further
-          classes.
+          available.
         </p>
       )}
-      {scoreLabel && (
-        <p className="text-[9px] leading-4 text-[#5C7A67]">
-          "{scoreType}" is the {scoreLabel.toLowerCase()}. It is the model's own
-          output, not the probability that this crop will succeed in your field.
-        </p>
-      )}
+      <p className="text-[9px] leading-4 text-[#5C7A67]">
+        Scores rank the options — they are not a guarantee of success in your
+        field.
+      </p>
     </div>
   );
 }

@@ -108,10 +108,10 @@ const URGENCY_CONFIG = {
 
 const SEVERITY_CONFIG = {
   extreme: { bg: "bg-[#FCE9E5]", text: "text-[#9D3E2E]", dot: "bg-[#E8493B]" },
-  severe:  { bg: "bg-[#FFF0DE]", text: "text-[#9A5E1A]", dot: "bg-[#E07B28]" },
-  moderate:{ bg: "bg-[#FFF5DE]", text: "text-[#8A6D2B]", dot: "bg-[#D99A2B]" },
-  mild:    { bg: "bg-[#E8EEF8]", text: "text-[#3F5A90]", dot: "bg-[#4F6590]" },
-  none:    { bg: "bg-[#EAF6EF]", text: "text-[#216B45]", dot: "bg-[#3F9C6A]" },
+  severe: { bg: "bg-[#FFF0DE]", text: "text-[#9A5E1A]", dot: "bg-[#E07B28]" },
+  moderate: { bg: "bg-[#FFF5DE]", text: "text-[#8A6D2B]", dot: "bg-[#D99A2B]" },
+  mild: { bg: "bg-[#E8EEF8]", text: "text-[#3F5A90]", dot: "bg-[#4F6590]" },
+  none: { bg: "bg-[#EAF6EF]", text: "text-[#216B45]", dot: "bg-[#3F9C6A]" },
 };
 
 const EMPTY_FORM = {
@@ -175,11 +175,14 @@ export default function DroughtAdvisor() {
       area_unit: form.area_unit,
       sowing_status: form.sowing_status,
       sowing_date: form.sowing_date.trim() || null,
-      recent_rainfall_mm: form.recent_rainfall_mm !== "" ? Number(form.recent_rainfall_mm) : null,
+      recent_rainfall_mm:
+        form.recent_rainfall_mm !== "" ? Number(form.recent_rainfall_mm) : null,
       water_availability: form.water_availability,
       irrigation_type: form.irrigation_type,
       irrigation_hours_available:
-        form.irrigation_hours_available !== "" ? Number(form.irrigation_hours_available) : null,
+        form.irrigation_hours_available !== ""
+          ? Number(form.irrigation_hours_available)
+          : null,
       budget_inr: form.budget_inr !== "" ? Number(form.budget_inr) : null,
       fetch_weather: form.fetch_weather,
       save: form.save,
@@ -252,7 +255,9 @@ export default function DroughtAdvisor() {
                 className="h-11 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] font-semibold text-[#203B2D] outline-none"
               >
                 {SOWING_STATUSES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -292,11 +297,15 @@ export default function DroughtAdvisor() {
                 onChange={(e) => set("area_unit", e.target.value)}
                 className="h-11 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] font-semibold text-[#203B2D] outline-none"
               >
-                {AREA_UNITS.map((u) => <option key={u}>{u}</option>)}
+                {AREA_UNITS.map((u) => (
+                  <option key={u}>{u}</option>
+                ))}
               </select>
             </label>
           </div>
-          {fieldErrors.area_value && <FieldError text={fieldErrors.area_value} />}
+          {fieldErrors.area_value && (
+            <FieldError text={fieldErrors.area_value} />
+          )}
         </div>
 
         {/* Water situation */}
@@ -323,7 +332,9 @@ export default function DroughtAdvisor() {
                 className="h-11 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] font-semibold text-[#203B2D] outline-none"
               >
                 {WATER_AVAILABILITY.map((w) => (
-                  <option key={w.value} value={w.value}>{w.label}</option>
+                  <option key={w.value} value={w.value}>
+                    {w.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -339,7 +350,9 @@ export default function DroughtAdvisor() {
                   className="h-11 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] font-semibold text-[#203B2D] outline-none"
                 >
                   {IRRIGATION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -370,13 +383,13 @@ export default function DroughtAdvisor() {
             placeholder="e.g. 5000"
           />
           <p className="mt-1 text-[9px] text-[#84938B] leading-4">
-            Used to tailor recommendations to your budget. Leave blank to skip.
+            Leave blank to skip.
           </p>
 
           <div className="mt-3 space-y-2">
             <CheckRow
               label="Fetch current weather forecast for my location"
-              sublabel="Uses Open-Meteo (free, no account needed). Forecast is advisory only."
+              sublabel="Forecast is advisory only."
               checked={form.fetch_weather}
               onChange={(v) => set("fetch_weather", v)}
             />
@@ -425,11 +438,17 @@ function ResultView({ data }) {
   return (
     <div className="space-y-4">
       {/* Severity header */}
-      <section className={`rounded-[22px] border p-4 ${sev.bg} border-white/60`}>
+      <section
+        className={`rounded-[22px] border p-4 ${sev.bg} border-white/60`}
+      >
         <div className="flex items-center gap-2 mb-2">
           <span className={`h-2.5 w-2.5 rounded-full ${sev.dot}`} />
-          <span className={`text-[10px] font-extrabold uppercase tracking-[.1em] ${sev.text}`}>
-            {data.drought_severity === "none" ? "No drought stress" : `${cap(data.drought_severity)} drought stress`}
+          <span
+            className={`text-[10px] font-extrabold uppercase tracking-[.1em] ${sev.text}`}
+          >
+            {data.drought_severity === "none"
+              ? "No drought stress"
+              : `${cap(data.drought_severity)} drought stress`}
           </span>
         </div>
         <p className={`text-[12px] font-bold leading-5 ${sev.text}`}>
@@ -469,15 +488,24 @@ function ResultView({ data }) {
           return (
             <button
               key={cat.category}
-              onClick={() => setExpandedCat(expandedCat === cat.category ? null : cat.category)}
+              onClick={() =>
+                setExpandedCat(
+                  expandedCat === cat.category ? null : cat.category,
+                )
+              }
               className={`rounded-2xl border p-3 text-left transition active:scale-[.98] ${u.bg} ${u.border}`}
             >
-              <span className={`inline-block rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase ${u.badge} mb-2`}>
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase ${u.badge} mb-2`}
+              >
                 {u.label}
               </span>
-              <p className={`text-[10px] font-extrabold ${u.text}`}>{cat.category_label}</p>
+              <p className={`text-[10px] font-extrabold ${u.text}`}>
+                {cat.category_label}
+              </p>
               <p className={`text-[9px] mt-0.5 ${u.text} opacity-70`}>
-                {cat.items?.length ?? 0} recommendation{cat.items?.length !== 1 ? "s" : ""}
+                {cat.items?.length ?? 0} recommendation
+                {cat.items?.length !== 1 ? "s" : ""}
               </p>
             </button>
           );
@@ -500,7 +528,7 @@ function ResultView({ data }) {
               <ModuleIcon name="book" size={13} />
             </span>
             <h3 className="text-[11px] font-extrabold text-[#213D2F]">
-              Agricultural knowledge context
+              Based on agricultural guidance
             </h3>
             <span className="ml-auto rounded-full bg-[#EDF5F0] px-2 py-0.5 text-[8px] font-extrabold text-[#52765E]">
               Advisory only
@@ -513,7 +541,8 @@ function ResultView({ data }) {
             <div className="mt-3 space-y-1">
               {data.rag_sources.map((s, i) => (
                 <p key={i} className="text-[9px] text-[#7A8C82]">
-                  [{i + 1}] {s.source}{s.page ? `, p.${s.page}` : ""} — similarity {(s.similarity * 100).toFixed(0)}%
+                  [{i + 1}] {s.source}
+                  {s.page ? `, p.${s.page}` : ""}
                 </p>
               ))}
             </div>
@@ -533,9 +562,13 @@ function CategoryDetail({ category, onClose }) {
   if (!category) return null;
   const u = URGENCY_CONFIG[category.urgency] ?? URGENCY_CONFIG.low;
   return (
-    <section className={`rounded-[22px] border p-4 space-y-3 ${u.bg} ${u.border}`}>
+    <section
+      className={`rounded-[22px] border p-4 space-y-3 ${u.bg} ${u.border}`}
+    >
       <div className="flex items-center justify-between">
-        <h3 className={`text-[13px] font-extrabold ${u.text}`}>{category.category_label}</h3>
+        <h3 className={`text-[13px] font-extrabold ${u.text}`}>
+          {category.category_label}
+        </h3>
         <button
           onClick={onClose}
           className="text-[10px] font-bold text-[#7A8C82] hover:underline"
@@ -560,12 +593,18 @@ function RecommendationCard({ item }) {
         <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${u.dot}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={`rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase ${u.badge}`}>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase ${u.badge}`}
+            >
               {u.label}
             </span>
           </div>
-          <p className="mt-1 text-[11px] font-bold leading-5 text-[#1A2F22]">{item.action}</p>
-          <p className="mt-0.5 text-[10px] leading-5 text-[#5A6F63]">{item.reason}</p>
+          <p className="mt-1 text-[11px] font-bold leading-5 text-[#1A2F22]">
+            {item.action}
+          </p>
+          <p className="mt-0.5 text-[10px] leading-5 text-[#5A6F63]">
+            {item.reason}
+          </p>
         </div>
       </div>
 
@@ -583,7 +622,9 @@ function RecommendationCard({ item }) {
             <DetailRow label="Materials needed">
               <ul className="space-y-0.5">
                 {item.materials.map((m, i) => (
-                  <li key={i} className="text-[10px] text-[#5A6F63]">· {m}</li>
+                  <li key={i} className="text-[10px] text-[#5A6F63]">
+                    · {m}
+                  </li>
                 ))}
               </ul>
             </DetailRow>
@@ -604,7 +645,9 @@ function RecommendationCard({ item }) {
             <DetailRow label="Expected benefits">
               <ul className="space-y-0.5">
                 {item.expected_benefits.map((b, i) => (
-                  <li key={i} className="text-[10px] text-[#216B45]">✓ {b}</li>
+                  <li key={i} className="text-[10px] text-[#216B45]">
+                    ✓ {b}
+                  </li>
                 ))}
               </ul>
             </DetailRow>
@@ -614,7 +657,9 @@ function RecommendationCard({ item }) {
             <DetailRow label="Limitations">
               <ul className="space-y-0.5">
                 {item.limitations.map((l, i) => (
-                  <li key={i} className="text-[10px] text-[#7C6428]">· {l}</li>
+                  <li key={i} className="text-[10px] text-[#7C6428]">
+                    · {l}
+                  </li>
                 ))}
               </ul>
             </DetailRow>
@@ -640,7 +685,8 @@ function WeatherCard({ weather }) {
     return (
       <section className="rounded-[22px] border border-[#E0D8B0] bg-[#FFFBEA] p-4">
         <p className="text-[10px] font-bold text-[#8A7830]">
-          Weather data unavailable — {weather.fetch_error || "enter rainfall manually."}
+          Weather data unavailable —{" "}
+          {weather.fetch_error || "enter rainfall manually."}
         </p>
       </section>
     );
@@ -652,7 +698,9 @@ function WeatherCard({ weather }) {
         <span className="grid h-6 w-6 place-items-center rounded-lg bg-[#D0EDF5] text-[#28778A]">
           <ModuleIcon name="drop" size={13} />
         </span>
-        <h3 className="text-[11px] font-extrabold text-[#1A4A5A]">Weather data</h3>
+        <h3 className="text-[11px] font-extrabold text-[#1A4A5A]">
+          Weather data
+        </h3>
         <span className="ml-auto text-[9px] text-[#5A8090]">
           {weather.data_as_of ? `as of ${weather.data_as_of.slice(0, 10)}` : ""}
         </span>
@@ -664,10 +712,16 @@ function WeatherCard({ weather }) {
       )}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {weather.current_temp_c != null && (
-          <WeatherTile label="Temperature" value={`${weather.current_temp_c.toFixed(1)} °C`} />
+          <WeatherTile
+            label="Temperature"
+            value={`${weather.current_temp_c.toFixed(1)} °C`}
+          />
         )}
         {weather.current_humidity_pct != null && (
-          <WeatherTile label="Humidity" value={`${weather.current_humidity_pct.toFixed(0)}%`} />
+          <WeatherTile
+            label="Humidity"
+            value={`${weather.current_humidity_pct.toFixed(0)}%`}
+          />
         )}
         {weather.historical_rain_mm != null && (
           <WeatherTile
@@ -695,12 +749,22 @@ function WeatherCard({ weather }) {
 function WeatherTile({ label, value, note, warn = false }) {
   return (
     <div className="rounded-xl border border-[#B8D8E4] bg-white p-2.5">
-      <p className="text-[9px] font-bold text-[#5A8090] uppercase tracking-[.06em]">{label}</p>
-      <p className={`mt-1 text-[16px] font-extrabold ${warn ? "text-[#D99A2B]" : "text-[#1A3C4A]"}`}>
+      <p className="text-[9px] font-bold text-[#5A8090] uppercase tracking-[.06em]">
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-[16px] font-extrabold ${
+          warn ? "text-[#D99A2B]" : "text-[#1A3C4A]"
+        }`}
+      >
         {value}
       </p>
       {note && (
-        <p className={`text-[8px] mt-0.5 ${warn ? "text-[#8A6D2B]" : "text-[#7A9090]"}`}>
+        <p
+          className={`text-[8px] mt-0.5 ${
+            warn ? "text-[#8A6D2B]" : "text-[#7A9090]"
+          }`}
+        >
           {note}
         </p>
       )}
@@ -714,10 +778,15 @@ function Disclaimers({ items }) {
   if (!items?.length) return null;
   return (
     <section className="rounded-[22px] border border-[#E0E8E2] bg-[#F4F7F3] p-4">
-      <p className="text-[10px] font-extrabold text-[#52665B] mb-2">Important limitations</p>
+      <p className="text-[10px] font-extrabold text-[#52665B] mb-2">
+        Important limitations
+      </p>
       <ul className="space-y-1.5">
         {items.map((d, i) => (
-          <li key={i} className="flex items-start gap-1.5 text-[10px] leading-5 text-[#5B6F63]">
+          <li
+            key={i}
+            className="flex items-start gap-1.5 text-[10px] leading-5 text-[#5B6F63]"
+          >
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#7A9585]" />
             {d}
           </li>
@@ -730,13 +799,17 @@ function Disclaimers({ items }) {
 // ── Shared helpers ───────────────────────────────────────────────────────────
 
 function FieldError({ text }) {
-  return <p className="text-[9px] font-semibold text-[#C05050] mt-0.5">{text}</p>;
+  return (
+    <p className="text-[9px] font-semibold text-[#C05050] mt-0.5">{text}</p>
+  );
 }
 
 function DetailRow({ label, children }) {
   return (
     <div>
-      <p className="text-[9px] font-bold uppercase tracking-[.07em] text-[#7A8C82] mb-1">{label}</p>
+      <p className="text-[9px] font-bold uppercase tracking-[.07em] text-[#7A8C82] mb-1">
+        {label}
+      </p>
       {children}
     </div>
   );
@@ -754,7 +827,9 @@ function CheckRow({ label, sublabel, checked, onChange }) {
       <span className="text-[10px] font-semibold text-[#52675B] leading-4">
         {label}
         {sublabel && (
-          <span className="block mt-0.5 text-[9px] font-normal text-[#84938B]">{sublabel}</span>
+          <span className="block mt-0.5 text-[9px] font-normal text-[#84938B]">
+            {sublabel}
+          </span>
         )}
       </span>
     </label>

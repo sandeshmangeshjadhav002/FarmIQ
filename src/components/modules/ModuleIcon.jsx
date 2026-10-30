@@ -1,5 +1,11 @@
 /** SVG path fragments for module-specific icons. */
 const paths = {
+  home: (
+    <>
+      <path d="M4 10.5 12 4l8 6.5" />
+      <path d="M6 9.5V20h12V9.5" />
+    </>
+  ),
   farm: (
     <>
       <path d="m3 10 9-6 9 6M5 9v11h14V9M9 20v-6h6v6" />
@@ -149,6 +155,13 @@ const paths = {
     <>
       <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z" />
       <path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15Z" />
+    </>
+  ),
+  bot: (
+    <>
+      <rect x="4" y="8" width="16" height="12" rx="3" />
+      <path d="M12 8V4M9 4h6" />
+      <path d="M9 13v2M15 13v2" />
     </>
   ),
   refresh: (

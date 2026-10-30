@@ -1,22 +1,55 @@
-import { moduleCatalog } from "@/data/modules";
+import {
+  browsableModules,
+  canAccessAdminTools,
+  sectionByKey,
+  sections,
+} from "@/data/modules";
 import ModuleIcon from "@/components/modules/ModuleIcon";
 
 /**
  * Sticky left sidebar shown on lg+ breakpoints.
  *
- * @param {object}    props
- * @param {string}    [props.activeModule] - Currently open module key.
- * @param {Function}  props.onHome         - Navigate to home screen.
- * @param {Function}  props.onAssistant    - Navigate to chat screen.
- * @param {Function}  props.onOpen         - Open a module by key.
+ * Mirrors the mobile bottom navigation (Home / My Farm / Advisor / Insights)
+ * and then lists the tools of each section beneath its heading, so the desktop
+ * and mobile builds present the same six-section structure. Administrative and
+ * MLOps tools appear only for the authorised role.
+ *
+ * @param {object}   props
+ * @param {object}   [props.user]         - Signed-in user, used for the admin gate.
+ * @param {string}   [props.activeNav]    - Active top-level destination key.
+ * @param {string}   [props.activeModule] - Currently open module key.
+ * @param {Function} props.onNavigate     - Navigate to a screen ("home", "farm"…).
+ * @param {Function} props.onAssistant    - Open the conversational assistant.
+ * @param {Function} props.onOpen         - Open a module by key.
  */
 export default function DesktopNavigation({
+  user,
+  activeNav,
   activeModule,
-  onHome,
+  onNavigate,
   onAssistant,
   onOpen,
 }) {
-  const primary = moduleCatalog.filter((item) => item.key !== "admin");
+  const visible = browsableModules(user);
+  const topLevel = [
+    { key: "home", label: "Home", icon: "home" },
+    { key: "farm", label: "My Farm", icon: "farm" },
+    { key: "advisor", label: "AI Farm Advisor", icon: "sparkles" },
+    { key: "insights", label: "Insights & Analytics", icon: "chart" },
+  ];
+
+  // Every section except "admin" (rendered separately, gated) that still has a
+  // visible tool to offer.
+  const groups = sections
+    .filter((section) => section.key !== "admin")
+    .map((section) => ({
+      section,
+      items: visible.filter((item) => item.section === section.key),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const adminTools = visible.filter((item) => item.section === "admin");
+  const showAdmin = canAccessAdminTools(user) && adminTools.length > 0;
 
   return (
     <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-64 shrink-0 flex-col overflow-hidden rounded-[24px] bg-[#17392A]/60 text-white shadow-xl backdrop-blur-2xl border border-white/10 lg:flex print:hidden">
@@ -28,42 +61,74 @@ export default function DesktopNavigation({
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3">
-        <button
-          onClick={onHome}
-          className="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[11px] font-bold text-white/75 hover:bg-white/10"
-        >
-          Overview
-        </button>
-        <button
-          onClick={onAssistant}
-          className="mb-3 flex w-full items-center gap-3 rounded-xl bg-[#2C7B54] px-3 py-2.5 text-left text-[11px] font-bold"
-        >
-          AI Assistant
-        </button>
-
-        {primary.map((item) => (
+        {topLevel.map((item) => (
           <button
             key={item.key}
-            onClick={() => onOpen(item.key)}
-            className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-semibold ${
-              activeModule === item.key
+            onClick={() => onNavigate(item.key)}
+            aria-current={activeNav === item.key ? "page" : undefined}
+            className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[11px] font-bold ${
+              activeNav === item.key
                 ? "bg-white/15 text-white"
-                : "text-white/65 hover:bg-white/10"
+                : "text-white/70 hover:bg-white/10"
             }`}
           >
             <ModuleIcon name={item.icon} size={16} />
-            {item.title}
+            {item.label}
           </button>
+        ))}
+
+        <button
+          onClick={onAssistant}
+          className="mb-3 mt-1 flex w-full items-center gap-3 rounded-xl bg-[#2C7B54] px-3 py-2.5 text-left text-[11px] font-bold"
+        >
+          <ModuleIcon name="bot" size={16} />
+          Ask FarmIQ
+        </button>
+
+        {groups.map(({ section, items }) => (
+          <div key={section.key} className="mb-3">
+            <p className="px-3 pb-1 pt-2 text-[8px] font-extrabold uppercase tracking-[.14em] text-white/40">
+              {section.label}
+            </p>
+            {items.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => onOpen(item.key)}
+                className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-[10px] font-semibold ${
+                  activeModule === item.key
+                    ? "bg-white/15 text-white"
+                    : "text-white/65 hover:bg-white/10"
+                }`}
+              >
+                <ModuleIcon name={item.icon} size={15} />
+                {item.title}
+              </button>
+            ))}
+          </div>
         ))}
       </nav>
 
-      <button
-        onClick={() => onOpen("admin")}
-        className="m-3 flex items-center gap-3 rounded-xl border border-white/10 px-3 py-3 text-left text-[10px] font-bold text-white/70"
-      >
-        <ModuleIcon name="shield" size={16} />
-        Administration &amp; Roles
-      </button>
+      {showAdmin && (
+        <div className="border-t border-white/10 p-3">
+          <p className="px-1 pb-1 text-[8px] font-extrabold uppercase tracking-[.14em] text-white/40">
+            {sectionByKey("admin")?.label ?? "Administration"}
+          </p>
+          {adminTools.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => onOpen(item.key)}
+              className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-[10px] font-semibold ${
+                activeModule === item.key
+                  ? "bg-white/15 text-white"
+                  : "text-white/65 hover:bg-white/10"
+              }`}
+            >
+              <ModuleIcon name={item.icon} size={15} />
+              {item.title}
+            </button>
+          ))}
+        </div>
+      )}
     </aside>
   );
 }

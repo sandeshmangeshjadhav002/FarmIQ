@@ -3,20 +3,30 @@ import { ModuleButton } from "./ModuleShared";
 import ModuleIcon from "./ModuleIcon";
 import { defaultReminders } from "@/data/modules";
 
-const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
-
 /**
- * Farming Calendar module — mini monthly calendar plus interactive reminders.
+ * Farming Calendar module — reminders for sowing, spraying and harvest dates.
  * Reminder data is seeded from `data/modules.js`.
  */
 export default function CalendarManager() {
   const [reminders, setReminders] = useState(defaultReminders);
-  const [newTitle, setNewTitle]   = useState("");
+  const [newTitle, setNewTitle] = useState("");
+
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const pending = reminders.filter((r) => !r.done).length;
 
   const addReminder = () => {
     if (!newTitle.trim()) return;
     setReminders((prev) => [
-      { id: Date.now(), title: newTitle.trim(), date: "Tomorrow • 8:00 AM", done: false },
+      {
+        id: Date.now(),
+        title: newTitle.trim(),
+        date: "Tomorrow • 8:00 AM",
+        done: false,
+      },
       ...prev,
     ]);
     setNewTitle("");
@@ -24,7 +34,7 @@ export default function CalendarManager() {
 
   const toggleDone = (id) => {
     setReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
+      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r)),
     );
   };
 
@@ -32,7 +42,9 @@ export default function CalendarManager() {
     const updated = window.prompt("Edit reminder", item.title);
     if (updated?.trim()) {
       setReminders((prev) =>
-        prev.map((r) => (r.id === item.id ? { ...r, title: updated.trim() } : r))
+        prev.map((r) =>
+          r.id === item.id ? { ...r, title: updated.trim() } : r,
+        ),
       );
     }
   };
@@ -47,32 +59,14 @@ export default function CalendarManager() {
 
   return (
     <div className="space-y-4">
-      {/* Mini calendar */}
+      {/* Today */}
       <section className="rounded-[22px] bg-[#216B45] p-4 text-white">
         <p className="text-[10px] font-bold uppercase tracking-[.1em] text-white/65">
-          October 2025
+          {today}
         </p>
-        <div className="mt-4 grid grid-cols-7 gap-1 text-center">
-          {DAY_LABELS.map((d, i) => (
-            <span
-              key={`day-${i}`}
-              className="text-[9px] font-bold text-white/60"
-            >
-              {d}
-            </span>
-          ))}
-          {Array.from({ length: 21 }, (_, i) => (
-            <button
-              key={`date-${i}`}
-              aria-label={`October ${i + 1}`}
-              className={`aspect-square rounded-full text-[9px] font-bold ${
-                i === 15 ? "bg-white text-[#216B45]" : "text-white/85"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        <p className="mt-1 text-[20px] font-extrabold tracking-[-.02em]">
+          {pending} reminder{pending === 1 ? "" : "s"} pending
+        </p>
       </section>
 
       {/* Add reminder */}
@@ -100,8 +94,8 @@ export default function CalendarManager() {
       <div className="space-y-2">
         {reminders.length === 0 && (
           <p className="rounded-2xl border border-dashed border-[#D8E3DA] bg-white p-6 text-center text-[12px] leading-5 text-[#7B8C82]">
-            No reminders yet. Add one above to keep track of sowing, spraying and
-            harvest dates.
+            No reminders yet. Add one above to keep track of sowing, spraying
+            and harvest dates.
           </p>
         )}
         {reminders.map((item) => (

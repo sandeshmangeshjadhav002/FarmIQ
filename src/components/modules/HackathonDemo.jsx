@@ -18,10 +18,30 @@ import ModuleIcon from "./ModuleIcon";
 import { ModuleButton, Field } from "./ModuleShared";
 
 const PRIORITY_CONFIG = {
-  critical: { bg: "bg-[#FCE9E5]", text: "text-[#9D3E2E]", badge: "bg-[#E8493B] text-white", label: "Critical" },
-  high:     { bg: "bg-[#FFF5DE]", text: "text-[#8A6D2B]", badge: "bg-[#D99A2B] text-white", label: "High" },
-  moderate: { bg: "bg-[#E8EEF8]", text: "text-[#3F5A90]", badge: "bg-[#4F6590] text-white", label: "Moderate" },
-  low:      { bg: "bg-white",     text: "text-[#52665B]", badge: "bg-[#9ABBA6] text-white", label: "Low" },
+  critical: {
+    bg: "bg-[#FCE9E5]",
+    text: "text-[#9D3E2E]",
+    badge: "bg-[#E8493B] text-white",
+    label: "Critical",
+  },
+  high: {
+    bg: "bg-[#FFF5DE]",
+    text: "text-[#8A6D2B]",
+    badge: "bg-[#D99A2B] text-white",
+    label: "High",
+  },
+  moderate: {
+    bg: "bg-[#E8EEF8]",
+    text: "text-[#3F5A90]",
+    badge: "bg-[#4F6590] text-white",
+    label: "Moderate",
+  },
+  low: {
+    bg: "bg-white",
+    text: "text-[#52665B]",
+    badge: "bg-[#9ABBA6] text-white",
+    label: "Low",
+  },
 };
 
 export default function HackathonDemo() {
@@ -43,10 +63,14 @@ export default function HackathonDemo() {
     setError(null);
     try {
       let result;
-      if (overrides && (soilMoisture !== null || temperature !== null || humidity !== null)) {
+      if (
+        overrides &&
+        (soilMoisture !== null || temperature !== null || humidity !== null)
+      ) {
         result = await apiPost("/api/demo/sensor", {
           farm_id: farmId,
-          soil_moisture: soilMoisture !== null ? Number(soilMoisture) : undefined,
+          soil_moisture:
+            soilMoisture !== null ? Number(soilMoisture) : undefined,
           temperature: temperature !== null ? Number(temperature) : undefined,
           humidity: humidity !== null ? Number(humidity) : undefined,
           include_weather: true,
@@ -84,18 +108,19 @@ export default function HackathonDemo() {
           </span>
         </div>
         <p className="text-[11px] font-bold text-[#7A6428]">
-          Synthetic farm data for demonstration purposes only.
-        </p>
-        <p className="mt-0.5 text-[10px] text-[#9A7C38]">
-          Real ML models run on the backend. Adjust sensor sliders to see how
-          recommendations change. No real user data is used.
+          Synthetic data for demonstration only — no real user data is used.
         </p>
       </div>
 
       {/* Farm selector */}
       {farmsLoading ? (
         <div className="grid grid-cols-1 gap-2">
-          {[1,2,3].map(n => <div key={n} className="h-16 animate-pulse rounded-[20px] bg-[#E8F0EB]" />)}
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="h-16 animate-pulse rounded-[20px] bg-[#E8F0EB]"
+            />
+          ))}
         </div>
       ) : (
         <div className="space-y-2">
@@ -113,13 +138,20 @@ export default function HackathonDemo() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-[12px] font-extrabold text-[#1D382A]">{farm.name}</p>
+                <p className="text-[12px] font-extrabold text-[#1D382A]">
+                  {farm.name}
+                </p>
                 <span className="text-[9px] rounded-full bg-[#E5F1E8] px-2 py-0.5 text-[#216B45] font-bold">
                   {farm.crop}
                 </span>
               </div>
-              <p className="mt-0.5 text-[10px] text-[#7B8C82]">{farm.location} · {farm.area_value} {farm.area_unit} · {farm.soil_type}</p>
-              <p className="mt-1 text-[9px] text-[#9AA79F] leading-4">{farm.description}</p>
+              <p className="mt-0.5 text-[10px] text-[#7B8C82]">
+                {farm.location} · {farm.area_value} {farm.area_unit} ·{" "}
+                {farm.soil_type}
+              </p>
+              <p className="mt-1 text-[9px] text-[#9AA79F] leading-4">
+                {farm.description}
+              </p>
             </button>
           ))}
         </div>
@@ -132,7 +164,7 @@ export default function HackathonDemo() {
             2. Adjust simulated sensor values
           </p>
           <p className="text-[9px] text-[#84938B]">
-            Leave blank to use defaults. Change values to observe how recommendations respond.
+            Leave blank to use defaults.
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -143,7 +175,9 @@ export default function HackathonDemo() {
                 onChange={setSoilMoisture}
                 placeholder="e.g. 25"
               />
-              <p className="text-[8px] text-[#9AA79F] mt-0.5">Try: 15 (dry) · 50 (ok) · 80 (wet)</p>
+              <p className="text-[8px] text-[#9AA79F] mt-0.5">
+                Try: 15 (dry) · 50 (ok) · 80 (wet)
+              </p>
             </div>
             <div>
               <Field
@@ -153,7 +187,9 @@ export default function HackathonDemo() {
                 onChange={setTemperature}
                 placeholder="e.g. 32"
               />
-              <p className="text-[8px] text-[#9AA79F] mt-0.5">Try: 25 (cool) · 38 (hot) · 42 (extreme)</p>
+              <p className="text-[8px] text-[#9AA79F] mt-0.5">
+                Try: 25 (cool) · 38 (hot) · 42 (extreme)
+              </p>
             </div>
             <div>
               <Field
@@ -189,7 +225,9 @@ export default function HackathonDemo() {
 
           {/* Summary */}
           <div className="rounded-[22px] border border-[#CDEBDA] bg-[#EAF6EF] p-4">
-            <p className="text-[13px] font-extrabold text-[#1D4A33]">{plan.summary}</p>
+            <p className="text-[13px] font-extrabold text-[#1D4A33]">
+              {plan.summary}
+            </p>
             <div className="mt-2 flex gap-3">
               {plan.critical_count > 0 && (
                 <span className="rounded-full bg-[#E8493B] px-2.5 py-1 text-[9px] font-extrabold text-white">
@@ -204,9 +242,10 @@ export default function HackathonDemo() {
             </div>
             {plan.sensor_values_used && (
               <div className="mt-2 rounded-xl bg-white/60 p-2.5 text-[9px] text-[#4C6355]">
-                Sensor values used: moisture {plan.sensor_values_used.soil_moisture}% ·
-                temp {plan.sensor_values_used.temperature}°C ·
-                humidity {plan.sensor_values_used.humidity}%
+                Sensor values used: moisture{" "}
+                {plan.sensor_values_used.soil_moisture}% · temp{" "}
+                {plan.sensor_values_used.temperature}°C · humidity{" "}
+                {plan.sensor_values_used.humidity}%
               </div>
             )}
           </div>
@@ -215,19 +254,32 @@ export default function HackathonDemo() {
           {(plan.actions ?? []).map((action, i) => {
             const cfg = PRIORITY_CONFIG[action.priority] ?? PRIORITY_CONFIG.low;
             return (
-              <div key={i} className={`rounded-[20px] border p-4 ${cfg.bg} border-white/60`}>
+              <div
+                key={i}
+                className={`rounded-[20px] border p-4 ${cfg.bg} border-white/60`}
+              >
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span className={`rounded-full px-2.5 py-0.5 text-[8px] font-extrabold uppercase ${cfg.badge}`}>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[8px] font-extrabold uppercase ${cfg.badge}`}
+                  >
                     {cfg.label}
                   </span>
                   <span className="text-[9px] uppercase tracking-[.08em] text-[#7A8C82] font-semibold">
                     {action.category?.replace("_", " ")}
                   </span>
                 </div>
-                <p className={`text-[12px] font-extrabold leading-5 ${cfg.text}`}>{action.action}</p>
-                <p className="mt-0.5 text-[10px] leading-5 text-[#5A6F63]">{action.reason}</p>
+                <p
+                  className={`text-[12px] font-extrabold leading-5 ${cfg.text}`}
+                >
+                  {action.action}
+                </p>
+                <p className="mt-0.5 text-[10px] leading-5 text-[#5A6F63]">
+                  {action.reason}
+                </p>
                 {action.warnings?.map((w, wi) => (
-                  <p key={wi} className="mt-1 text-[9px] text-[#8A6D2B]">⚠ {w}</p>
+                  <p key={wi} className="mt-1 text-[9px] text-[#8A6D2B]">
+                    ⚠ {w}
+                  </p>
                 ))}
               </div>
             );
@@ -236,28 +288,40 @@ export default function HackathonDemo() {
           {/* Weather / conditions */}
           {plan.weather_summary && (
             <div className="rounded-[22px] border border-[#C5DCE4] bg-[#EBF6FA] p-4">
-              <p className="text-[10px] font-bold text-[#1A4A5A] mb-2">Weather conditions</p>
+              <p className="text-[10px] font-bold text-[#1A4A5A] mb-2">
+                Weather conditions
+              </p>
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 {plan.weather_summary.temperature_c != null && (
-                  <span>🌡 {plan.weather_summary.temperature_c.toFixed(1)}°C</span>
+                  <span>
+                    🌡 {plan.weather_summary.temperature_c.toFixed(1)}°C
+                  </span>
                 )}
                 {plan.weather_summary.humidity_pct != null && (
-                  <span>💧 {plan.weather_summary.humidity_pct.toFixed(0)}% humidity</span>
+                  <span>
+                    💧 {plan.weather_summary.humidity_pct.toFixed(0)}% humidity
+                  </span>
                 )}
                 {plan.weather_summary.forecast_rain_7d_mm != null && (
                   <span className="text-[#D99A2B]">
-                    🌧 {plan.weather_summary.forecast_rain_7d_mm.toFixed(1)} mm forecast (7 days, unconfirmed)
+                    🌧 {plan.weather_summary.forecast_rain_7d_mm.toFixed(1)} mm
+                    forecast (7 days, unconfirmed)
                   </span>
                 )}
               </div>
               {!plan.weather_summary.temperature_c && (
-                <p className="text-[9px] text-[#5A8090]">Weather data unavailable — using sensor data only.</p>
+                <p className="text-[9px] text-[#5A8090]">
+                  Weather data unavailable — using sensor data only.
+                </p>
               )}
             </div>
           )}
 
           <p className="text-[9px] text-[#9AA79F] text-right">
-            Generated: {plan.generated_at ? new Date(plan.generated_at).toLocaleTimeString("en-IN") : "—"}
+            Generated:{" "}
+            {plan.generated_at
+              ? new Date(plan.generated_at).toLocaleTimeString("en-IN")
+              : "—"}
           </p>
         </div>
       )}

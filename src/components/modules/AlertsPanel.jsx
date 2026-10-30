@@ -107,12 +107,16 @@ export default function AlertsPanel() {
     }
   };
 
-  const handleRefresh = () => runAction(() => apiPost("/api/alerts/refresh", {}));
+  const handleRefresh = () =>
+    runAction(() => apiPost("/api/alerts/refresh", {}));
 
   const handleToggleRead = (alert) =>
-    runAction(() => apiPatch(`/api/alerts/${alert.id}`, { is_read: !alert.is_read }));
+    runAction(() =>
+      apiPatch(`/api/alerts/${alert.id}`, { is_read: !alert.is_read }),
+    );
 
-  const handleReadAll = () => runAction(() => apiPost("/api/alerts/read-all", {}));
+  const handleReadAll = () =>
+    runAction(() => apiPost("/api/alerts/read-all", {}));
 
   if (loading && items.length === 0) {
     return <ScreenLoader label="Loading alerts…" />;
@@ -153,8 +157,7 @@ export default function AlertsPanel() {
         </div>
 
         <p className="mt-3 text-[9px] leading-relaxed text-[#84938B]">
-          Alerts are generated from your own farm data. FarmIQ never invents an
-          alert, and it stays silent when the underlying data is missing.
+          Based only on your own farm data.
         </p>
 
         <div className="mt-3 flex gap-2">
@@ -175,12 +178,7 @@ export default function AlertsPanel() {
       </section>
 
       {/* ── Errors ────────────────────────────────────────────────────── */}
-      {needsAuth && (
-        <Notice tone="amber">
-          Sign in to view your alerts — this module only shows data from your own
-          account.
-        </Notice>
-      )}
+      {needsAuth && <Notice tone="amber">Sign in to view your alerts.</Notice>}
       {error && !needsAuth && (
         <Notice tone="red">{error.message || "Could not load alerts."}</Notice>
       )}
@@ -228,7 +226,9 @@ function AlertCard({ alert, busy, onToggleRead }) {
             {alert.is_demo && <DemoBadge status="Simulated data" />}
           </div>
 
-          <h3 className={`mt-2 text-[13px] font-extrabold leading-snug ${tone.title}`}>
+          <h3
+            className={`mt-2 text-[13px] font-extrabold leading-snug ${tone.title}`}
+          >
             {alert.title}
           </h3>
           {alert.body && (
@@ -274,7 +274,7 @@ function EmptyState({ filter, hasAny }) {
       <p className="mx-auto mt-1 max-w-[260px] text-[10px] leading-relaxed text-[#7B8C82]">
         {unreadFilter && hasAny
           ? "Everything here has been read. Switch to All to review past alerts."
-          : "Alerts appear when FarmIQ detects something that needs attention — a sensor that stops reporting, an unusual reading, drought conditions, or a heavy-rain forecast."}
+          : "Alerts appear when something on your farm needs attention."}
       </p>
     </div>
   );
@@ -286,7 +286,9 @@ function Notice({ tone, children }) {
     amber: "border-[#F0D090] bg-[#FFF5DE] text-[#8A6D2B]",
   };
   return (
-    <div className={`rounded-2xl border p-3 text-[10px] font-semibold ${tones[tone]}`}>
+    <div
+      className={`rounded-2xl border p-3 text-[10px] font-semibold ${tones[tone]}`}
+    >
       {children}
     </div>
   );

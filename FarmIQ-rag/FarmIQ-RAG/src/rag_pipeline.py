@@ -15,6 +15,11 @@ Key behaviours enforced here
   confidence scores are never invented, and the model's values are never
   modified.
 * **Optional ML** – the pipeline works identically with ``ml_results=None``.
+* **Optional farm context** – a dictionary of facts the caller already knows
+  about the farmer's own farm (name, location, area, soil type, current crop,
+  irrigation type, latest sensor reading) may be supplied. Only the values
+  actually provided are shown to the model, they are labelled as facts (not
+  predictions), and the model is told not to invent anything missing.
 * **Source references** – every answer is returned together with the retrieved
   :class:`~src.vector_store.RetrievedItem` list so callers can cite sources.
 * **Graceful degradation** – if the LLM is not configured, we still return the
@@ -124,6 +129,7 @@ class AnswerResult:
     retrieval_message: str = ""
     ml_context_provided: bool = False
     ml_context_summary: str = ""
+    farm_context_provided: bool = False
     llm_used: bool = False
     warnings: List[str] = field(default_factory=list)
     query: str = ""
@@ -164,6 +170,7 @@ class RAGPipeline:
         relevance_threshold: Optional[float] = None,
         language: Optional[str] = None,
         history: Optional[List[Dict[str, Any]]] = None,
+        farm_context: Optional[Dict[str, Any]] = None,
     ) -> AnswerResult:
         """Answer *question*, optionally grounded in FarmIQ ML predictions.
 
@@ -187,6 +194,15 @@ class RAGPipeline:
             ``"assistant"``/``"ai"``. Used to (a) resolve follow-up references
             such as "it" when building the retrieval query and (b) give the
             model the immediate context. Malformed entries are ignored.
+        farm_context:
+            Optional dictionary of *facts the caller already knows* about the
+            farmer's own farm (farm name, location, area, soil type, current
+            crop, irrigation type, and the latest real sensor reading). These
+            are passed to the model as background so an answer fits the farm
+            instead of being generic. They are explicitly labelled as facts
+            supplied by FarmIQ — never as predictions — and the model is told
+            not to invent values that are not listed. Nothing is inferred or
+            filled in when a field is missing.
         """
         question = (question or "").strip()
         warnings: List[str] = []
@@ -211,6 +227,10 @@ class RAGPipeline:
         history_display = _format_history(turns)
         previous_question = _last_farmer_question(turns)
 
+        # ── 2b. Normalise the optional farm context ───────────────────────────
+        farm_display = _format_farm_context(farm_context)
+        farm_context_provided = bool(farm_display)
+
         # ── 3. Retrieve ───────────────────────────────────────────────────────
         retrieval_query = _build_retrieval_query(question, ml_query_hint, previous_question)
         result = self.retriever.retrieve(
@@ -233,6 +253,7 @@ class RAGPipeline:
                 retrieval_message=result.message,
                 ml_context_provided=ml_context_provided,
                 ml_context_summary=ml_display,
+                farm_context_provided=farm_context_provided,
                 llm_used=False,
                 warnings=warnings,
                 query=question,
@@ -241,7 +262,7 @@ class RAGPipeline:
         # ── 5. Build prompt + call LLM (or degrade gracefully) ─────────────────
         context_block = format_context_block(result.items)
         prompt = self._build_user_prompt(
-            question, ml_display, context_block, language, history_display
+            question, ml_display, context_block, language, history_display, farm_display
         )
 
         if not self.llm_client.is_configured:
@@ -258,6 +279,7 @@ class RAGPipeline:
                 retrieval_message="",
                 ml_context_provided=ml_context_provided,
                 ml_context_summary=ml_display,
+                farm_context_provided=farm_context_provided,
                 llm_used=False,
                 warnings=warnings,
                 query=question,
@@ -278,6 +300,7 @@ class RAGPipeline:
                 retrieval_status=result.status,
                 ml_context_provided=ml_context_provided,
                 ml_context_summary=ml_display,
+                farm_context_provided=farm_context_provided,
                 llm_used=False,
                 warnings=warnings,
                 query=question,
@@ -290,6 +313,7 @@ class RAGPipeline:
                 retrieval_status=result.status,
                 ml_context_provided=ml_context_provided,
                 ml_context_summary=ml_display,
+                farm_context_provided=farm_context_provided,
                 llm_used=False,
                 warnings=warnings,
                 query=question,
@@ -310,6 +334,7 @@ class RAGPipeline:
             retrieval_message="",
             ml_context_provided=ml_context_provided,
             ml_context_summary=ml_display,
+            farm_context_provided=farm_context_provided,
             llm_used=True,
             warnings=warnings,
             query=question,
@@ -323,8 +348,9 @@ class RAGPipeline:
         context_block: str,
         language: Optional[str] = None,
         history_display: str = "",
+        farm_display: str = "",
     ) -> str:
-        """Compose the user message: ML context (if any) + history + passages + question."""
+        """Compose the user message: ML context + farm context + history + passages + question."""
         sections: List[str] = []
 
         if ml_display:
@@ -335,6 +361,16 @@ class RAGPipeline:
                 "Do not invent additional predictions, confidence scores, or model details. "
                 "Do not change the values above. Clearly distinguish these predictions from "
                 "retrieved agricultural facts."
+            )
+
+        if farm_display:
+            sections.append(
+                "Farmer's own farm (facts supplied by FarmIQ, not predictions):\n"
+                f"{farm_display}\n\n"
+                "Use this only as background so your answer fits this farm. These are the "
+                "only farm values available: do not invent, round or assume any value that "
+                "is not listed above. If a value you need is not listed, say what you would "
+                "need to know rather than guessing."
             )
 
         if history_display:
@@ -400,6 +436,39 @@ def _format_ml_compact(items: Dict[str, str]) -> str:
     if not items:
         return ""
     return ", ".join(f"{k}: {v}" for k, v in items.items())
+
+
+def _format_farm_context(farm_context: Any) -> str:
+    """Render caller-supplied farm facts as a short prompt block.
+
+    Only values that were actually supplied are included — nothing is inferred,
+    defaulted or rounded — so the model can never be handed a fabricated farm
+    value. Returns ``""`` when there is nothing to show, which keeps the prompt
+    identical to the pre-farm-context behaviour.
+    """
+    if not isinstance(farm_context, dict):
+        return ""
+
+    lines: List[str] = []
+    for key, value in farm_context.items():
+        if value is None:
+            continue
+        if isinstance(value, str):
+            if not value.strip():
+                continue
+        elif isinstance(value, (list, tuple, set)):
+            value = ", ".join(str(v) for v in value if v not in (None, ""))
+            if not value:
+                continue
+        elif isinstance(value, dict):
+            nested = [f"{k}: {v}" for k, v in value.items() if v not in (None, "")]
+            if not nested:
+                continue
+            value = "; ".join(nested)
+
+        label = str(key).replace("_", " ").strip()
+        lines.append(f"- {label}: {value}")
+    return "\n".join(lines)
 
 
 def _build_retrieval_query(

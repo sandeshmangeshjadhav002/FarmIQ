@@ -1,5 +1,9 @@
 import { Suspense, lazy } from "react";
-import { moduleCatalog } from "@/data/modules";
+import {
+  moduleCatalog,
+  sectionByKey,
+  canAccessAdminTools,
+} from "@/data/modules";
 import ScreenLoader from "@/components/common/ScreenLoader";
 import ModuleIcon from "./ModuleIcon";
 
@@ -32,6 +36,7 @@ const AlertsPanel = lazy(() => import("./AlertsPanel"));
  * @param {Function} props.onAsk          - Navigate to the chat screen.
  * @param {string}   props.currentLanguage
  * @param {Function} props.onLanguage     - Update language from settings.
+ * @param {object}   [props.user]         - Signed-in user, used for the admin gate.
  */
 export default function ModuleScreen({
   moduleKey,
@@ -39,8 +44,45 @@ export default function ModuleScreen({
   onAsk,
   currentLanguage,
   onLanguage,
+  user,
 }) {
   const info = moduleCatalog.find((item) => item.key === moduleKey);
+  const section = sectionByKey(info?.section);
+
+  // Administrative/MLOps modules are hidden from the browse grid, but the route
+  // can still be reached (deep link, stale state). Refuse it here rather than
+  // rendering a technical panel to a farmer.
+  if (info?.adminOnly && !canAccessAdminTools(user)) {
+    return (
+      <div className="px-5 pb-8 pt-5">
+        <header className="mb-5 flex items-start gap-3">
+          <button
+            onClick={onBack}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DDE6DF] bg-white text-[#3F5A4B]"
+          >
+            <ModuleIcon name="back" size={19} />
+          </button>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#6D8377]">
+              Restricted
+            </p>
+            <h1 className="text-[20px] font-extrabold leading-tight tracking-[-.03em] text-[#17392A]">
+              {info?.title ?? "Administrative tool"}
+            </h1>
+          </div>
+        </header>
+        <div className="rounded-[20px] border border-dashed border-[#B0C9B8] p-6 text-center">
+          <p className="text-[12px] font-bold text-[#3C5C49]">
+            This tool is for administrators and agricultural experts.
+          </p>
+          <p className="mt-1.5 text-[10px] leading-5 text-[#7B8C82]">
+            Ask an agricultural expert to sign in, or contact support if you
+            believe you should have access.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (moduleKey) {
@@ -101,12 +143,11 @@ export default function ModuleScreen({
         </span>
         <div className="min-w-0">
           <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#6D8377]">
-            {info?.group}
+            {section?.label ?? "FarmIQ tool"}
           </p>
           <h1 className="text-[20px] font-extrabold leading-tight tracking-[-.03em] text-[#17392A]">
             {info?.title}
           </h1>
-          <p className="mt-1 text-[10px] text-[#7B8C82]">{info?.short}</p>
         </div>
       </header>
 

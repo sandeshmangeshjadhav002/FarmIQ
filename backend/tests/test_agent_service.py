@@ -1,0 +1,694 @@
+"""Tests for the unified AI agent engine (app.agent_service).
+
+Covers the agent-spec scenarios that the engine itself owns:
+
+* tool routing (only the tools a question needs),
+* reasoning over real ML + sensor + weather + profile data,
+* conflicts (ML vs sensor, sensor vs weather, stale prediction vs reading),
+* missing data reported rather than invented,
+* response shape (Situation / Observation / Recommendation / Reason / Warning),
+* multilingual labels,
+* caching and its invalidation,
+* graceful degradation when a tool or the assistant fails,
+* owner isolation.
+
+The assistant (RAG) is stubbed: these tests never touch the knowledge base or
+an LLM.
+"""
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from app import agent_service, farm_context_manager as ctx
+
+NOW = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
+UID = "u1"
+OTHER = "u2"
+FARM_ID = "f1"
+
+
+def _iso(hours_ago: float = 0.0) -> str:
+    return (NOW - timedelta(hours=hours_ago)).isoformat()
+
+
+FARM_ROW = {
+    "id": FARM_ID,
+    "owner_id": UID,
+    "name": "Green Valley Farm",
+    "location": "Nashik, Maharashtra",
+    "area_value": 2.5,
+    "area_unit": "acres",
+    "soil_type": "Black (Vertisol)",
+    "current_crop": "Wheat",
+    "irrigation_type": "drip",
+    "latitude": 19.9975,
+    "longitude": 73.7898,
+    "created_at": _iso(24 * 30),
+}
+
+
+def _weather_ok(*_, **__):
+    return {
+        "source": "Open-Meteo",
+        "fetched_at": NOW.isoformat(),
+        "location": {"name": "Nashik, Maharashtra"},
+        "current": {
+            "observed_at": NOW.isoformat(),
+            "temperature_c": 41.0,
+            "humidity_pct": 48.0,
+            "precipitation_mm": 0.0,
+        },
+        "forecast_rainfall": {"total_mm": 1.0, "daily": []},
+        "historical_rainfall": {"total_mm": 142.5},
+    }
+
+
+@pytest.fixture(autouse=True)
+def _isolated_state(monkeypatch):
+    """Fresh caches for every test, and a working weather provider."""
+    from app import weather as weather_module
+
+    ctx.reset_caches()
+    agent_service.reset_cache()
+    monkeypatch.setattr(weather_module, "build_report", _weather_ok)
+
+    class _StubAdapter:
+        def status(self):
+            return {"crop": {"model": True}}
+
+    monkeypatch.setattr("ml.adapter.get_adapter", lambda: _StubAdapter())
+    yield
+    ctx.reset_caches()
+    agent_service.reset_cache()
+
+
+@pytest.fixture(autouse=True)
+def _assistant_offline(monkeypatch):
+    """Default the assistant to unavailable; tests opt in to a stub."""
+    from app.rag_service import RagUnavailableError
+
+    def _unavailable(*_, **__):
+        raise RagUnavailableError("knowledge base not loaded")
+
+    monkeypatch.setattr("app.rag_service.answer_question", _unavailable)
+
+
+def _seed(fake_client, *, farm=True, reading=None, predictions=None):
+    fake_client.seed_profile(uid=UID)
+    if farm:
+        fake_client.tables.setdefault("farms", []).append(dict(FARM_ROW))
+    if reading is not None:
+        fake_client.tables.setdefault("sensor_readings", []).append(
+            {"owner_id": UID, "farm_id": FARM_ID, "device_id": "d1", **reading}
+        )
+    for row in predictions or []:
+        fake_client.tables.setdefault("predictions", []).append(
+            {"owner_id": UID, "source": "model", **row}
+        )
+
+
+def _reading(**overrides):
+    return {
+        "created_at": _iso(0.2),
+        "soil_moisture": 20.0,
+        # Matches the weather stub, so only the dedicated divergence test sees a
+        # sensor-vs-weather gap.
+        "temperature": 41.0,
+        "humidity": 51.0,
+        "ph": 6.8,
+        "nitrogen": 42.0,
+        "phosphorous": 18.0,
+        "potassium": 55.0,
+        "soil_temperature": 27.5,
+        **overrides,
+    }
+
+
+def _ask(fake_client, question, *, owner=UID, language="en", farm_id=None, **kwargs):
+    return agent_service.answer(
+        question,
+        client=fake_client,
+        owner_id=owner,
+        farm_id=farm_id,
+        language=language,
+        now=NOW,
+        **kwargs,
+    )
+
+
+# ── Routing ──────────────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize(
+    "question,expected",
+    [
+        ("When should I irrigate my wheat?", "irrigation"),
+        ("पाणी द्यावे का?", "irrigation"),
+        ("Which fertilizer should I use?", "fertilizer"),
+        ("खत द्यावे का?", "fertilizer"),
+        ("Which crop should I plant this season?", "crop_selection"),
+        ("How much yield will I get?", "yield"),
+        ("Will it rain tomorrow?", "weather"),
+        ("What is the soil moisture right now?", "sensors"),
+        ("Show me my previous predictions", "history"),
+        ("What is my land area?", "profile"),
+        ("What should I do on my farm today?", "farm_status"),
+        ("What is the capital of France?", "unknown"),
+    ],
+)
+def test_intent_routing(question, expected):
+    assert agent_service.classify_intent(question) == expected
+
+
+def test_unknown_intent_gets_no_tools():
+    assert agent_service.tools_for_intent("unknown") == ()
+    assert agent_service.tools_for_intent("nonsense") == ()
+
+
+def test_weather_question_calls_only_the_weather_tool(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "Will it rain tomorrow?")
+
+    assert result["intent"] == "weather"
+    assert result["tools_used"] == ["get_weather_information"]
+    # No sensor or prediction evidence was fetched, so none is reported.
+    assert result["context"]["sensors"] is None
+    assert result["context"]["predictions"] == {}
+
+
+def test_question_about_sensors_does_not_read_the_weather(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert result["tools_used"] == ["get_sensor_readings"]
+    assert result["context"]["weather"] is None
+
+
+# ── Reasoning over real values ───────────────────────────────────────────────
+
+def test_irrigation_answer_uses_the_real_sensor_weather_and_model_values(fake_client):
+    _seed(
+        fake_client,
+        reading=_reading(soil_moisture=22.0, temperature=30.1),
+        predictions=[
+            {
+                "id": "p1",
+                "domain": "irrigation",
+                "output": {"prediction": 1, "label": "Irrigation recommended"},
+                "created_at": _iso(1.0),
+            }
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert result["intent"] == "irrigation"
+    assert set(result["tools_used"]) == {
+        "get_irrigation_prediction",
+        "get_farm_profile",
+        "get_sensor_readings",
+        "get_weather_information",
+    }
+    observation = " ".join(result["sections"]["observation"])
+    assert "22" in observation                  # real soil-moisture reading
+    assert "41" in observation                  # real weather temperature
+    assert result["sections"]["recommendation"]  # actionable advice present
+    assert result["sections"]["reason"]
+    assert result["fallback"] is False
+
+
+def test_bme680_measurements_appear_in_the_sensor_observation(fake_client):
+    """A BME680 node's air measurements are reported as readings, with units."""
+    _seed(fake_client, reading=_reading(pressure=1008.3))
+
+    result = _ask(fake_client, "What is the soil moisture right now?")
+    observation = " ".join(result["sections"]["observation"])
+
+    assert "Air pressure" in observation
+    assert "1008.3 hPa" in observation
+    assert result["context"]["sensors"]["pressure"] == 1008.3
+    # A reading, not a prediction.
+    assert "(model output)" not in observation
+
+
+def test_sensor_reading_and_model_output_are_labelled_differently(fake_client):
+    _seed(
+        fake_client,
+        reading=_reading(),
+        predictions=[
+            {"id": "p1", "domain": "crop", "output": {"prediction": "Wheat"},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    # A model answer must never be presented as a measurement...
+    model = _ask(fake_client, "Which crop should I plant?")
+    model_observation = " ".join(model["sections"]["observation"])
+    assert "(model output)" in model_observation
+    assert "Sensor reading" not in model_observation
+
+    # ...and a reading is never presented as a prediction.
+    reading = _ask(fake_client, "What is the soil moisture level?")
+    reading_observation = " ".join(reading["sections"]["observation"])
+    assert "Sensor reading" in reading_observation
+    assert "(model output)" not in reading_observation
+
+
+def test_prediction_is_never_presented_as_a_guaranteed_outcome(fake_client):
+    _seed(
+        fake_client,
+        predictions=[
+            {"id": "p1", "domain": "yield", "output": {"prediction": 3.2},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    result = _ask(fake_client, "How much yield will I get?")
+
+    reasons = " ".join(result["sections"]["reason"])
+    assert "prediction, not a guaranteed outcome" in reasons
+
+
+def test_situation_describes_the_farm_profile(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What should I do on my farm today?")
+
+    assert "Wheat" in result["sections"]["situation"]
+    assert "Nashik" in result["sections"]["situation"]
+
+
+# ── Conflicts ────────────────────────────────────────────────────────────────
+
+def test_ml_irrigation_conflicting_with_the_sensor_is_surfaced(fake_client):
+    # Model says "do not irrigate"; the reading (20%) is below the wheat
+    # threshold (45%), so the rule says irrigate. They disagree.
+    _seed(
+        fake_client,
+        reading=_reading(soil_moisture=20.0),
+        predictions=[
+            {"id": "p1", "domain": "irrigation",
+             "output": {"prediction": 0, "label": "No irrigation", "source": "model"},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    kinds = {conflict["kind"] for conflict in result["conflicts"]}
+    assert "ml_vs_sensor" in kinds
+    conflict = next(c for c in result["conflicts"] if c["kind"] == "ml_vs_sensor")
+    assert conflict["evidence"]["ml_prediction"] == 0
+    assert conflict["evidence"]["soil_moisture"] == 20.0
+    assert conflict["evidence"]["threshold_pct"] == 45
+    # The conflict is also shown as a warning, and the answer says to check.
+    assert any("Check the sensor" in w for w in result["sections"]["warning"])
+
+
+def test_ml_irrigation_agreeing_with_the_sensor_is_not_a_conflict(fake_client):
+    _seed(
+        fake_client,
+        reading=_reading(soil_moisture=20.0),
+        predictions=[
+            {"id": "p1", "domain": "irrigation", "output": {"prediction": 1},
+             "created_at": _iso(0.1)}
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert result["conflicts"] == []
+
+
+def test_non_percentage_moisture_is_not_compared_with_the_threshold(fake_client):
+    """A 0–2000 raw-scale value must never be read as a percentage."""
+    _seed(
+        fake_client,
+        reading=_reading(soil_moisture=450.0),
+        predictions=[
+            {"id": "p1", "domain": "irrigation", "output": {"prediction": 0},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert all(conflict["kind"] != "ml_vs_sensor" for conflict in result["conflicts"])
+
+
+def test_sensor_and_weather_disagreement_is_surfaced(fake_client):
+    # Sensor 30.1 °C vs weather 41.0 °C: a 10.9 °C gap.
+    _seed(fake_client, reading=_reading(temperature=30.1))
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    divergence = [c for c in result["conflicts"] if c["kind"] == "sensor_vs_weather"]
+    assert divergence, result["conflicts"]
+    assert divergence[0]["channel"] == "temperature"
+    assert divergence[0]["sensor_value"] == 30.1
+    assert divergence[0]["weather_value"] == 41.0
+
+
+def test_prediction_older_than_the_reading_is_flagged(fake_client):
+    _seed(
+        fake_client,
+        reading=_reading(created_at=_iso(0.5)),
+        predictions=[
+            {"id": "p1", "domain": "irrigation", "output": {"prediction": 1},
+             "created_at": _iso(10.0)}
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    stale = [c for c in result["conflicts"] if c["kind"] == "prediction_before_reading"]
+    assert stale, result["conflicts"]
+    assert stale[0]["tool"] == "get_irrigation_prediction"
+    assert "older than your latest sensor reading" in stale[0]["message"]
+
+
+# ── Missing data is reported, never invented ─────────────────────────────────
+
+def test_no_farm_and_no_sensors_is_reported_honestly(fake_client):
+    fake_client.seed_profile(uid=UID)
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert "sensor_readings" in result["missing"]
+    assert result["context"]["sensors"] is None
+    assert result["context"]["predictions"] == {}
+    assert result["sections"]["observation"] == []
+
+
+def test_absent_sensor_readings_are_never_substituted(fake_client):
+    _seed(fake_client, reading=None)
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert result["missing"] == ["sensor_readings"]
+    assert result["sections"]["observation"] == []
+    assert any("No sensor readings" in w for w in result["sections"]["warning"])
+
+
+def test_stale_reading_is_flagged_as_uncertain(fake_client):
+    _seed(fake_client, reading=_reading(created_at=_iso(10.0)))
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert any("conditions may have changed" in note for note in result["uncertainty"])
+    assert any("conditions may have changed" in w for w in result["sections"]["warning"])
+
+
+def test_demo_reading_is_disclosed(fake_client):
+    _seed(fake_client, reading=_reading(is_demo=True))
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert any("simulated (DEMO)" in w for w in result["sections"]["warning"])
+
+
+def test_implausible_channel_is_flagged(fake_client):
+    _seed(fake_client, reading=_reading(ph=99.0))
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert any("outside plausible sensor limits" in note for note in result["uncertainty"])
+
+
+def test_unrelated_question_without_the_assistant_returns_help(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the capital of France?")
+
+    assert result["intent"] == "unknown"
+    assert result["tools_used"] == []
+    assert result["fallback"] is True
+    assert result["llm_used"] is False
+    assert "farm plan" in result["answer"]
+    # No farm data was read, so nothing is claimed to be missing.
+    assert result["missing"] == []
+
+
+# ── The assistant is additive, never load-bearing ────────────────────────────
+
+def test_knowledge_question_is_answered_by_the_assistant(fake_client, monkeypatch):
+    monkeypatch.setattr(
+        "app.rag_service.answer_question",
+        lambda *_, **__: {
+            "answer": "Spray neem oil early in the morning.",
+            "llm_used": True,
+            "sources": [{"title": "ICAR pest guide"}],
+        },
+    )
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "How do I control aphids on tomato?")
+
+    assert result["intent"] == "unknown"
+    assert result["answer"] == "Spray neem oil early in the morning."
+    assert result["llm_used"] is True
+    assert result["sources"] == [{"title": "ICAR pest guide"}]
+    assert result["fallback"] is False
+
+
+def test_assistant_receives_only_the_values_the_tools_returned(fake_client, monkeypatch):
+    captured: dict = {}
+
+    def _fake(question, ml_results=None, **kwargs):
+        captured["question"] = question
+        captured["ml"] = ml_results
+        captured["farm_context"] = kwargs.get("farm_context")
+        return {"answer": "", "llm_used": False, "sources": []}
+
+    monkeypatch.setattr("app.rag_service.answer_question", _fake)
+    _seed(
+        fake_client,
+        reading=_reading(),
+        predictions=[
+            {"id": "p1", "domain": "irrigation",
+             "output": {"prediction": 1, "label": "Irrigation recommended"},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert captured["ml"]["irrigation_prediction"] == "Irrigation recommended"
+    assert captured["farm_context"]["current_crop"] == "Wheat"
+    assert captured["farm_context"]["soil_moisture"] == 20.0
+    # Internal identifiers are never handed to the model.
+    for leaked in ("id", "owner_id", "latitude", "longitude"):
+        assert leaked not in captured["farm_context"]
+
+
+def test_assistant_failure_leaves_the_structured_answer_intact(fake_client, monkeypatch):
+    def _boom(*_, **__):
+        raise RuntimeError("provider 503")
+
+    monkeypatch.setattr("app.rag_service.answer_question", _boom)
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert result["llm_used"] is False
+    assert result["explanation"] is None
+    assert "20" in result["answer"]
+    assert result["sections"]["observation"]
+
+
+def test_assistant_empty_answer_does_not_replace_the_structured_answer(fake_client, monkeypatch):
+    monkeypatch.setattr(
+        "app.rag_service.answer_question",
+        lambda *_, **__: {"answer": "   ", "llm_used": False, "sources": []},
+    )
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert "20" in result["answer"]
+
+
+# ── Degradation ──────────────────────────────────────────────────────────────
+
+def test_one_failing_tool_does_not_fail_the_answer(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+
+    def _boom(self):
+        raise RuntimeError("weather provider unreachable")
+
+    monkeypatch.setattr(agent_service.FarmTools, "get_weather_information", _boom)
+
+    result = _ask(fake_client, "What should I do on my farm today?")
+
+    assert "weather" in result["missing"]
+    assert any("Weather data is not available" in w for w in result["sections"]["warning"])
+    # The sensor evidence still made it into the answer.
+    assert any("Sensor reading" in item for item in result["sections"]["observation"])
+
+
+def test_weather_failure_for_a_weather_only_question_still_answers(fake_client, monkeypatch):
+    from app import weather as weather_module
+
+    def _boom(*_, **__):
+        raise RuntimeError("upstream down")
+
+    monkeypatch.setattr(weather_module, "build_report", _boom)
+    ctx.reset_caches()
+    _seed(fake_client)
+
+    result = _ask(fake_client, "Will it rain tomorrow?")
+
+    assert result["intent"] == "weather"
+    assert "weather" in result["missing"]
+    assert result["sections"]["warning"]
+
+
+# ── Multilingual ─────────────────────────────────────────────────────────────
+
+def test_marathi_question_gets_marathi_labels_and_values(fake_client):
+    _seed(fake_client, reading=_reading(soil_moisture=22.0))
+
+    result = _ask(fake_client, "माझ्या शेतातील माती ओलावा किती?", language="mr")
+
+    assert result["language"] == "mr"
+    assert "निरीक्षण" in result["answer"]
+    assert "22" in result["answer"]
+
+
+def test_unsupported_language_falls_back_to_english(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?", language="hi")
+
+    assert result["language"] == "en"
+
+
+# ── Caching ──────────────────────────────────────────────────────────────────
+
+def test_identical_question_is_served_from_cache(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    first = _ask(fake_client, "What is the soil moisture level?")
+    second = _ask(fake_client, "What is the soil moisture level?")
+
+    assert first["cached"] is False
+    assert second["cached"] is True
+    assert second["answer"] == first["answer"]
+
+
+def test_a_new_reading_invalidates_the_cached_answer(fake_client):
+    _seed(fake_client, reading=_reading(created_at=_iso(0.5), soil_moisture=20.0))
+
+    first = _ask(fake_client, "What is the soil moisture level?")
+    assert "20" in first["answer"]
+
+    fake_client.tables["sensor_readings"].append(
+        {"owner_id": UID, "farm_id": FARM_ID, "device_id": "d1",
+         "created_at": _iso(0.0), "soil_moisture": 61.0}
+    )
+
+    second = _ask(fake_client, "What is the soil moisture level?")
+
+    assert second["cached"] is False
+    assert "61" in second["answer"]
+    assert "20" not in second["answer"]
+
+
+def test_different_questions_are_cached_separately(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    a = _ask(fake_client, "What is the soil moisture level?")
+    b = _ask(fake_client, "What is the soil ph value?")
+
+    assert a["cached"] is False
+    assert b["cached"] is False
+    assert a["answer"] != b["answer"]
+
+
+# ── Ownership isolation ──────────────────────────────────────────────────────
+
+def test_another_farmer_never_sees_this_farm(fake_client):
+    _seed(fake_client, reading=_reading())
+    fake_client.seed_profile(uid=OTHER, email="other@example.com", mobile="+919000000002")
+
+    result = _ask(fake_client, "What is the soil moisture level?", owner=OTHER)
+
+    assert result["context"]["sensors"] is None
+    assert result["context"]["farm"] is None
+    assert "sensor_readings" in result["missing"]
+    assert "20" not in result["answer"]
+
+
+def test_another_farmer_cannot_select_a_foreign_farm(fake_client):
+    _seed(fake_client, reading=_reading())
+    fake_client.seed_profile(uid=OTHER, email="other@example.com", mobile="+919000000002")
+
+    result = _ask(
+        fake_client, "What is the soil moisture level?", owner=OTHER, farm_id=FARM_ID
+    )
+
+    assert result["context"]["sensors"] is None
+    assert result["context"]["farm"] is None
+
+
+def test_concurrent_farmers_get_their_own_answers(fake_client):
+    _seed(fake_client, reading=_reading(soil_moisture=20.0))
+    fake_client.seed_profile(uid=OTHER, email="other@example.com", mobile="+919000000002")
+    fake_client.tables.setdefault("farms", []).append(
+        {**FARM_ROW, "id": "f2", "owner_id": OTHER, "current_crop": "Cotton"}
+    )
+    fake_client.tables.setdefault("sensor_readings", []).append(
+        {"owner_id": OTHER, "farm_id": "f2", "device_id": "d2",
+         "created_at": _iso(0.1), "soil_moisture": 80.0}
+    )
+
+    mine = _ask(fake_client, "What should I do on my farm today?")
+    theirs = _ask(fake_client, "What should I do on my farm today?", owner=OTHER)
+
+    assert "20" in mine["answer"]
+    assert "80" in theirs["answer"]
+    assert "Wheat" in mine["sections"]["situation"]
+    assert "Cotton" in theirs["sections"]["situation"]
+
+
+# ── Response shape ───────────────────────────────────────────────────────────
+
+def test_sections_render_in_the_expected_order(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What should I do on my farm today?")
+
+    text = result["answer"]
+    assert text.index("Situation") < text.index("Observation")
+    assert text.index("Observation") < text.index("Recommendation")
+    assert text.index("Recommendation") < text.index("Reason")
+
+
+def test_sections_are_omitted_when_there_is_nothing_to_say(fake_client):
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    sections = result["sections"]
+    assert sections["situation"] is None
+    assert sections["recommendation"] == []
+    assert "Recommendation" not in result["answer"]
+
+
+def test_freshness_is_reported_per_source(fake_client):
+    _seed(
+        fake_client,
+        reading=_reading(),
+        predictions=[
+            {"id": "p1", "domain": "irrigation", "output": {"prediction": 1},
+             "created_at": _iso(1.0)}
+        ],
+    )
+
+    result = _ask(fake_client, "Should I irrigate my wheat?")
+
+    assert result["freshness"]["get_sensor_readings"] == _iso(0.2)
+    assert result["freshness"]["get_irrigation_prediction"] == _iso(1.0)

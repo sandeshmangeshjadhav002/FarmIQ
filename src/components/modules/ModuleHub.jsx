@@ -1,24 +1,52 @@
-import { useState } from "react";
-import { moduleCatalog } from "@/data/modules";
+import { useMemo, useState } from "react";
+import { browsableModules, sections } from "@/data/modules";
 import ModuleIcon from "./ModuleIcon";
 
-const GROUPS = ["All", "Plan", "Monitor", "Learn", "Manage", "Administration"];
-
 /**
- * All-tools browser — searchable, filterable grid of every FarmIQ module.
+ * All-tools browser — searchable, section-grouped list of every FarmIQ module.
+ *
+ * Modules flagged ``contextual`` (device pairing, sensor simulation) are
+ * deliberately absent: they are opened from the screen that owns them, so they
+ * would only add noise here. Modules flagged ``adminOnly`` appear only for the
+ * authorised role.
  *
  * @param {object}   props
  * @param {Function} props.onBack - Navigate back to the home screen.
  * @param {Function} props.onOpen - Open a module by its key.
+ * @param {object}   [props.user] - Signed-in user, used for the admin gate.
  */
-export default function ModuleHub({ onBack, onOpen }) {
+export default function ModuleHub({ onBack, onOpen, user }) {
   const [query, setQuery] = useState("");
-  const [group, setGroup] = useState("All");
+  const [activeSection, setActiveSection] = useState("all");
 
-  const results = moduleCatalog.filter(
-    (item) =>
-      (group === "All" || item.group === group) &&
-      `${item.title} ${item.short}`.toLowerCase().includes(query.toLowerCase()),
+  const modules = useMemo(() => browsableModules(user), [user]);
+
+  // Only offer a section filter when that section actually has visible tools —
+  // an empty chip would promise something the user cannot reach.
+  const availableSections = useMemo(
+    () => sections.filter((s) => modules.some((m) => m.section === s.key)),
+    [modules],
+  );
+
+  const matches = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return modules.filter(
+      (item) =>
+        (activeSection === "all" || item.section === activeSection) &&
+        (!needle ||
+          `${item.title} ${item.short}`.toLowerCase().includes(needle)),
+    );
+  }, [modules, activeSection, query]);
+
+  const groups = useMemo(
+    () =>
+      availableSections
+        .map((section) => ({
+          section,
+          items: matches.filter((m) => m.section === section.key),
+        }))
+        .filter((group) => group.items.length > 0),
+    [availableSections, matches],
   );
 
   return (
@@ -26,18 +54,14 @@ export default function ModuleHub({ onBack, onOpen }) {
       <header className="flex items-center gap-3">
         <button
           onClick={onBack}
+          aria-label="Back to home"
           className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/30 bg-white/40 text-[#3F5A4B] backdrop-blur-md shadow-sm"
         >
           <ModuleIcon name="back" size={19} />
         </button>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#648071]">
-            FarmIQ workspace
-          </p>
-          <h1 className="text-[25px] font-extrabold tracking-[-.04em] text-[#17392A]">
-            All tools
-          </h1>
-        </div>
+        <h1 className="text-[25px] font-extrabold tracking-[-.04em] text-[#17392A]">
+          All tools
+        </h1>
       </header>
 
       <label className="mt-5 flex h-12 items-center gap-3 rounded-2xl border border-white/30 bg-white/40 px-4 backdrop-blur-md shadow-sm">
@@ -52,45 +76,91 @@ export default function ModuleHub({ onBack, onOpen }) {
       </label>
 
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-        {GROUPS.map((item) => (
-          <button
-            key={item}
-            onClick={() => setGroup(item)}
-            className={`shrink-0 rounded-full px-3 py-2 text-[10px] font-bold backdrop-blur-md ${
-              group === item
-                ? "bg-[#216B45] text-white"
-                : "border border-white/30 bg-white/40 text-[#607369]"
-            }`}
-          >
-            {item}
-          </button>
+        <SectionChip
+          label="All"
+          selected={activeSection === "all"}
+          onClick={() => setActiveSection("all")}
+        />
+        {availableSections.map((section) => (
+          <SectionChip
+            key={section.key}
+            label={section.label}
+            selected={activeSection === section.key}
+            onClick={() => setActiveSection(section.key)}
+          />
         ))}
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {results.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => onOpen(item.key)}
-            className="flex items-center gap-3 rounded-[18px] border border-white/30 bg-white/40 p-4 text-left shadow-[0_4px_14px_rgba(31,57,44,.04)] backdrop-blur-md transition hover:-translate-y-0.5 shadow-sm"
-          >
-            <span
-              className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${item.color}`}
-            >
-              <ModuleIcon name={item.icon} />
+      {groups.length === 0 && (
+        <div className="mt-8 rounded-[20px] border border-dashed border-[#B0C9B8] p-8 text-center">
+          <p className="text-[12px] font-bold text-[#3C5C49]">
+            No tools match "{query}"
+          </p>
+          <p className="mt-1.5 text-[10px] text-[#7B8C82]">
+            Try a different word, or clear the search to see everything.
+          </p>
+        </div>
+      )}
+
+      {groups.map(({ section, items }) => (
+        <section key={section.key} className="mt-6">
+          <div className="mb-3 flex items-start gap-2.5">
+            <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#E6F2E9] text-[#216B45]">
+              <ModuleIcon name={section.icon} size={15} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-extrabold text-[#233F31]">
-                {item.title}
-              </span>
-              <span className="mt-1 block text-[10px] leading-4 text-[#75877D]">
-                {item.short}
-              </span>
-            </span>
-            <ModuleIcon name="arrow" size={16} />
-          </button>
-        ))}
-      </div>
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-extrabold leading-tight tracking-[-.02em] text-[#1B3A2B]">
+                {section.label}
+              </h2>
+              <p className="mt-0.5 text-[10px] text-[#7B8C82]">
+                {section.short}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {items.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => onOpen(item.key)}
+                className="flex items-center gap-3 rounded-[18px] border border-white/30 bg-white/40 p-4 text-left shadow-[0_4px_14px_rgba(31,57,44,.04)] backdrop-blur-md transition hover:-translate-y-0.5"
+              >
+                <span
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${item.color}`}
+                >
+                  <ModuleIcon name={item.icon} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-extrabold text-[#233F31]">
+                    {item.title}
+                  </span>
+                  <span className="mt-1 block text-[10px] leading-4 text-[#75877D]">
+                    {item.short}
+                  </span>
+                </span>
+                <ModuleIcon name="arrow" size={16} />
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
+  );
+}
+
+/** Pill-shaped section filter. */
+function SectionChip({ label, selected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`shrink-0 rounded-full px-3 py-2 text-[10px] font-bold backdrop-blur-md ${
+        selected
+          ? "bg-[#216B45] text-white"
+          : "border border-white/30 bg-white/40 text-[#607369]"
+      }`}
+    >
+      {label}
+    </button>
   );
 }

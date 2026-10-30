@@ -100,6 +100,24 @@ class Settings(BaseSettings):
     # Path to the standalone FarmIQ-RAG project (contains src/ and data/).
     farmiq_rag_path: str = str(DEFAULT_RAG_PROJECT)
 
+    # â”€â”€ AI assistant LLM (Hugging Face Inference Providers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # The assistant's answer generation runs on a Hugging Face model served by
+    # any supported Inference Provider (hf-inference, together, deepinfra,
+    # novita, groq, ...). These are the ONLY place the assistant's LLM
+    # credentials are configured: the bridge in app/rag_service.py forwards
+    # them to the RAG project, so a deployment does not need a second .env.
+    # The token stays on the backend â€” it is never sent to the frontend and
+    # never written to a log line or an error message.
+    hf_token: str = ""
+    hf_model_id: str = ""
+    # Optional: pin one inference provider instead of letting the Hub route to
+    # the first available one. Blank means "auto".
+    hf_provider: str = ""
+    # Per-request timeout for the Hugging Face call, in seconds. Kept short so
+    # an unresponsive provider degrades to the retrieved-passages fallback
+    # instead of holding the request open.
+    hf_timeout_seconds: float = 45.0
+
     # â”€â”€ Weather (Open-Meteo, no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Used to auto-fill temperature / humidity / accumulated rainfall in the
     # ML prediction forms. Open-Meteo needs no key; the base URLs are settings
@@ -116,6 +134,18 @@ class Settings(BaseSettings):
     weather_timeout_seconds: float = 8.0
     # How many past days of daily rainfall are summed for the accumulated total.
     weather_history_days: int = 30
+
+    # ── AI agent caching ─────────────────────────────────────────────
+    # The agent re-reads weather and farm context often. Both are cached in
+    # process for a short window so a burst of questions re-uses one lookup
+    # instead of hammering Open-Meteo or the database. Kept short because the
+    # underlying data (rain, soil moisture) is itself time-sensitive: a stale
+    # cache would make the agent describe yesterday's field.
+    weather_cache_ttl_seconds: int = 900        # 15 min
+    context_cache_ttl_seconds: int = 60         # 1 min
+    # Identical questions over unchanged farm data reuse one LLM answer instead
+    # of paying for a second generation.
+    agent_answer_cache_ttl_seconds: int = 300   # 5 min
 
     # â”€â”€ Device ingestion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     sensor_ingest_token: str = ""  # optional shared secret for ESP32 devices
@@ -172,6 +202,16 @@ class Settings(BaseSettings):
     @property
     def rag_project_dir(self) -> Path:
         return Path(self.farmiq_rag_path)
+
+    @property
+    def hf_configured(self) -> bool:
+        """True when a Hugging Face model can be used for answer generation.
+
+        Both values are required: without a model id the Hugging Face client
+        would fall back to a model the provider does not serve, and without a
+        token every request would fail with 401.
+        """
+        return bool(self.hf_token.strip()) and bool(self.hf_model_id.strip())
 
 
 @lru_cache

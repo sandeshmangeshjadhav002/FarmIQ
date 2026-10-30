@@ -23,6 +23,11 @@ edge-tts>=6.1
 supabase>=2.7
 python-dotenv>=1.0
 email-validator>=2.0
+# Hugging Face Inference Providers client (huggingface_hub.InferenceClient).
+# Used by the RAG assistant's answer generation when HF_TOKEN/HF_MODEL_ID are
+# configured, and by scripts/verify_llm_model.py to confirm the model is served
+# by a live inference provider.
+huggingface_hub>=0.27
 
 # ML adapter: loads existing sklearn encoders/scalers + optional trained models.
 # PINNED, not a range: the shipped preprocessing artefacts under

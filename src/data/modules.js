@@ -1,13 +1,98 @@
 /**
+ * The six top-level sections FarmIQ is organised into.
+ *
+ * Every module belongs to exactly one section. ``home`` owns no browseable
+ * tools — it is the overview screen itself, plus the alerts surface — so the
+ * hub lists it only when it has modules (see ``browsableModules``).
+ */
+export const sections = [
+  {
+    key: "home",
+    label: "Home",
+    short: "Overview, today's plan and alerts",
+    icon: "home",
+  },
+  {
+    key: "farm",
+    label: "My Farm",
+    short: "Farms, crops, soil, sensors and devices",
+    icon: "farm",
+  },
+  {
+    key: "advisor",
+    label: "AI Farm Advisor",
+    short: "Guidance from the ML models and knowledge base",
+    icon: "sparkles",
+  },
+  {
+    key: "insights",
+    label: "Insights & Analytics",
+    short: "Yield, market, reports and prediction history",
+    icon: "chart",
+  },
+  {
+    key: "knowledge",
+    label: "Knowledge Centre",
+    short: "Trusted guides and government schemes",
+    icon: "book",
+  },
+  {
+    key: "admin",
+    label: "Settings & Administration",
+    short: "Profile, devices, roles and model health",
+    icon: "settings",
+  },
+];
+
+/** Look up a section descriptor by key. */
+export const sectionByKey = (key) => sections.find((item) => item.key === key);
+
+/**
+ * Which bottom-navigation tab a section belongs to.
+ *
+ * The Knowledge Centre and Settings sections have no tab of their own; they are
+ * reached through "More", so opening one of their modules keeps "More" lit
+ * instead of highlighting an unrelated tab.
+ */
+const SECTION_TO_NAV = {
+  home: "home",
+  farm: "farm",
+  advisor: "advisor",
+  insights: "insights",
+  knowledge: "more",
+  admin: "more",
+};
+
+/** Active bottom-nav key for a section (defaults to Home). */
+export const navKeyForSection = (section) => SECTION_TO_NAV[section] ?? "home";
+
+/**
+ * Role allowed to open the administrative tools.
+ *
+ * Mirrors the roles the backend validates (VALID_ROLES in
+ * backend/app/config.py). FarmIQ has no dedicated administrator role, so the
+ * technical/advisory role is treated as the authorised one.
+ */
+export const ADMIN_ROLE = "agricultural_expert";
+
+/** True when this user may open administrative/MLOps modules. */
+export const canAccessAdminTools = (user) => user?.role === ADMIN_ROLE;
+
+/**
  * Master catalog of every FarmIQ module/tool.
  * Used by ModuleHub (browsing) and ModuleScreen (rendering).
+ *
+ * ``section``  — the top-level section this module belongs to (see ``sections``).
+ * ``contextual`` — reachable from within its section's screens rather than as a
+ *                  primary destination in the browse grid.
+ * ``adminOnly``  — hidden unless the signed-in role is ``ADMIN_ROLE``.
  */
 export const moduleCatalog = [
   {
     key: "farm-management",
     title: "Farm Management",
     short: "Farms, fields, crops and growth stages",
-    group: "Manage",
+    section: "farm",
     color: "bg-[#E6F3E8] text-[#216B45]",
     icon: "farm",
   },
@@ -15,7 +100,7 @@ export const moduleCatalog = [
     key: "crop-recommendation",
     title: "Crop Recommendation",
     short: "Find crops suited to your field",
-    group: "Plan",
+    section: "advisor",
     color: "bg-[#E6F3E8] text-[#216B45]",
     icon: "crop",
   },
@@ -23,7 +108,7 @@ export const moduleCatalog = [
     key: "fertilizer",
     title: "Fertilizer Recommendation",
     short: "Nutrient guidance and precautions",
-    group: "Plan",
+    section: "advisor",
     color: "bg-[#FFF2DA] text-[#986313]",
     icon: "flask",
   },
@@ -31,7 +116,7 @@ export const moduleCatalog = [
     key: "organic-farming",
     title: "Organic Farming Advisor",
     short: "Compare conventional, organic and integrated methods",
-    group: "Plan",
+    section: "advisor",
     color: "bg-[#E6F3E8] text-[#216B45]",
     icon: "leaf",
   },
@@ -39,7 +124,7 @@ export const moduleCatalog = [
     key: "drought-management",
     title: "Drought Management",
     short: "Water conservation and dry-spell guidance",
-    group: "Plan",
+    section: "advisor",
     color: "bg-[#E5F3F7] text-[#28778A]",
     icon: "drought",
   },
@@ -47,7 +132,7 @@ export const moduleCatalog = [
     key: "irrigation",
     title: "Smart Irrigation",
     short: "Water at the right time and amount",
-    group: "Monitor",
+    section: "advisor",
     color: "bg-[#E5F3F7] text-[#28778A]",
     icon: "drop",
   },
@@ -55,7 +140,7 @@ export const moduleCatalog = [
     key: "soil",
     title: "Soil Health",
     short: "pH, EC, moisture and NPK readings",
-    group: "Monitor",
+    section: "farm",
     color: "bg-[#EFEBDD] text-[#76683A]",
     icon: "soil",
   },
@@ -63,7 +148,7 @@ export const moduleCatalog = [
     key: "sensors",
     title: "IoT Sensor Monitoring",
     short: "Live and historical farm readings",
-    group: "Monitor",
+    section: "farm",
     color: "bg-[#E5F3F7] text-[#28778A]",
     icon: "signal",
   },
@@ -71,7 +156,8 @@ export const moduleCatalog = [
     key: "sensor-simulator",
     title: "Sensor Simulator",
     short: "Test the pipeline with demo readings",
-    group: "Monitor",
+    section: "farm",
+    contextual: true,
     color: "bg-[#FFF2DA] text-[#986313]",
     icon: "signal",
   },
@@ -79,7 +165,7 @@ export const moduleCatalog = [
     key: "yield",
     title: "Yield Prediction",
     short: "Estimate production with uncertainty",
-    group: "Plan",
+    section: "insights",
     color: "bg-[#EAF1DE] text-[#657638]",
     icon: "chart",
   },
@@ -87,7 +173,7 @@ export const moduleCatalog = [
     key: "market",
     title: "Market Intelligence",
     short: "Prices, trends, forecasts and alerts",
-    group: "Plan",
+    section: "insights",
     color: "bg-[#F2EAF7] text-[#745088]",
     icon: "market",
   },
@@ -95,7 +181,7 @@ export const moduleCatalog = [
     key: "image-analysis",
     title: "Crop Image Analysis",
     short: "Check crop photos for possible issues",
-    group: "Monitor",
+    section: "advisor",
     color: "bg-[#FCEBDD] text-[#A7602A]",
     icon: "camera",
   },
@@ -103,7 +189,7 @@ export const moduleCatalog = [
     key: "knowledge",
     title: "Knowledge Center",
     short: "Trusted agricultural guides and sources",
-    group: "Learn",
+    section: "knowledge",
     color: "bg-[#E9F1EA] text-[#3C6A4D]",
     icon: "book",
   },
@@ -111,7 +197,7 @@ export const moduleCatalog = [
     key: "schemes",
     title: "Government Schemes",
     short: "Verified subsidy and support schemes",
-    group: "Learn",
+    section: "knowledge",
     color: "bg-[#E9F1EA] text-[#3C6A4D]",
     icon: "shield",
   },
@@ -119,7 +205,7 @@ export const moduleCatalog = [
     key: "calendar",
     title: "Farming Calendar",
     short: "Activities, tasks and reminders",
-    group: "Manage",
+    section: "farm",
     color: "bg-[#E8EEF8] text-[#4F6590]",
     icon: "calendar",
   },
@@ -127,7 +213,7 @@ export const moduleCatalog = [
     key: "alerts",
     title: "Alerts & Notifications",
     short: "Weather, sensor and market updates",
-    group: "Manage",
+    section: "home",
     color: "bg-[#FCE9E5] text-[#A55243]",
     icon: "bell",
   },
@@ -135,7 +221,7 @@ export const moduleCatalog = [
     key: "reports",
     title: "Reports & Analytics",
     short: "Farm performance and saved advice",
-    group: "Manage",
+    section: "insights",
     color: "bg-[#E9EAF7] text-[#575E95]",
     icon: "report",
   },
@@ -143,7 +229,8 @@ export const moduleCatalog = [
     key: "devices",
     title: "Device Management",
     short: "Pair, assign and configure devices",
-    group: "Manage",
+    section: "farm",
+    contextual: true,
     color: "bg-[#E5F3F7] text-[#28778A]",
     icon: "device",
   },
@@ -151,7 +238,7 @@ export const moduleCatalog = [
     key: "settings",
     title: "Profile & Settings",
     short: "Language, units and preferences",
-    group: "Manage",
+    section: "admin",
     color: "bg-[#EDF1EE] text-[#52665B]",
     icon: "settings",
   },
@@ -159,7 +246,8 @@ export const moduleCatalog = [
     key: "mlops",
     title: "MLOps Dashboard",
     short: "Models, data quality and API health",
-    group: "Administration",
+    section: "admin",
+    adminOnly: true,
     color: "bg-[#E9EAF7] text-[#575E95]",
     icon: "model",
   },
@@ -167,7 +255,8 @@ export const moduleCatalog = [
     key: "hackathon-demo",
     title: "Hackathon Demo Mode",
     short: "Interactive synthetic farm for judges",
-    group: "Administration",
+    section: "admin",
+    adminOnly: true,
     color: "bg-[#FFF8EA] text-[#8A6D2B]",
     icon: "sparkles",
   },
@@ -175,11 +264,31 @@ export const moduleCatalog = [
     key: "admin",
     title: "Administration & Roles",
     short: "Users, permissions and audit activity",
-    group: "Administration",
+    section: "admin",
+    adminOnly: true,
     color: "bg-[#F2EAF7] text-[#745088]",
     icon: "shield",
   },
 ];
+
+/** Look up a module descriptor by key. */
+export const moduleByKey = (key) =>
+  moduleCatalog.find((item) => item.key === key);
+
+/**
+ * Modules a user should see as primary destinations.
+ *
+ * Contextual modules (device configuration, sensor simulation) stay in the
+ * catalogue so their routes keep working, but they are opened from the screen
+ * that owns them rather than listed as standalone tools.
+ */
+export function browsableModules(user, { includeContextual = false } = {}) {
+  return moduleCatalog.filter(
+    (item) =>
+      (includeContextual || !item.contextual) &&
+      (!item.adminOnly || canAccessAdminTools(user)),
+  );
+}
 
 /**
  * Static data for each generic module screen (metrics, summary rows).
@@ -351,45 +460,6 @@ export const settingsLanguages = [
   ["ଓଡ଼ିଆ (Odia)", "Odia"],
 ];
 
-/** Static conversation history entries. */
-export const conversations = [
-  {
-    title: "Best time to water tomatoes",
-    preview: "Based on your soil moisture...",
-    date: "Today",
-    icon: "droplet",
-    tone: "bg-[#E5F3F7] text-[#28778A]",
-  },
-  {
-    title: "Fertilizer for onion crop",
-    preview: "For your current crop stage...",
-    date: "Yesterday",
-    icon: "fertilizer",
-    tone: "bg-[#FFF2DA] text-[#9A6817]",
-  },
-  {
-    title: "Tomato market price",
-    preview: "Nashik mandi prices have...",
-    date: "12 Oct",
-    icon: "market",
-    tone: "bg-[#F2EAF7] text-[#745088]",
-  },
-  {
-    title: "Signs of leaf curl disease",
-    preview: "Look for upward curling and...",
-    date: "8 Oct",
-    icon: "leaf",
-    tone: "bg-[#E6F3E8] text-[#216B45]",
-  },
-  {
-    title: "Preparing soil for wheat",
-    preview: "Start with a deep ploughing...",
-    date: "2 Oct",
-    icon: "crop",
-    tone: "bg-[#EEF1DF] text-[#6E7934]",
-  },
-];
-
 /**
  * Quick action cards shown on the Home screen.
  * ``target`` is the module key each card opens (see ``moduleCatalog``).
@@ -425,86 +495,19 @@ export const quickActions = [
   },
 ];
 
-/** Farming advice/recommendation cards shown on the Advice screen. */
-export const recommendations = [
-  {
-    category: "Crop recommendation",
-    title: "Plant chickpea next",
-    body: "Your loamy soil and October window are a strong match for chickpea.",
-    icon: "crop",
-    tone: "bg-[#E6F3E8] text-[#216B45]",
-    tag: "92% match",
-  },
-  {
-    category: "Irrigation",
-    title: "Water tomatoes tomorrow",
-    body: "Moisture is adequate today. Irrigate lightly before 8 AM tomorrow.",
-    icon: "droplet",
-    tone: "bg-[#E5F3F7] text-[#28778A]",
-    tag: "Save 120 L",
-  },
-  {
-    category: "Fertilizer guidance",
-    title: "Nitrogen feed due soon",
-    body: "Apply 18 kg/acre in 3 days, after the next planned irrigation.",
-    icon: "fertilizer",
-    tone: "bg-[#FFF2DA] text-[#9A6817]",
-    tag: "In 3 days",
-  },
-  {
-    category: "Market information",
-    title: "Tomato price is rising",
-    body: "Nashik mandi is at ₹2,450/quintal, up 8% from last week.",
-    icon: "market",
-    tone: "bg-[#F2EAF7] text-[#745088]",
-    tag: "+8% this week",
-  },
-];
-
-/** Nav items for the bottom navigation bar. */
+/**
+ * Bottom-navigation destinations.
+ *
+ * Five entries is the most that fits legibly at 360px. The Knowledge Centre
+ * and Settings & Administration sections are reached through "More", which
+ * opens the section-grouped tool browser.
+ */
 export const navItems = [
   { key: "home", label: "Home", icon: "home" },
-  { key: "chat", label: "Assistant", icon: "bot" },
   { key: "farm", label: "My Farm", icon: "farm" },
-  { key: "history", label: "History", icon: "history" },
-];
-
-/** Crops displayed on the My Farm screen. */
-export const farmCrops = [
-  {
-    name: "Tomato",
-    stage: "Flowering",
-    icon: "crop",
-    tone: "bg-[#E9F4E9] text-[#2C7049]",
-  },
-  {
-    name: "Onion",
-    stage: "Day 42",
-    icon: "leaf",
-    tone: "bg-[#FFF2DB] text-[#A16912]",
-  },
-  {
-    name: "Wheat",
-    stage: "Day 18",
-    icon: "crop",
-    tone: "bg-[#EEF1DF] text-[#6E7934]",
-  },
-];
-
-/** Initial farm list for the Farm Management module. */
-export const defaultFarms = [
-  {
-    name: "Green Valley Farm",
-    location: "Nashik, Maharashtra",
-    area: "12.5 acres",
-    crop: "Tomato • Flowering",
-  },
-  {
-    name: "Riverbend Plot",
-    location: "Pune, Maharashtra",
-    area: "4 acres",
-    crop: "Wheat • Germination",
-  },
+  { key: "advisor", label: "Advisor", icon: "bot" },
+  { key: "insights", label: "Insights", icon: "chart" },
+  { key: "more", label: "More", icon: "menu" },
 ];
 
 /** Checklist items shown in the Farm Management add-farm form. */
@@ -515,21 +518,6 @@ export const farmChecklist = [
   "Irrigation method",
   "Farm area & units",
   "GPS location",
-];
-
-/** Default IoT devices shown in the Device Management module. */
-export const defaultDevices = [
-  {
-    name: "ESP32 Field Hub",
-    status: "Online • Green Valley Farm",
-    value: "98%",
-  },
-  {
-    name: "ESP8266 Tank Node",
-    status: "Offline • Last seen 18m ago",
-    value: "—",
-  },
-  { name: "Soil Probe S1", status: "Online • Tomato field", value: "62%" },
 ];
 
 /** Default reminder entries for the Farming Calendar module. */
@@ -594,22 +582,4 @@ export const knowledgeTopicTags = [
   "Irrigation",
   "Pests",
   "Weather",
-];
-
-/**
- * Seed (demo) messages shown in the Chat screen on first load.
- * sender: "ai" | "farmer"
- */
-export const seedChatMessages = [
-  {
-    id: 1,
-    sender: "ai",
-    text: "Hello! I'm your FarmIQ assistant. Ask me anything about your crops, soil, weather, or market.",
-  },
-  { id: 2, sender: "farmer", text: "When should I water my crops?" },
-  {
-    id: 3,
-    sender: "ai",
-    text: "Let's check your soil moisture, crop stage, and recent rainfall before deciding.",
-  },
 ];

@@ -10,18 +10,19 @@ import { knowledgeArticles, knowledgeTopicTags } from "@/data/modules";
  * @param {Function} props.onAsk - Navigate to the assistant screen.
  */
 export default function KnowledgeCenter({ onAsk }) {
-  const [query, setQuery]     = useState("");
+  const [query, setQuery] = useState("");
   const [article, setArticle] = useState(null);
 
   const filteredArticles = useMemo(
     () =>
       knowledgeArticles.filter((item) =>
-        item.join(" ").toLowerCase().includes(query.toLowerCase())
+        item.join(" ").toLowerCase().includes(query.toLowerCase()),
       ),
-    [query]
+    [query],
   );
 
   if (article) {
+    const [title, category, source] = article;
     return (
       <div className="space-y-4">
         <button
@@ -35,21 +36,17 @@ export default function KnowledgeCenter({ onAsk }) {
         <article className="rounded-[22px] border border-[#E0E8E2] bg-white p-5">
           <DemoBadge status="Verified source" />
           <h2 className="mt-4 text-[21px] font-extrabold leading-tight text-[#1D3A2B]">
-            {article}
+            {title}
           </h2>
           <p className="mt-2 text-[10px] font-semibold text-[#789085]">
-            Published by ICAR Extension Network • 12 Sep 2025
+            {category} • {source}
           </p>
           <p className="mt-5 text-[12px] leading-6 text-[#4F6559]">
-            Regular field inspection is the best first step. Check new growth,
-            leaf color, soil moisture and pest activity. Record what you observe
-            before choosing treatment. Use locally approved guidance and follow
-            label precautions.
+            Ask the assistant about this topic and it will answer from the
+            stored guide and its sources.
           </p>
           <div className="mt-4 rounded-xl bg-[#F1F6F2] p-4 text-[11px] leading-5 text-[#486050]">
-            <b>Source note:</b> FarmIQ uses retrieved agricultural sources to
-            help answer follow-up questions. Always verify high-impact advice
-            with a local expert.
+            <b>Note:</b> Always verify high-impact advice with a local expert.
           </div>
         </article>
 
@@ -93,7 +90,7 @@ export default function KnowledgeCenter({ onAsk }) {
           filteredArticles.map(([title, category, source], index) => (
             <button
               key={title}
-              onClick={() => setArticle(title)}
+              onClick={() => setArticle([title, category, source])}
               className={`flex w-full items-center gap-3 p-4 text-left ${
                 index ? "border-t border-[#EDF1EE]" : ""
               }`}

@@ -36,6 +36,10 @@ DEFAULT_EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 
 DEFAULT_COLLECTION_NAME = "farmiq_agri_docs"
 
+# ``LLM_PROVIDER`` values that select the Hugging Face Inference Providers
+# client. Any other value falls back to the OpenAI-compatible client.
+HUGGINGFACE_PROVIDER_NAMES = frozenset({"huggingface", "hf", "hf-inference"})
+
 
 def _env_bool(name: str, default: bool) -> bool:
     """Read a boolean environment variable, tolerating common spellings."""
@@ -111,6 +115,18 @@ class Settings:
     llm_max_tokens: int = 800
     llm_request_timeout: float = 60.0
 
+    # --- Hugging Face Inference Providers ------------------------------------
+    # Used when ``llm_provider`` is one of HUGGINGFACE_PROVIDER_NAMES. The
+    # token is a Hugging Face access token (read scope is enough for public
+    # models) and is never logged. ``hf_model_id`` is any model served by an
+    # Inference Provider (e.g. "meta-llama/Llama-3.1-8B-Instruct").
+    # ``hf_provider`` optionally pins a single provider ("hf-inference",
+    # "together", "deepinfra", "novita", "groq", ...); when it is unset the Hub
+    # router selects the first available provider for the model.
+    hf_token: Optional[str] = None
+    hf_model_id: Optional[str] = None
+    hf_provider: Optional[str] = None
+
     # --- Logging -------------------------------------------------------------
     log_level: str = "INFO"
 
@@ -120,8 +136,20 @@ class Settings:
             logger.debug("LLM_API_KEY is not set; answer generation will be unavailable.")
 
     @property
+    def is_huggingface_provider(self) -> bool:
+        """True when the configured provider is a Hugging Face Inference one."""
+        return (self.llm_provider or "").strip().lower() in HUGGINGFACE_PROVIDER_NAMES
+
+    @property
     def llm_configured(self) -> bool:
         """True when an LLM provider can be used for answer generation."""
+        if self.is_huggingface_provider:
+            # HF_TOKEN / HF_MODEL_ID are the documented names; LLM_API_KEY /
+            # LLM_MODEL are accepted as aliases so a deployment can configure
+            # the provider once, under either naming.
+            return bool(self.hf_token or self.llm_api_key) and bool(
+                self.hf_model_id or self.llm_model
+            )
         return bool(self.llm_api_key) and bool(self.llm_model)
 
     def ensure_dirs(self) -> None:
@@ -175,6 +203,9 @@ def get_settings() -> Settings:
         llm_temperature=_env_float("LLM_TEMPERATURE", 0.2),
         llm_max_tokens=_env_int("LLM_MAX_TOKENS", 800),
         llm_request_timeout=_env_float("LLM_REQUEST_TIMEOUT", 60.0),
+        hf_token=os.getenv("HF_TOKEN") or None,
+        hf_model_id=os.getenv("HF_MODEL_ID") or None,
+        hf_provider=os.getenv("HF_PROVIDER") or None,
         log_level=(os.getenv("LOG_LEVEL") or "INFO").upper(),
     )
 

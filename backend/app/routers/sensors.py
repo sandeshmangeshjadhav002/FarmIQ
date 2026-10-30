@@ -83,6 +83,7 @@ def ingest_reading(
             "temperature": payload.temperature,
             "humidity": payload.humidity,
             "soil_moisture_raw": payload.soil_moisture_raw,
+            "pressure": payload.pressure,
         },
     )
     return SensorReadingOut(**row)

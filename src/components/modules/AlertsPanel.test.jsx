@@ -66,7 +66,9 @@ describe("AlertsPanel", () => {
 
     expect(await screen.findByText("No alerts yet")).toBeInTheDocument();
     expect(
-      screen.getByText(/FarmIQ never invents an alert/),
+      screen.getByText(
+        "Alerts appear when something on your farm needs attention.",
+      ),
     ).toBeInTheDocument();
     // Nothing to act on → "Mark all read" must be disabled.
     expect(

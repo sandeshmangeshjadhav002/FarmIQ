@@ -11,6 +11,11 @@ export const iconPaths = {
       <path d="M12 2v4M8 12h.01M16 12h.01M9 16h6" />
     </>
   ),
+  book: (
+    <>
+      <path d="M4 4h7a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4V4ZM20 4h-3a3 3 0 0 0-3 3v14a3 3 0 0 1 3-3h3V4Z" />
+    </>
+  ),
   calendar: (
     <>
       <rect x="3" y="5" width="18" height="16" rx="3" />
@@ -124,6 +129,11 @@ export const iconPaths = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  report: (
+    <>
+      <path d="M5 3h14v18H5zM9 16v-3M12 16V8M15 16v-5" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="7" />

@@ -65,3 +65,57 @@ def test_list_readings(app_client, fake_client):
 def test_ingest_requires_some_auth(app_client):
     body = {"device_id": "x", "soil_moisture": 10.0}
     assert app_client.post("/api/sensor-readings/ingest", json=body).status_code == 401
+
+
+# ── BME680 air measurements ──────────────────────────────────────────────────
+
+def test_ingest_stores_bme680_pressure(app_client, fake_client):
+    """An ESP32 + BME680 node's pressure reading must be persisted, not dropped."""
+    h = _auth(fake_client)
+    device = _pair_device(app_client, h)
+    did = device["id"]
+    body = {
+        "device_id": did,
+        "temperature": 28.4,
+        "humidity": 61.2,
+        "pressure": 1008.3,
+    }
+    headers = {"Authorization": f"Bearer {device['device_token']}", "X-Device-Id": did}
+    r = app_client.post("/api/sensor-readings/ingest", json=body, headers=headers)
+    assert r.status_code == 201, r.text
+    out = r.json()
+    assert out["pressure"] == 1008.3
+    assert out["temperature"] == 28.4
+    assert out["humidity"] == 61.2
+    assert out["is_demo"] is False
+
+    stored = fake_client.tables["sensor_readings"][-1]
+    assert stored["pressure"] == 1008.3
+
+
+def test_ingest_without_pressure_leaves_it_null(app_client, fake_client):
+    """A soil-only probe must not have a pressure value invented for it."""
+    h = _auth(fake_client)
+    device = _pair_device(app_client, h)
+    r = app_client.post(
+        "/api/sensor-readings/ingest",
+        json={"device_id": device["id"], "soil_moisture": 44.0},
+        headers=h,
+    )
+    assert r.status_code == 201, r.text
+    assert r.json()["pressure"] is None
+    assert "pressure" not in fake_client.tables["sensor_readings"][-1]
+
+
+def test_ingest_rejects_implausible_pressure(app_client, fake_client):
+    """Outside 300–1100 hPa cannot come from a working BME680."""
+    h = _auth(fake_client)
+    device = _pair_device(app_client, h)
+    for bad in (1200.0, 12.0, -1008.0):
+        r = app_client.post(
+            "/api/sensor-readings/ingest",
+            json={"device_id": device["id"], "pressure": bad},
+            headers=h,
+        )
+        assert r.status_code == 422, f"{bad} should be rejected"
+

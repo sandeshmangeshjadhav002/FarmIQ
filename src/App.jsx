@@ -15,6 +15,7 @@ import ProfilePanel from "@/components/layout/ProfilePanel";
 import ScreenLoader from "@/components/common/ScreenLoader";
 import ModuleHub from "@/components/modules/ModuleHub";
 import ModuleScreen from "@/components/modules/ModuleScreen";
+import { moduleByKey, navKeyForSection } from "@/data/modules";
 
 // Detect if running inside Capacitor (Android / iOS native app).
 // When running as a native app we skip the desktop sidebar entirely.
@@ -27,10 +28,11 @@ const BACK_MAP = {
   home: null, // top — exits app
   chat: "home",
   farm: "home",
-  advice: "home",
+  advisor: "home",
+  insights: "home",
   history: "home",
   more: "home",
-  module: "more",
+  module: "more", // overridden by the module's own return screen (see below)
 };
 
 // Screens are split into their own chunks: only the screen the farmer opens is
@@ -40,7 +42,8 @@ const BACK_MAP = {
 const HomeScreen = lazy(() => import("@/pages/HomeScreen"));
 const ChatScreen = lazy(() => import("@/pages/ChatScreen"));
 const FarmScreen = lazy(() => import("@/pages/FarmScreen"));
-const AdviceScreen = lazy(() => import("@/pages/AdviceScreen"));
+const AdvisorScreen = lazy(() => import("@/pages/AdvisorScreen"));
+const InsightsScreen = lazy(() => import("@/pages/InsightsScreen"));
 const HistoryScreen = lazy(() => import("@/pages/HistoryScreen"));
 const LoginScreen = lazy(() => import("@/pages/LoginScreen"));
 const RegisterScreen = lazy(() => import("@/pages/RegisterScreen"));
@@ -64,6 +67,11 @@ export default function App() {
   const [language, setLanguage] = useState("English");
   const [languageOpen, setLanguageOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState("crop-recommendation");
+  // Where the hardware/UI back button returns to from an open module. Modules
+  // are opened from several places (Home quick actions, an advisor shortcut,
+  // My Farm, the tool browser) so a single static parent would send farmers to
+  // the wrong screen.
+  const [moduleBack, setModuleBack] = useState("home");
 
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -72,8 +80,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const openModule = useCallback((module) => {
+  const openModule = useCallback((module, backTo = "home") => {
     setSelectedModule(module);
+    setModuleBack(backTo);
     setScreen("module");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
@@ -146,7 +155,7 @@ export default function App() {
             setLanguageOpen(false);
             return;
           }
-          const prev = BACK_MAP[screen];
+          const prev = screen === "module" ? moduleBack : BACK_MAP[screen];
           if (prev) {
             setScreen(prev);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -162,7 +171,7 @@ export default function App() {
     return () => {
       listener?.remove?.();
     };
-  }, [screen, profileOpen, languageOpen]);
+  }, [screen, profileOpen, languageOpen, moduleBack]);
 
   // ── Auth screens (no desktop nav / bottom nav) ────────────────────────────
   if (screen === "login") {
@@ -181,6 +190,13 @@ export default function App() {
   }
 
   // ── Main app ──────────────────────────────────────────────────────────────
+  // Keep the correct bottom-nav tab lit while a module is open, so the section
+  // the tool belongs to stays highlighted.
+  const activeTab =
+    screen === "module"
+      ? navKeyForSection(moduleByKey(selectedModule)?.section)
+      : screen;
+
   return (
     <div
       className={`relative min-h-dvh bg-[#E9EFEA] bg-[url('/app-bg.jpg')] bg-cover bg-center bg-fixed ${
@@ -193,9 +209,11 @@ export default function App() {
       {!IS_NATIVE && (
         <DesktopNavigation
           activeModule={screen === "module" ? selectedModule : undefined}
+          activeNav={activeTab}
           onAssistant={() => navigate("chat")}
-          onHome={() => navigate("home")}
-          onOpen={openModule}
+          onNavigate={navigate}
+          onOpen={(key) => openModule(key, "more")}
+          user={user}
         />
       )}
 
@@ -209,7 +227,6 @@ export default function App() {
               language={language}
               navigate={navigate}
               openLanguages={openLanguages}
-              openTools={() => navigate("more")}
               openModule={openModule}
               user={user}
               onOpenProfile={() => setProfileOpen(true)}
@@ -223,22 +240,50 @@ export default function App() {
               openModule={openModule}
             />
           )}
-          {screen === "farm" && <FarmScreen navigate={navigate} />}
-          {screen === "advice" && <AdviceScreen navigate={navigate} />}
-          {screen === "history" && <HistoryScreen navigate={navigate} />}
+          {screen === "farm" && (
+            <FarmScreen
+              navigate={navigate}
+              openModule={(key) => openModule(key, "farm")}
+            />
+          )}
+          {screen === "advisor" && (
+            <AdvisorScreen
+              navigate={navigate}
+              openModule={(key) => openModule(key, "advisor")}
+              user={user}
+            />
+          )}
+          {screen === "insights" && (
+            <InsightsScreen
+              navigate={navigate}
+              openModule={(key) => openModule(key, "insights")}
+              user={user}
+            />
+          )}
+          {screen === "history" && (
+            <HistoryScreen
+              navigate={navigate}
+              openModule={(key) => openModule(key, "history")}
+            />
+          )}
           {screen === "more" && (
-            <ScreenShell active="home" navigate={navigate}>
-              <ModuleHub onBack={() => navigate("home")} onOpen={openModule} />
+            <ScreenShell active="more" navigate={navigate}>
+              <ModuleHub
+                onBack={() => navigate("home")}
+                onOpen={(key) => openModule(key, "more")}
+                user={user}
+              />
             </ScreenShell>
           )}
           {screen === "module" && (
-            <ScreenShell active="home" navigate={navigate}>
+            <ScreenShell active={activeTab} navigate={navigate}>
               <ModuleScreen
                 currentLanguage={language}
                 moduleKey={selectedModule}
                 onAsk={() => navigate("chat")}
-                onBack={() => navigate("more")}
+                onBack={() => navigate(moduleBack)}
                 onLanguage={setLanguage}
+                user={user}
               />
             </ScreenShell>
           )}
