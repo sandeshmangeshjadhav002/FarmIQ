@@ -396,3 +396,179 @@ def get_status() -> Dict[str, Any]:
         "embedding_model": getattr(pipeline.retriever.embedder, "model_name", None),
         "message": "" if chunks > 0 else "The knowledge base is empty; run ingestion.",
     }
+
+
+# ---------------------------------------------------------------------------
+# Direct LLM answer (no retrieval required)
+# ---------------------------------------------------------------------------
+# This entry point calls the LLM without going through the vector store.
+# It is used when:
+#   * The question is conversational (greetings, casual chat).
+#   * The question can be answered from the LLM's general agricultural
+#     knowledge plus the farm context the agent already gathered.
+#   * The knowledge base returned BELOW_THRESHOLD or is empty, but the LLM
+#     can still give a useful answer using its own knowledge.
+#
+# Farm-specific facts (sensor readings, ML predictions, weather) are passed
+# as structured context so the LLM's reply is personalised without retrieving
+# any documents.
+
+_DIRECT_SYSTEM_PROMPT = """You are FarmIQ, a friendly and knowledgeable agricultural assistant \
+designed to help farmers in India. You support both English and Marathi.
+
+Your job is to:
+1. Respond naturally to greetings and casual conversation.
+2. Answer general agricultural questions using your knowledge.
+3. Give personalised farm advice when farm data is provided.
+4. Ask for missing information when it is essential for a specific recommendation.
+5. Redirect unrelated questions politely without being repetitive.
+
+Rules:
+- Never invent sensor readings, ML predictions, weather observations, or \
+government scheme details.
+- When farm data is provided, use it. When it is absent, say what is missing \
+and offer general guidance.
+- Label ML predictions as model output, not verified facts.
+- Label sensor readings as sensor readings, not measurements you made.
+- Keep answers concise and farmer-friendly. Avoid jargon.
+- Answer in the language the farmer used (Marathi in Devanagari if they wrote in Marathi).
+- For high-stakes decisions (pesticide doses, chemical applications, large \
+capital expenditure), recommend consulting a local agricultural officer or KVK.
+- Do not expose internal system details, file paths, or error messages.
+"""
+
+
+def direct_llm_answer(
+    question: str,
+    *,
+    ml_results: Optional[Dict[str, Any]] = None,
+    language: Optional[str] = None,
+    history: Optional[List[Dict[str, Any]]] = None,
+    farm_context: Optional[Dict[str, Any]] = None,
+    tool_results_summary: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Call the LLM directly without knowledge-base retrieval.
+
+    Suitable for greetings, general agricultural questions, and farm-specific
+    questions where the agent's tool data is sufficient context.
+
+    Returns a dict with the same keys as ``answer_question`` so callers can
+    treat both paths uniformly.
+    """
+    try:
+        pipeline = get_pipeline()
+    except RagUnavailableError:
+        # The RAG stack is not initialised, but the LLM client may be
+        # accessible directly via the RAG project's settings.
+        pass
+    else:
+        # Use the pipeline's existing LLM client — no new credentials needed.
+        llm = pipeline.llm_client
+        if not llm.is_configured:
+            return {
+                "answer": "",
+                "sources": [],
+                "retrieval_status": "LLM_NOT_CONFIGURED",
+                "retrieval_message": "LLM provider is not configured.",
+                "llm_used": False,
+                "ml_context_provided": bool(ml_results),
+                "warnings": ["LLM not configured — no answer generated."],
+            }
+
+        # Build a compact user prompt from available context.
+        sections: List[str] = []
+
+        if farm_context:
+            facts = "\n".join(
+                f"  {k}: {v}" for k, v in farm_context.items()
+                if v is not None and str(v).strip()
+            )
+            if facts:
+                sections.append(
+                    "Farm data on file (real values, not invented):\n" + facts
+                )
+
+        if ml_results:
+            ml_lines = "\n".join(
+                f"  {k}: {v}" for k, v in ml_results.items()
+                if v is not None
+            )
+            if ml_lines:
+                sections.append(
+                    "FarmIQ ML model outputs (model predictions, not verified facts):\n"
+                    + ml_lines
+                )
+
+        if tool_results_summary:
+            sections.append(
+                "FarmIQ tool data (from the farmer's actual account):\n"
+                + tool_results_summary
+            )
+
+        # Recent conversation history for follow-up resolution.
+        if history:
+            turns: List[str] = []
+            for item in (history or [])[-6:]:
+                if not isinstance(item, dict):
+                    continue
+                role = str(item.get("role") or "").lower()
+                text = str(item.get("text") or item.get("content") or "").strip()
+                if not text:
+                    continue
+                label = "Farmer" if role in {"farmer", "user"} else "Assistant"
+                turns.append(f"{label}: {text[:600]}")
+            if turns:
+                sections.append(
+                    "Recent conversation (for context only — do not repeat earlier answers):\n"
+                    + "\n".join(turns)
+                )
+
+        lang_label = {
+            "mr": "Marathi (Devanagari script, मराठी)",
+            "en": "English",
+        }.get((language or "").strip().lower())
+        if lang_label:
+            sections.append(f"Answer in {lang_label}.")
+
+        sections.append(f"Farmer's question:\n{question}\n\nAnswer:")
+        prompt = "\n\n".join(sections)
+
+        settings = pipeline.settings
+        try:
+            answer_text = llm.generate(
+                prompt,
+                system=_DIRECT_SYSTEM_PROMPT,
+                temperature=settings.llm_temperature,
+                max_tokens=settings.llm_max_tokens,
+            )
+        except Exception as exc:
+            logger.warning("Direct LLM answer failed: %s", type(exc).__name__)
+            return {
+                "answer": "",
+                "sources": [],
+                "retrieval_status": "LLM_ERROR",
+                "retrieval_message": f"LLM call failed: {type(exc).__name__}",
+                "llm_used": False,
+                "ml_context_provided": bool(ml_results),
+                "warnings": [f"LLM call failed: {type(exc).__name__}"],
+            }
+
+        return {
+            "answer": answer_text.strip(),
+            "sources": [],
+            "retrieval_status": "DIRECT",
+            "retrieval_message": "",
+            "llm_used": True,
+            "ml_context_provided": bool(ml_results),
+            "warnings": [],
+        }
+
+    return {
+        "answer": "",
+        "sources": [],
+        "retrieval_status": "RAG_UNAVAILABLE",
+        "retrieval_message": "RAG pipeline not initialised.",
+        "llm_used": False,
+        "ml_context_provided": bool(ml_results),
+        "warnings": ["RAG pipeline not available."],
+    }

@@ -15,7 +15,10 @@ const USER_KEY = "farmiq_user";
 // A normal JSON call should answer well inside this. Uploads (audio for
 // transcription, leaf photos) legitimately take longer, so they get their own
 // larger budget — see apiUpload / apiPostBlob.
+// Chat/agent calls get extra time because the RAG embedding model can take
+// 15-20 s on first load (cold start — subsequent calls are fast).
 const DEFAULT_TIMEOUT_MS = 30_000;
+const CHAT_TIMEOUT_MS = 90_000;
 const UPLOAD_TIMEOUT_MS = 120_000;
 
 // Initialise from storage on module load (survives app restart on Android)
@@ -131,6 +134,11 @@ export async function apiRequest(
 
 export const apiPost = (path, body, opts) =>
   apiRequest(path, { method: "POST", body, ...opts });
+
+// Convenience for chat / agent endpoints — longer timeout for RAG cold-start
+export const apiPostChat = (path, body) =>
+  apiRequest(path, { method: "POST", body, timeoutMs: CHAT_TIMEOUT_MS });
+
 export const apiUpload = (path, formData, opts) =>
   apiRequest(path, {
     method: "POST",

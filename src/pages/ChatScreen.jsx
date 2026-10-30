@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/common/Icon";
 import TextInput from "@/components/common/TextInput";
 import ScreenShell from "@/components/layout/ScreenShell";
-import { apiPost } from "@/lib/apiClient";
+import { apiPost, apiPostChat } from "@/lib/apiClient";
 import {
   VOICE_LANGUAGES,
   DEFAULT_VOICE_LANG,
@@ -353,7 +353,6 @@ export default function ChatScreen({
     setMessages([
       { id: "greet", sender: "ai", text: GREETINGS[voiceLang] || GREETINGS.en },
     ]);
-    setVoiceCtx(null);
   }, [voiceLang]);
 
   // Auto-scroll to bottom
@@ -404,7 +403,7 @@ export default function ChatScreen({
     setSending(true);
 
     try {
-      const res = await apiPost("/api/agent/chat", {
+      const res = await apiPostChat("/api/agent/chat", {
         message: text,
         language: voiceLang,
         history,

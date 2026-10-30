@@ -1258,29 +1258,172 @@ def _explain(
     history: Optional[list[dict]],
     results: dict[str, dict],
 ) -> tuple[Optional[str], bool, list[dict]]:
-    """Ask the existing RAG assistant to explain the gathered evidence.
+    """Ask the LLM to generate a natural answer from gathered evidence.
 
-    Never raises: when the assistant is unavailable the caller still has the
-    structured answer.
+    Strategy:
+    1. Build a compact plain-text summary of the tool results (sensor
+       readings, weather, ML predictions, farm profile).
+    2. Call ``rag_service.direct_llm_answer`` — the LLM generates a reply
+       using that context and its own agricultural knowledge.  This handles
+       greetings, general questions, and farm-specific questions equally well
+       because it does **not** require the knowledge base to contain
+       relevant documents.
+    3. Optionally attempt RAG retrieval and append any cited passages to
+       the answer.  If the knowledge base is empty or the question does not
+       match any document, this step is silently skipped — the direct answer
+       stands on its own.
+
+    Never raises: when the LLM is unavailable the caller still has the
+    structured section answer.
     """
     from app import rag_service
 
+    farm_ctx = llm_context(results)
+    ml_ctx = ml_results(results)
+    tool_summary = _tool_results_summary(results, lang)
+
+    # ── Primary: direct LLM call ─────────────────────────────────────────
+    direct = rag_service.direct_llm_answer(
+        question,
+        ml_results=ml_ctx,
+        language=lang,
+        history=history,
+        farm_context=farm_ctx,
+        tool_results_summary=tool_summary,
+    )
+    direct_text = str(direct.get("answer") or "").strip()
+    direct_used = bool(direct.get("llm_used"))
+
+    # ── Fallback: RAG answer_question ────────────────────────────────────
+    # Used when direct_llm_answer is unavailable (LLM not configured, pipeline
+    # not loaded) so that tests which mock only answer_question still work, and
+    # so that documents in the knowledge base are surfaced when available.
+    rag_text: str = ""
+    rag_used: bool = False
+    rag_sources: list[dict] = []
     try:
-        response = rag_service.answer_question(
+        rag_resp = rag_service.answer_question(
             question,
-            ml_results=ml_results(results),
+            ml_results=ml_ctx,
             language=lang,
             history=history,
-            farm_context=llm_context(results),
+            farm_context=farm_ctx,
         )
+        status = rag_resp.get("retrieval_status", "")
+        raw_answer = str(rag_resp.get("answer") or "").strip()
+        # Use the RAG answer when:
+        # (a) the direct call produced nothing, OR
+        # (b) RAG found real documents (OK status) — append sources regardless.
+        if status == "OK" and raw_answer:
+            rag_text = raw_answer
+            rag_used = bool(rag_resp.get("llm_used"))
+            rag_sources = list(rag_resp.get("sources") or [])
+        elif not direct_text and raw_answer and not _is_retrieval_error_message(raw_answer):
+            # RAG returned something useful (e.g. a mocked answer in tests)
+            rag_text = raw_answer
+            rag_used = bool(rag_resp.get("llm_used"))
+            rag_sources = list(rag_resp.get("sources") or [])
     except RagUnavailableError as exc:
-        logger.info("Agent explanation unavailable: %s", exc)
-        return None, False, []
+        logger.info("Agent RAG fallback unavailable: %s", exc)
     except Exception as exc:  # noqa: BLE001 — the answer must survive this
-        logger.warning("Agent explanation failed: %s", type(exc).__name__)
-        return None, False, []
+        logger.warning("Agent RAG fallback failed: %s", type(exc).__name__)
 
-    text = str(response.get("answer") or "").strip()
-    if not text:
-        return None, False, []
-    return text, bool(response.get("llm_used")), list(response.get("sources") or [])
+    # ── Combine ──────────────────────────────────────────────────────────
+    # Direct LLM answer takes precedence; RAG sources are always appended
+    # when available.
+    if direct_text:
+        return direct_text, direct_used, rag_sources
+    if rag_text:
+        return rag_text, rag_used, rag_sources
+    return None, False, []
+
+
+def _tool_results_summary(results: dict[str, dict], lang: str) -> Optional[str]:
+    """Build a compact text block of what the tools found, for the LLM prompt."""
+    lines: list[str] = []
+
+    farm = _data(results, "get_farm_profile") or {}
+    if farm:
+        parts = [v for k, v in farm.items()
+                 if k in ("name", "location", "current_crop", "soil_type",
+                          "area_value", "area_unit", "irrigation_type")
+                 and v not in (None, "")]
+        if parts:
+            lines.append("Farm: " + " · ".join(str(p) for p in parts))
+        stage = farm.get("growth_stage")
+        if stage:
+            lines.append(f"Growth stage: {stage}")
+
+    sensors = _data(results, "get_sensor_readings")
+    if sensors:
+        sensor_parts = []
+        for ch in ("soil_moisture", "soil_temperature", "temperature", "humidity"):
+            v = sensors.get(ch)
+            if v is not None:
+                unit = "%" if ch in ("soil_moisture", "humidity") else "°C"
+                sensor_parts.append(f"{ch.replace('_', ' ')} {v}{unit}")
+        if sensor_parts:
+            freshness = sensors.get("freshness", "")
+            age = sensors.get("age_hours")
+            age_str = f" ({age:.1f}h ago)" if age is not None else ""
+            demo_flag = " [DEMO/simulated]" if sensors.get("is_demo") else ""
+            lines.append(f"Sensor readings{age_str}{demo_flag}: " + ", ".join(sensor_parts))
+        if sensors.get("freshness") in ("stale", "offline"):
+            lines.append(f"  ⚠ Sensor data is {sensors['freshness']} — may not reflect current conditions.")
+
+    weather = _data(results, "get_weather_information")
+    if weather:
+        w_parts = []
+        if weather.get("temperature_c") is not None:
+            w_parts.append(f"temp {weather['temperature_c']}°C")
+        if weather.get("humidity_pct") is not None:
+            w_parts.append(f"humidity {weather['humidity_pct']}%")
+        if weather.get("forecast_rain_7d_mm") is not None:
+            w_parts.append(f"7-day rain forecast {weather['forecast_rain_7d_mm']} mm (not confirmed)")
+        if w_parts:
+            loc = weather.get("location") or "farm location"
+            lines.append(f"Weather at {loc}: " + ", ".join(w_parts))
+
+    crop = _data(results, "get_crop_prediction")
+    if crop and crop.get("prediction"):
+        lines.append(f"Crop recommendation (ML model): {crop['prediction']}")
+
+    fertilizer = _data(results, "get_fertilizer_prediction")
+    if fertilizer and fertilizer.get("prediction"):
+        lines.append(f"Fertilizer recommendation (ML model): {fertilizer['prediction']}")
+
+    irrigation = _data(results, "get_irrigation_prediction")
+    if irrigation:
+        ml = irrigation.get("ml_prediction") or {}
+        rule = irrigation.get("rule_based_baseline") or {}
+        if ml.get("prediction") is not None:
+            lines.append(f"Irrigation (ML model): {ml.get('label') or ml['prediction']}")
+        elif rule.get("action"):
+            lines.append(f"Irrigation (rule baseline): {rule['action']}")
+
+    yield_pred = _data(results, "get_yield_prediction")
+    if yield_pred and yield_pred.get("prediction") is not None:
+        lines.append(f"Yield prediction (ML model): {yield_pred['prediction']} t/ha")
+
+    drought = _data(results, "get_drought_context")
+    if drought and drought.get("drought_severity"):
+        lines.append(f"Drought assessment: severity = {drought['drought_severity']}")
+        if drought.get("top_recommendations"):
+            lines.append("  Top drought actions: " + "; ".join(drought["top_recommendations"][:2]))
+
+    organic = _data(results, "get_organic_guidance")
+    if organic and organic.get("recommendation_summary"):
+        lines.append(f"Organic farming guidance: {organic['recommendation_summary']}")
+
+    history_data = _data(results, "get_farm_history")
+    if history_data and history_data.get("count", 0) > 0:
+        lines.append(f"Saved predictions: {history_data['count']} in history")
+
+    plan = _data(results, "get_available_farm_recommendations")
+    if plan and plan.get("actions"):
+        top_action = plan["actions"][0]
+        lines.append(
+            f"Top farm action ({top_action.get('priority', '')}): {top_action.get('action', '')}"
+        )
+
+    return "\n".join(lines) if lines else None
