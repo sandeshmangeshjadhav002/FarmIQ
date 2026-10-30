@@ -84,6 +84,8 @@ _AGENT_INTENTS: tuple[str, ...] = (
     "sensors",
     "history",
     "profile",
+    "organic_farming",
+    "drought_management",
     "farm_status",
 )
 
@@ -124,6 +126,18 @@ _INTENT_TOOLS: dict[str, tuple[str, ...]] = {
         "get_sensor_readings",
         "get_weather_information",
         "get_available_farm_recommendations",
+    ),
+    # Organic farming: need farm profile (crop/soil) + saved guidance if any.
+    "organic_farming": (
+        "get_farm_profile",
+        "get_organic_guidance",
+    ),
+    # Drought: need saved assessment + live sensor + weather for freshness check.
+    "drought_management": (
+        "get_drought_context",
+        "get_sensor_readings",
+        "get_weather_information",
+        "get_farm_profile",
     ),
 }
 
@@ -166,6 +180,21 @@ _INTENT_KEYWORDS: dict[str, tuple[str, ...]] = {
         "irrigation type", "which crop am i", "my location", "farm size",
         "शेत माहिती", "मातीचा प्रकार", "माझे शेत",
     ),
+    "organic_farming": (
+        "organic", "organic farming", "organic method", "compost", "vermicompost",
+        "green manure", "biofertilizer", "ipm", "integrated pest", "mulch",
+        "crop rotation", "intercrop", "natural farming", "without chemicals",
+        "reduce fertilizer", "reduce pesticide", "transition to organic",
+        "सेंद्रिय", "सेंद्रिय शेती", "कंपोस्ट", "गांडूळ खत", "हिरवळीचे खत",
+        "जैव खत", "एकात्मिक किड", "पीक रोटेशन", "नैसर्गिक शेती",
+    ),
+    "drought_management": (
+        "drought", "water stress", "dry spell", "water shortage", "no rain",
+        "low rainfall", "water scarcity", "less water", "save water",
+        "dry season", "deficit", "drought risk", "drought management",
+        "दुष्काळ", "पाणीटंचाई", "पाण्याची कमतरता", "पाऊस नाही",
+        "कमी पाऊस", "पाणी वाचवा", "दुष्काळाचा धोका",
+    ),
     "farm_status": (
         "what should i do", "what do i do", "need attention", "today", "status",
         "my farm", "farm plan", "advice", "recommend", "suggestion", "priority",
@@ -184,6 +213,8 @@ _INTENT_LABELS: dict[str, dict[str, str]] = {
     "history": {"en": "prediction history", "mr": "अंदाज इतिहास"},
     "profile": {"en": "farm profile", "mr": "शेत माहिती"},
     "farm_status": {"en": "farm plan", "mr": "शेत योजना"},
+    "organic_farming": {"en": "organic farming", "mr": "सेंद्रिय शेती"},
+    "drought_management": {"en": "drought management", "mr": "दुष्काळ व्यवस्थापन"},
     "unknown": {"en": "general", "mr": "सामान्य"},
 }
 
@@ -362,9 +393,51 @@ _TEXT: dict[str, dict[str, str]] = {
     # ── unrelated / unavailable ──────────────────────────────────────
     "no_farm_intent": {
         "en": "I can help with your farm plan, irrigation, fertilizer, crop choice, "
-              "yield, soil sensors and weather. Ask me about any of those.",
-        "mr": "मी शेत योजना, सिंचन, खत, पीक निवड, उत्पादन, सेन्सर आणि हवामान यांत मदत करू शकतो. "
+              "yield, soil sensors, weather, organic farming, and drought management. "
+              "Ask me about any of those.",
+        "mr": "मी शेत योजना, सिंचन, खत, पीक निवड, उत्पादन, सेन्सर, हवामान, "
+              "सेंद्रिय शेती आणि दुष्काळ व्यवस्थापन यांत मदत करू शकतो. "
               "यापैकी काहीही विचारा.",
+    },
+    # ── drought observations ─────────────────────────────────────────
+    "obs_drought_prefix": {
+        "en": "Drought assessment (saved {age})",
+        "mr": "दुष्काळ मूल्यांकन ({age} पूर्वी जतन केले)",
+    },
+    "obs_drought_severity": {
+        "en": "Risk level: {severity}",
+        "mr": "धोका पातळी: {severity}",
+    },
+    "obs_drought_no_data": {
+        "en": "No drought assessment has been saved yet. Run one in Drought Management.",
+        "mr": "अद्याप कोणतेही दुष्काळ मूल्यांकन जतन केलेले नाही. दुष्काळ व्यवस्थापन वापरा.",
+    },
+    # ── organic farming observations ─────────────────────────────────
+    "obs_organic_prefix": {
+        "en": "Organic farming guidance (saved {age})",
+        "mr": "सेंद्रिय शेती मार्गदर्शन ({age} पूर्वी जतन केले)",
+    },
+    "obs_organic_no_data": {
+        "en": "No organic farming comparison has been saved yet. Use the Organic Farming Advisor.",
+        "mr": "अद्याप कोणतीही सेंद्रिय शेती तुलना जतन केलेली नाही. सेंद्रिय शेती सल्लागार वापरा.",
+    },
+    # ── drought recommendations ──────────────────────────────────────
+    "rec_drought_action": {
+        "en": "Drought guidance: {action}",
+        "mr": "दुष्काळ मार्गदर्शन: {action}",
+    },
+    "rec_drought_monitor": {
+        "en": "Monitor soil moisture and check crop stress symptoms regularly.",
+        "mr": "माती ओलावा तपासा आणि पीक ताण लक्षणे नियमितपणे पाहा.",
+    },
+    # ── organic recommendations ──────────────────────────────────────
+    "rec_organic_summary": {
+        "en": "Organic guidance: {summary}",
+        "mr": "सेंद्रिय मार्गदर्शन: {summary}",
+    },
+    "rec_organic_alternative": {
+        "en": "Consider: {name} — {what}",
+        "mr": "विचार करा: {name} — {what}",
     },
 }
 
@@ -760,6 +833,52 @@ def _observations(lang: str, results: dict[str, dict]) -> list[str]:
     if history and history.get("count"):
         observations.append(_t(lang, "obs_history", count=history["count"]))
 
+    # ── drought context ───────────────────────────────────────────────
+    if "get_drought_context" in results:
+        drought = _data(results, "get_drought_context")
+        if drought:
+            age_h = None
+            as_of = (results.get("get_drought_context") or {}).get("as_of")
+            if as_of:
+                try:
+                    from datetime import datetime, timezone as tz
+                    parsed = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+                    now_utc = datetime.now(tz.utc)
+                    age_h = round((now_utc - parsed).total_seconds() / 3600, 1)
+                except Exception:
+                    pass
+            prefix = _t(lang, "obs_drought_prefix", age=_age_label(lang, age_h))
+            severity = drought.get("drought_severity")
+            if severity:
+                observations.append(f"{prefix} — {_t(lang, 'obs_drought_severity', severity=severity)}")
+            else:
+                observations.append(prefix)
+        else:
+            observations.append(_t(lang, "obs_drought_no_data"))
+
+    # ── organic guidance ──────────────────────────────────────────────
+    if "get_organic_guidance" in results:
+        organic = _data(results, "get_organic_guidance")
+        if organic:
+            age_h = None
+            as_of = (results.get("get_organic_guidance") or {}).get("as_of")
+            if as_of:
+                try:
+                    from datetime import datetime, timezone as tz
+                    parsed = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+                    now_utc = datetime.now(tz.utc)
+                    age_h = round((now_utc - parsed).total_seconds() / 3600, 1)
+                except Exception:
+                    pass
+            prefix = _t(lang, "obs_organic_prefix", age=_age_label(lang, age_h))
+            crop = organic.get("crop")
+            if crop:
+                observations.append(f"{prefix} ({crop})")
+            else:
+                observations.append(prefix)
+        else:
+            observations.append(_t(lang, "obs_organic_no_data"))
+
     return observations
 
 
@@ -825,6 +944,41 @@ def _recommendations(lang: str, intent: str, results: dict[str, dict]) -> tuple[
                 if text:
                     recommendations.append(text)
                 reasons.append(_t(lang, "reason_irrigation_rule"))
+
+    # ── drought recommendations ───────────────────────────────────────
+    if intent == "drought_management":
+        drought = _data(results, "get_drought_context")
+        if drought:
+            top_recs = drought.get("top_recommendations") or []
+            for action_text in top_recs[:2]:
+                recommendations.append(_t(lang, "rec_drought_action", action=action_text))
+            if drought.get("drought_severity") in ("moderate", "severe", "extreme"):
+                recommendations.append(_t(lang, "rec_drought_monitor"))
+            severity_reason = drought.get("drought_severity_reason")
+            if severity_reason:
+                reasons.append(severity_reason)
+        else:
+            # No saved assessment — recommend running the tool.
+            recommendations.append(_t(lang, "obs_drought_no_data"))
+
+    # ── organic farming recommendations ───────────────────────────────
+    if intent == "organic_farming":
+        organic = _data(results, "get_organic_guidance")
+        if organic:
+            summary = organic.get("recommendation_summary")
+            if summary:
+                recommendations.append(_t(lang, "rec_organic_summary", summary=summary))
+            alternatives = organic.get("organic_alternatives") or []
+            for alt in alternatives[:2]:
+                name = alt.get("name", "")
+                what = alt.get("what_it_does", "")
+                if name and what:
+                    recommendations.append(_t(lang, "rec_organic_alternative", name=name, what=what[:80]))
+            next_step = organic.get("next_step")
+            if next_step:
+                reasons.append(next_step)
+        else:
+            recommendations.append(_t(lang, "obs_organic_no_data"))
 
     return recommendations, reasons
 
@@ -915,6 +1069,8 @@ def context_block(results: dict[str, dict]) -> dict[str, Any]:
         "sensors": _data(results, "get_sensor_readings"),
         "weather": _data(results, "get_weather_information"),
         "predictions": predictions,
+        "drought": _data(results, "get_drought_context"),
+        "organic": _data(results, "get_organic_guidance"),
     }
 
 

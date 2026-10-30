@@ -131,6 +131,8 @@ def test_all_nine_tools_exist():
         "get_yield_prediction",
         "get_farm_history",
         "get_available_farm_recommendations",
+        "get_drought_context",
+        "get_organic_guidance",
     )
     # Every advertised name must be callable.
     tools = FarmTools(object(), UID)

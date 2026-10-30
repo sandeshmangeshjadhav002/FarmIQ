@@ -1,6 +1,6 @@
 """The AI agent's tool layer.
 
-Nine read-only tools, each scoped to one authenticated farmer. Every tool
+Eleven read-only tools, each scoped to one authenticated farmer. Every tool
 
 * reads through :mod:`app.db`, which filters on ``owner_id`` (defence in depth
   on top of RLS), so no tool can ever return another farmer's row;
@@ -20,6 +20,13 @@ Reused, not duplicated
 Reads are lazy and cached per instance: a question about the weather does not
 also read the sensor history, and asking for two predictions does not re-read
 the prediction table.
+
+The two newest tools (``get_drought_context``, ``get_organic_guidance``) read
+the latest *saved* assessment / comparison from the drought and farming modules.
+They surface only the top-level summary fields — severity, recommendations,
+method preference, resource availability — not the full nested recommendation
+tree, which would exceed the context window and include field-level detail the
+LLM should not rephrase.
 """
 from __future__ import annotations
 
@@ -45,6 +52,9 @@ TOOL_NAMES: tuple[str, ...] = (
     "get_yield_prediction",
     "get_farm_history",
     "get_available_farm_recommendations",
+    # Phase 2 additions — organic farming and drought context
+    "get_drought_context",
+    "get_organic_guidance",
 )
 
 # The predictions table holds two vocabularies for the same domains: the
@@ -429,6 +439,152 @@ class FarmTools:
                 "actions": items,
             },
             as_of=plan.get("generated_at"),
+        )
+
+    def get_drought_context(self) -> dict[str, Any]:
+        """The most recent saved drought assessment for this account.
+
+        Only the top-level summary is returned — severity category, reason,
+        location, crop, growth stage, and the first recommendation category
+        that carried actionable items.  The full nested recommendation tree
+        is omitted: it is too large for the context window and would require
+        the LLM to paraphrase ICAR-attributed text, which is not its role.
+
+        Returns ``available: False`` when no assessment has been saved yet.
+        """
+        row = self._latest_assessment()
+        if not row:
+            return _result(
+                "get_drought_context",
+                False,
+                note=(
+                    "No drought assessment has been saved for this account. "
+                    "Use the Drought Management tool to run one."
+                ),
+            )
+
+        result_payload = row.get("result") or {}
+        # Pull the top-level summary fields only.
+        data: dict[str, Any] = {
+            "drought_severity": result_payload.get("drought_severity"),
+            "drought_severity_reason": result_payload.get("drought_severity_reason"),
+            "location": row.get("location") or result_payload.get("location"),
+            "crop": row.get("crop") or result_payload.get("crop"),
+            "growth_stage": result_payload.get("growth_stage"),
+            "water_availability": (row.get("input") or {}).get("water_availability"),
+            "irrigation_type": (row.get("input") or {}).get("irrigation_type"),
+        }
+        # Surface at most the first category of recommendations so the LLM has
+        # enough to answer "what should I do about drought?" without the full
+        # payload.
+        categories = result_payload.get("categories") or []
+        if categories:
+            first = categories[0]
+            data["top_category"] = first.get("category_label")
+            data["top_category_urgency"] = first.get("urgency")
+            top_items = [
+                item.get("action") for item in (first.get("items") or [])[:3]
+                if item.get("action")
+            ]
+            if top_items:
+                data["top_recommendations"] = top_items
+        # Weather snapshot from the time the assessment was run.
+        weather_snap = row.get("weather_snapshot") or result_payload.get("weather") or {}
+        if weather_snap.get("fetched"):
+            data["weather_at_assessment"] = {
+                k: weather_snap.get(k)
+                for k in ("current_temp_c", "historical_rain_mm", "forecast_rain_7d_mm")
+                if weather_snap.get(k) is not None
+            }
+
+        # Remove None values so the LLM context is compact.
+        data = {k: v for k, v in data.items() if v is not None}
+        return _result(
+            "get_drought_context",
+            True,
+            data=data,
+            as_of=row.get("created_at"),
+        )
+
+    def get_organic_guidance(self) -> dict[str, Any]:
+        """The most recent saved organic farming comparison or transition plan.
+
+        Returns the recommended farming method, the farmer's stated preference,
+        the crop, and the top two organic alternatives identified for that crop.
+        The full per-method comparison table and the transition phases are
+        omitted for the same reason as in ``get_drought_context``.
+
+        Returns ``available: False`` when no plan has been saved yet.
+        """
+        row: Optional[dict] = None
+        try:
+            rows, _ = db.list_farming_plans(
+                self._client, self._owner_id, limit=1, offset=0
+            )
+            row = rows[0] if rows else None
+        except Exception as exc:  # noqa: BLE001 — optional context
+            logger.warning("Could not read farming plans for user %s: %s", self._owner_id, exc)
+
+        if not row:
+            return _result(
+                "get_organic_guidance",
+                False,
+                note=(
+                    "No organic farming comparison has been saved for this account. "
+                    "Use the Organic Farming Advisor to run one."
+                ),
+            )
+
+        result_payload = row.get("result") or {}
+        kind = row.get("kind", "comparison")
+
+        data: dict[str, Any] = {
+            "kind": kind,
+            "crop": result_payload.get("crop"),
+            "preference": result_payload.get("preference") or (row.get("input") or {}).get("preference"),
+        }
+
+        # For a comparison, surface the recommended method summary.
+        rec = result_payload.get("recommendation") or {}
+        if rec.get("summary"):
+            data["recommendation_summary"] = rec["summary"]
+        if rec.get("next_step"):
+            data["next_step"] = rec["next_step"]
+
+        # Up to two organic alternatives.
+        alternatives = result_payload.get("organic_alternatives") or []
+        if alternatives:
+            data["organic_alternatives"] = [
+                {
+                    "name": alt.get("name"),
+                    "category": alt.get("category"),
+                    "what_it_does": alt.get("what_it_does"),
+                }
+                for alt in alternatives[:2]
+                if alt.get("name")
+            ]
+
+        # For a transition plan, surface the first phase.
+        phases = result_payload.get("phases") or []
+        if phases and kind == "transition_plan":
+            first_phase = phases[0]
+            data["first_transition_phase"] = {
+                "title": first_phase.get("title"),
+                "timeframe": first_phase.get("timeframe"),
+                "steps": [s.get("text") for s in (first_phase.get("steps") or [])[:3] if s.get("text")],
+            }
+
+        # Warnings / cautions from the result.
+        warnings = result_payload.get("warnings") or []
+        if warnings:
+            data["cautions"] = warnings[:3]
+
+        data = {k: v for k, v in data.items() if v is not None}
+        return _result(
+            "get_organic_guidance",
+            True,
+            data=data,
+            as_of=row.get("created_at"),
         )
 
     # ── Derived helpers ─────────────────────────────────────────────────

@@ -73,10 +73,19 @@ function TypingDots() {
 function IntentBadge({ intent }) {
   const INTENT_LABELS = {
     crop_recommendation: "Crop",
+    crop_selection: "Crop",
     fertilizer_recommendation: "Fertilizer",
+    fertilizer: "Fertilizer",
     irrigation: "Irrigation",
     yield_prediction: "Yield",
+    yield: "Yield",
     sensor_query: "Sensor",
+    sensors: "Sensor",
+    organic_farming: "Organic",
+    drought_management: "Drought",
+    weather: "Weather",
+    profile: "Farm",
+    farm_status: "Farm Plan",
     navigation_help: "Help",
     knowledge: "Assistant",
     unknown: null,
@@ -111,6 +120,163 @@ function TTSControls({ speaking, onSpeak, onStop, label }) {
           <Icon name="bot" size={13} />
           {label.listen}
         </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Collapsible panel showing the farm data sources used to generate an answer.
+ * Renders only when the agent response includes context (sensors, weather, etc.).
+ */
+function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
+  const [open, setOpen] = useState(false);
+  if (!context) return null;
+
+  const hasAnything =
+    context.farm || context.sensors || context.weather ||
+    (context.predictions && Object.keys(context.predictions).length > 0) ||
+    context.drought || context.organic;
+  if (!hasAnything) return null;
+
+  const fmt = (isoStr) => {
+    if (!isoStr) return null;
+    try {
+      const d = new Date(isoStr);
+      return d.toLocaleString(lang === "mr" ? "mr-IN" : "en-IN", {
+        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return null; }
+  };
+
+  const SourceRow = ({ label, value, timestamp, warn, demo }) => (
+    <div className="flex items-start justify-between gap-2 py-1 border-b border-[#EDF1EE] last:border-0">
+      <span className="text-[10px] font-semibold text-[#52675B] flex-1">{label}</span>
+      <span className={`text-[10px] font-bold text-right ${warn ? "text-[#9A5E1A]" : "text-[#1D3A2A]"}`}>
+        {value ?? "—"}
+        {demo && <span className="ml-1 text-[8px] font-extrabold text-[#D99A2B]">DEMO</span>}
+      </span>
+      {timestamp && (
+        <span className="text-[9px] text-[#9AA79F] whitespace-nowrap">{fmt(timestamp)}</span>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="ml-[42px] mt-1.5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-[9px] font-bold text-[#52675B] hover:text-[#216B45]"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-[#9CB3A4]" />
+        {lang === "mr" ? (open ? "शेत डेटा लपवा ▲" : "शेत डेटा वापरला ▼") : (open ? "Hide farm data ▲" : "Farm data used ▼")}
+      </button>
+
+      {open && (
+        <div className="mt-2 rounded-[16px] border border-[#DDE6DF] bg-white/70 p-3 text-[10px] backdrop-blur-md space-y-1">
+
+          {/* Farm profile */}
+          {context.farm && (
+            <SourceRow
+              label={lang === "mr" ? "शेत" : "Farm"}
+              value={[context.farm.current_crop, context.farm.location].filter(Boolean).join(" · ") || "On file"}
+              timestamp={freshness?.get_farm_profile}
+            />
+          )}
+
+          {/* Sensors */}
+          {context.sensors && (
+            <>
+              {context.sensors.soil_moisture != null && (
+                <SourceRow
+                  label={lang === "mr" ? "माती ओलावा" : "Soil moisture"}
+                  value={`${context.sensors.soil_moisture}%`}
+                  timestamp={context.sensors.observed_at}
+                  warn={context.sensors.freshness === "stale" || context.sensors.freshness === "offline"}
+                  demo={context.sensors.is_demo}
+                />
+              )}
+              {context.sensors.temperature != null && (
+                <SourceRow
+                  label={lang === "mr" ? "तापमान" : "Temperature"}
+                  value={`${context.sensors.temperature}°C`}
+                  timestamp={context.sensors.observed_at}
+                  demo={context.sensors.is_demo}
+                />
+              )}
+              {context.sensors.humidity != null && (
+                <SourceRow
+                  label={lang === "mr" ? "आर्द्रता" : "Humidity"}
+                  value={`${context.sensors.humidity}%`}
+                  timestamp={context.sensors.observed_at}
+                  demo={context.sensors.is_demo}
+                />
+              )}
+            </>
+          )}
+
+          {/* Weather */}
+          {context.weather && (
+            <>
+              {context.weather.temperature_c != null && (
+                <SourceRow
+                  label={lang === "mr" ? "हवामान तापमान" : "Weather temp"}
+                  value={`${context.weather.temperature_c}°C`}
+                  timestamp={context.weather.observed_at}
+                />
+              )}
+              {context.weather.forecast_rain_7d_mm != null && (
+                <SourceRow
+                  label={lang === "mr" ? "७ दिवस पावसाचा अंदाज" : "7-day rain forecast"}
+                  value={`${context.weather.forecast_rain_7d_mm} mm`}
+                  timestamp={context.weather.observed_at}
+                  warn
+                />
+              )}
+            </>
+          )}
+
+          {/* ML predictions */}
+          {Object.entries(context.predictions || {}).map(([domain, pred]) => (
+            <SourceRow
+              key={domain}
+              label={lang === "mr" ? `${domain} मॉडेल` : `${domain} model`}
+              value={pred.label ?? pred.prediction ?? "—"}
+              timestamp={pred.as_of}
+            />
+          ))}
+
+          {/* Drought assessment */}
+          {context.drought && (
+            <SourceRow
+              label={lang === "mr" ? "दुष्काळ मूल्यांकन" : "Drought assessment"}
+              value={context.drought.drought_severity ?? "on file"}
+              timestamp={freshness?.get_drought_context}
+            />
+          )}
+
+          {/* Organic guidance */}
+          {context.organic && (
+            <SourceRow
+              label={lang === "mr" ? "सेंद्रिय मार्गदर्शन" : "Organic guidance"}
+              value={context.organic.crop ?? "on file"}
+              timestamp={freshness?.get_organic_guidance}
+            />
+          )}
+
+          {/* Missing / conflicts */}
+          {missing?.length > 0 && (
+            <p className="pt-1 text-[9px] text-[#9A5E1A]">
+              {lang === "mr" ? "उपलब्ध नाही: " : "Not available: "}
+              {missing.join(", ")}
+            </p>
+          )}
+          {conflicts?.length > 0 && (
+            <p className="pt-1 text-[9px] text-[#9A5E1A]">
+              {lang === "mr" ? "⚠ डेटा संघर्ष आढळला" : "⚠ Data conflict detected"}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -178,7 +344,6 @@ export default function ChatScreen({
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
-  const [voiceCtx, setVoiceCtx] = useState(null); // multi-turn slot context
   const [uiError, setUiError] = useState(null);
 
   const threadRef = useRef(null);
@@ -239,18 +404,11 @@ export default function ChatScreen({
     setSending(true);
 
     try {
-      const res = await apiPost("/api/voice/chat", {
+      const res = await apiPost("/api/agent/chat", {
         message: text,
         language: voiceLang,
-        context: voiceCtx,
         history,
       });
-
-      // Persist slot context for multi-turn collection
-      const newCtx = res.follow_up
-        ? { ...(voiceCtx || {}), ...(res.context || {}) }
-        : null;
-      setVoiceCtx(newCtx);
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -258,21 +416,25 @@ export default function ChatScreen({
             ? {
                 ...m,
                 pending: false,
-                text: res.response_text,
+                // Agent endpoint returns { answer, sections, intent, ... }
+                // Voice endpoint returned { response_text, intent, ... }
+                text: res.answer || res.response_text || "",
                 intent: res.intent,
-                // The backend answers in the language of the question, which
-                // may differ from the app's display language.
                 language: res.language || voiceLang,
-                follow_up: res.follow_up,
-                prediction: res.prediction,
+                // Agent-specific fields for the Farm data panel
+                context: res.context,
+                freshness: res.freshness,
+                conflicts: res.conflicts,
+                missing: res.missing,
               }
             : m,
         ),
       );
 
-      // Auto-play TTS when the response says to speak
-      if (res.speak && res.response_text) {
-        speak(res.response_text, res.language || voiceLang);
+      // Auto-play TTS — agent always speaks (no per-message speak flag)
+      const responseText = res.answer || res.response_text;
+      if (responseText) {
+        speak(responseText, res.language || voiceLang);
       }
     } catch (err) {
       const friendly =
@@ -410,6 +572,16 @@ export default function ChatScreen({
                     ? "अधिक माहिती द्या…"
                     : "Please provide the missing information…"}
                 </p>
+              )}
+              {/* Farm data used — collapsible context panel */}
+              {!msg.pending && !msg.isError && msg.id !== "greet" && msg.context && (
+                <FarmDataPanel
+                  context={msg.context}
+                  freshness={msg.freshness}
+                  conflicts={msg.conflicts}
+                  missing={msg.missing}
+                  lang={msg.language || voiceLang}
+                />
               )}
             </div>
           ),

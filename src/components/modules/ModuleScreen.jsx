@@ -108,7 +108,7 @@ export default function ModuleScreen({
       case "schemes":
         return <Schemes />;
       case "organic-farming":
-        return <OrganicFarmingAdvisor />;
+        return <OrganicFarmingAdvisor onAsk={onAsk} />;
       case "drought-management":
         return <DroughtAdvisor />;
       case "hackathon-demo":

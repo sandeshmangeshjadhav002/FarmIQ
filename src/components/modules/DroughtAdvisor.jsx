@@ -132,9 +132,67 @@ const EMPTY_FORM = {
   save: false,
 };
 
+// ── Static advisory content ───────────────────────────────────────────────────
+
+const IMMEDIATE_ACTIONS = [
+  "Check soil moisture visually or with a probe before irrigating — waterlogging wastes water and harms roots.",
+  "Inspect irrigation systems for leaks, blocked emitters, and broken pipes. A 10% leak in a drip line can waste significant water daily.",
+  "Apply organic mulch (crop residues, dry straw) between rows to reduce soil evaporation. Even a 2–3 cm layer can help.",
+  "Prioritise crops and growth stages: flowering and grain-filling stages are most sensitive to water stress — water those first.",
+  "Avoid irrigating during the hottest part of the day (10 AM–3 PM) — evaporation losses are highest then.",
+  "Repair or construct field bunds and channels to capture any rainfall that does occur.",
+];
+
+const LONGTERM_PRACTICES = [
+  "Build or restore farm ponds and check dams to capture and store monsoon rainfall for later use.",
+  "Improve soil organic matter gradually through compost and crop residues — this increases the soil's water-holding capacity over multiple seasons.",
+  "Consider drip or micro-irrigation for water-sensitive crops — drip systems can save 30–50% water compared with flood irrigation.",
+  "Explore locally appropriate drought-tolerant crops (jowar, bajra, moong) for future sowing if your area regularly experiences dry spells.",
+  "Consult your local KVK (Krishi Vigyan Kendra) or agricultural extension officer when water shortages become severe — they have location-specific guidance.",
+];
+
+const ORGANIC_DROUGHT_INTEGRATION = [
+  {
+    practice: "Mulching",
+    impact: "Organic mulch (straw, crop residues) can reduce soil-surface evaporation by 25–50%, conserving moisture in the root zone.",
+    note: "Widely applicable and one of the most practical immediate steps during a dry spell.",
+    caveat: null,
+  },
+  {
+    practice: "Compost and organic amendments",
+    impact: "Compost and farmyard manure can improve soil structure over time, increasing the soil's capacity to hold water. Sandy soils benefit most.",
+    note: "This is a long-term practice — one application does not immediately solve drought risk.",
+    caveat: null,
+  },
+  {
+    practice: "Cover crops",
+    impact: "Cover crops can protect the soil surface, reduce erosion, and add organic matter when incorporated.",
+    note: "Most useful during the off-season or in rotation.",
+    caveat: "⚠ Cover crops require water to establish and grow. Do not use cover crops during an active drought when the main crop is already under water stress — they will compete for scarce moisture.",
+  },
+  {
+    practice: "Crop rotation",
+    impact: "Including legumes and drought-tolerant crops in rotation can gradually improve soil health and break pest cycles that weaken crop resilience.",
+    note: "Benefits are cumulative across seasons, not immediate.",
+    caveat: null,
+  },
+  {
+    practice: "Reduced tillage",
+    impact: "Minimising soil disturbance helps preserve soil structure and existing moisture. Reduces wind erosion on bare soil during dry periods.",
+    note: "Particularly useful on light soils prone to crusting.",
+    caveat: null,
+  },
+];
+
 // ── Main Component ───────────────────────────────────────────────────────────
 
+const DROUGHT_TABS = [
+  { key: "advice", label: "Guidance" },
+  { key: "assess", label: "Assess" },
+];
+
 export default function DroughtAdvisor() {
+  const [activeTab, setActiveTab] = useState("advice");
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
@@ -201,7 +259,28 @@ export default function DroughtAdvisor() {
 
   return (
     <div className="space-y-4">
-      {/* ── Input Form ────────────────────────────────────────────────────── */}
+      {/* Tab strip */}
+      <div className="flex gap-1 rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md">
+        {DROUGHT_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition ${
+              activeTab === tab.key
+                ? "bg-[#28778A] text-white shadow"
+                : "text-[#52665B] hover:bg-white/60"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "advice" && <DroughtGuidancePanel />}
+
+      {activeTab === "assess" && (
+        <div className="space-y-4">
+          {/* ── Input Form ────────────────────────────────────────────────────── */}
       <section className="rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#E5F3F7] text-[#28778A]">
@@ -425,6 +504,103 @@ export default function DroughtAdvisor() {
 
       {/* ── Results ───────────────────────────────────────────────────────── */}
       {result && <ResultView data={result} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Drought Guidance Panel (static educational content) ─────────────────────
+
+function DroughtGuidancePanel() {
+  return (
+    <div className="space-y-4">
+      {/* Risk assessment methodology note */}
+      <section className="rounded-[22px] border border-[#C5DCE4] bg-[#EBF6FA] p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="grid h-7 w-7 place-items-center rounded-xl bg-[#D0EDF5] text-[#28778A]">
+            <ModuleIcon name="drought" size={15} />
+          </span>
+          <h2 className="text-[12px] font-extrabold text-[#1A4A5A]">About the drought risk assessment</h2>
+        </div>
+        <p className="text-[10px] leading-5 text-[#2A6070]">
+          The "Assess" tab provides a preliminary risk category based on your reported water availability and recent rainfall. It uses documented rules (not a scientific drought index) and is intended as a starting point for your own decision-making — not an official drought warning.
+        </p>
+        <p className="mt-2 text-[10px] leading-5 text-[#2A6070]">
+          Risk categories: <b>None / Mild / Moderate / Severe / Extreme</b>. The category shown depends on what information you provide. Missing data will be noted as a data gap.
+        </p>
+        <p className="mt-2 rounded-xl bg-[#D0EDF5] p-2.5 text-[9px] leading-4 text-[#1A4A5A]">
+          ⚠ Always consult local agricultural extension officers or your KVK for official drought advisories. A single assessment does not replace ongoing monitoring.
+        </p>
+      </section>
+
+      {/* Immediate actions */}
+      <section className="rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="grid h-7 w-7 place-items-center rounded-xl bg-[#FCE9E5] text-[#A55243]">
+            <ModuleIcon name="bell" size={15} />
+          </span>
+          <h3 className="text-[12px] font-extrabold text-[#1A2F22]">Immediate actions</h3>
+          <span className="ml-auto rounded-full bg-[#FCE9E5] px-2 py-0.5 text-[8px] font-extrabold text-[#A55243]">Do now</span>
+        </div>
+        <ul className="space-y-2">
+          {IMMEDIATE_ACTIONS.map((action, i) => (
+            <li key={i} className="flex items-start gap-2 text-[10px] leading-5 text-[#3C5248]">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8493B]" />
+              {action}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Long-term practices */}
+      <section className="rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="grid h-7 w-7 place-items-center rounded-xl bg-[#E5F3F7] text-[#28778A]">
+            <ModuleIcon name="calendar" size={15} />
+          </span>
+          <h3 className="text-[12px] font-extrabold text-[#1A2F22]">Long-term practices</h3>
+          <span className="ml-auto rounded-full bg-[#E5F3F7] px-2 py-0.5 text-[8px] font-extrabold text-[#28778A]">Plan ahead</span>
+        </div>
+        <ul className="space-y-2">
+          {LONGTERM_PRACTICES.map((practice, i) => (
+            <li key={i} className="flex items-start gap-2 text-[10px] leading-5 text-[#3C5248]">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#4F6590]" />
+              {practice}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Organic practices + drought resilience */}
+      <section className="rounded-[22px] border border-[#D6E4D8] bg-[#F7FAF8] p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="grid h-7 w-7 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
+            <ModuleIcon name="leaf" size={15} />
+          </span>
+          <h3 className="text-[12px] font-extrabold text-[#1A3C28]">Organic soil management and drought resilience</h3>
+        </div>
+        <p className="text-[10px] leading-5 text-[#5B6F63] mb-3">
+          Some organic soil management practices can help reduce a field's vulnerability to water stress over time. These are not drought cures — but they can make soil more resilient. Note the distinction between <b>reducing vulnerability</b>, <b>monitoring conditions</b>, and <b>managing an active shortage</b>.
+        </p>
+        <div className="space-y-3">
+          {ORGANIC_DROUGHT_INTEGRATION.map((item) => (
+            <div key={item.practice} className="rounded-xl border border-[#DDE9E1] bg-white p-3">
+              <p className="text-[11px] font-extrabold text-[#216B45] mb-1">{item.practice}</p>
+              <p className="text-[10px] leading-5 text-[#3C5248]">{item.impact}</p>
+              <p className="mt-1 text-[10px] italic leading-5 text-[#7A8C82]">{item.note}</p>
+              {item.caveat && (
+                <p className="mt-2 rounded-lg bg-[#FFF8EA] border border-[#F0DFC0] px-2.5 py-2 text-[10px] leading-5 text-[#8A6D2B]">
+                  {item.caveat}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 rounded-xl bg-[#EDF1EE] p-3 text-[10px] leading-5 text-[#5B6F63]">
+          Organic farming does not prevent drought and does not guarantee drought resistance. The practices above can support better soil water management over time, but they must be combined with monitoring, good irrigation management, and timely expert advice.
+        </p>
+      </section>
     </div>
   );
 }
