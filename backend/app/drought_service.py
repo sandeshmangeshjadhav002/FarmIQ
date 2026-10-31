@@ -679,7 +679,7 @@ def _fetch_weather_snapshot(location: str) -> dict[str, Any]:
 # RAG context helper
 # ---------------------------------------------------------------------------
 
-def _fetch_rag_context(ctx: dict[str, Any]) -> dict[str, Any]:
+def _fetch_rag_context(ctx: dict[str, Any], language: str = "en") -> dict[str, Any]:
     """Retrieve crop- and region-specific drought guidance from the RAG pipeline.
 
     Returns a dict with ``rag_context``, ``rag_sources``, and ``rag_status``.
@@ -702,7 +702,7 @@ def _fetch_rag_context(ctx: dict[str, Any]) -> dict[str, Any]:
     )
 
     try:
-        result = rag_service.answer_question(question, language="en")
+        result = rag_service.answer_question(question, language=language)
         return {
             "rag_context": result.get("answer") or "",
             "rag_sources": result.get("sources") or [],
@@ -778,8 +778,8 @@ def assess_drought(payload: dict[str, Any]) -> dict[str, Any]:
     # 3. Structured recommendations
     categories = build_categories(ctx, severity)
 
-    # 4. RAG advisory context
-    rag_data = _fetch_rag_context(ctx)
+    # 4. RAG advisory context — retrieved in the farmer's selected language.
+    rag_data = _fetch_rag_context(ctx, language=payload.get("language") or "en")
 
     # 5. Data gaps
     data_gaps = []

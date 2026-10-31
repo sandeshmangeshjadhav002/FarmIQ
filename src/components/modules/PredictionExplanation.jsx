@@ -1,7 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiPost } from "@/lib/apiClient";
+import { DEFAULT_LANGUAGE, normalizeLanguage, readStoredLanguage } from "@/i18n/language";
 import ModuleIcon from "./ModuleIcon";
+
+// The four labelled lines the assistant is asked to return, in display order.
+// Each canonical key maps to a translation key under
+// ``predictionExplanation.labels`` so the section headings are shown in the
+// farmer's own language even though the model returns the content.
+const LABEL_KEYS = ["explanation", "keyFactors", "nextStep", "limitations"];
+
+// English label text, used as a fallback when the assistant answers with the
+// English label instead of the localised one.
+const CANONICAL_LABELS = {
+  explanation: "Explanation",
+  keyFactors: "Key factors",
+  nextStep: "Next step",
+  limitations: "Limitations",
+};
 
 /**
  * PredictionExplanation — a plain-language explanation of a finished ML
@@ -28,7 +44,13 @@ export default function PredictionExplanation({
   farmName,
   onAsk,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // The selected interface language ("en" | "mr"). The explanation is requested
+  // in this language, but the prediction values themselves are never touched.
+  const language =
+    normalizeLanguage(i18n.resolvedLanguage || i18n.language) ||
+    readStoredLanguage() ||
+    DEFAULT_LANGUAGE;
   const [state, setState] = useState("idle"); // idle | loading | done | error
   const [answer, setAnswer] = useState("");
   const [errorNote, setErrorNote] = useState("");
@@ -51,16 +73,28 @@ export default function PredictionExplanation({
     const prediction =
       result.label ?? result.prediction ?? result.details?.top?.[0]?.crop;
 
+    // Ask for the reply in the selected language. The four labels are taken
+    // from the translation file so the assistant structures its answer the same
+    // way in both languages; ``parseAnswer`` accepts either the localised or
+    // the English label.
+    const labelText = LABEL_KEYS.map((key) =>
+      t(`predictionExplanation.labels.${key}`),
+    );
+    const languageName =
+      language === "mr" ? "Marathi (Devanagari script, मराठी)" : "English";
+
     const message =
-      "Explain this farm prediction in simple language for a farmer. " +
+      `Explain this farm prediction for a farmer. Write the reply in ${languageName}. ` +
+      "Use the numbers, units and prediction exactly as given — never change or invent a value. " +
       "Reply with exactly four short labelled lines and nothing else:\n" +
-      "Explanation: <one sentence on what the result means>\n" +
-      "Key factors: <the inputs that most influenced it>\n" +
-      "Next step: <one practical action>\n" +
-      "Limitations: <what this prediction cannot tell the farmer>";
+      `${labelText[0]}: <one sentence on what the result means>\n` +
+      `${labelText[1]}: <the inputs that most influenced it>\n` +
+      `${labelText[2]}: <one practical action>\n` +
+      `${labelText[3]}: <what this prediction cannot tell the farmer>`;
 
     apiPost("/api/chat", {
       message,
+      language,
       ml_results: {
         source: "farmiq_ml_model",
         domain: moduleKey,
@@ -91,12 +125,24 @@ export default function PredictionExplanation({
     return () => {
       cancelled = true;
     };
-    // `attempt` lets the farmer retry without re-running the prediction.
-  }, [resultKey, attempt]); // eslint-disable-line react-hooks/exhaustive-deps
+    // `attempt` lets the farmer retry without re-running the prediction;
+    // `language` re-requests the explanation when the farmer switches language.
+  }, [resultKey, attempt, language]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Map every label we may receive back (localised + English fallback) to its
+  // canonical key, so the section headings can be rendered from the dictionary.
+  const labelMap = useMemo(() => {
+    const map = new Map();
+    LABEL_KEYS.forEach((key) => {
+      map.set(t(`predictionExplanation.labels.${key}`), key);
+      map.set(CANONICAL_LABELS[key], key);
+    });
+    return map;
+  }, [t, language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!result) return null;
 
-  const sections = state === "done" ? parseAnswer(answer) : [];
+  const sections = state === "done" ? parseAnswer(answer, labelMap) : [];
 
   return (
     <section className="rounded-[22px] border border-[#D8E4DC] bg-white p-4">
@@ -146,11 +192,9 @@ export default function PredictionExplanation({
       {state === "done" && sections.length > 0 && (
         <dl className="mt-3 space-y-2.5">
           {sections.map((s, i) => (
-            <div key={`${s.label}-${i}`}>
+            <div key={`${s.key}-${i}`}>
               <dt className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8C82]">
-                {titleCase(
-                  t(`predictionExplanation.labels.${labelKeyFor(s.label)}`),
-                )}
+                {titleCase(t(`predictionExplanation.labels.${s.key}`))}
               </dt>
               <dd className="mt-0.5 text-[11px] leading-5 text-[#42594C]">
                 {s.text}
@@ -179,18 +223,26 @@ export default function PredictionExplanation({
   );
 }
 
-// The labels we ask the assistant to use, in the order they should be shown.
-const CANONICAL = ["Explanation", "Key factors", "Next step", "Limitations"];
-
-// Translation key suffix for each canonical label, in the same order.
-const LABEL_KEYS = ["explanation", "keyFactors", "nextStep", "limitations"];
-
-/** Map a parsed section label to its translation key suffix. */
-function labelKeyFor(label) {
-  const i = CANONICAL.findIndex(
-    (c) => c.toLowerCase() === String(label).toLowerCase(),
-  );
-  return LABEL_KEYS[i] ?? "explanation";
+/**
+ * Match a reply line against the labels the assistant was asked to use.
+ *
+ * Handles both the localised label (Marathi) and the English fallback, and both
+ * the ASCII colon and the full-width colon an LLM may emit. Returns the
+ * canonical key plus the text after the colon, or ``null`` when the line is not
+ * a label.
+ */
+function matchLabel(line, labelMap) {
+  const lower = line.toLowerCase();
+  for (const [label, key] of labelMap) {
+    const base = String(label).toLowerCase();
+    if (lower.startsWith(`${base}:`)) {
+      return { key, rest: line.slice(base.length + 1).trim() };
+    }
+    if (lower.startsWith(`${base}：`)) {
+      return { key, rest: line.slice(base.length + 1).trim() };
+    }
+  }
+  return null;
 }
 
 /**
@@ -201,7 +253,7 @@ function labelKeyFor(label) {
  * current section, and a reply with no recognisable label is treated as one
  * "Explanation" block — the text is always shown as written, never rewritten.
  */
-function parseAnswer(answer) {
+function parseAnswer(answer, labelMap) {
   const text = String(answer ?? "").trim();
   if (!text) return [];
 
@@ -211,25 +263,19 @@ function parseAnswer(answer) {
   for (const raw of text.split(/\r?\n/)) {
     const line = raw
       .trim()
-      .replace(/^[-*•]\s*/, "")
       .replace(/\*\*/g, "")
+      .replace(/^[-*•]\s*/, "")
       .trim();
     if (!line) continue;
 
-    const match = line.match(/^([A-Za-z][A-Za-z ]{2,24}):\s*(.*)$/);
-    const isLabel =
-      match &&
-      CANONICAL.some(
-        (label) => label.toLowerCase() === match[1].trim().toLowerCase(),
-      );
-
-    if (isLabel) {
-      current = { label: titleCase(match[1].trim()), text: match[2].trim() };
+    const matched = matchLabel(line, labelMap);
+    if (matched) {
+      current = { key: matched.key, text: matched.rest };
       sections.push(current);
     } else if (current) {
       current.text += current.text ? ` ${line}` : line;
     } else {
-      current = { label: "Explanation", text: line };
+      current = { key: "explanation", text: line };
       sections.push(current);
     }
   }
@@ -237,16 +283,18 @@ function parseAnswer(answer) {
   // A single block needs no reordering; multiple blocks are shown in the
   // sequence the assistant was asked to use.
   if (sections.length <= 1) return sections;
-  return sections.sort((a, b) => orderOf(a.label) - orderOf(b.label));
+  return sections.sort(
+    (a, b) => LABEL_KEYS.indexOf(a.key) - LABEL_KEYS.indexOf(b.key),
+  );
 }
 
-function orderOf(label) {
-  const i = CANONICAL.findIndex((c) => c.toLowerCase() === label.toLowerCase());
-  return i === -1 ? CANONICAL.length : i;
-}
-
+/**
+ * English section headings are title-cased for display ("Key factors" →
+ * "Key Factors"). Case conversion is a no-op for Marathi, so this is safe to
+ * apply to either language.
+ */
 function titleCase(value) {
-  return value
+  return String(value)
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");

@@ -57,9 +57,11 @@ def chat(
             payload.message,
             payload.ml_results,
             top_k=payload.top_k,
-            # Answer in the language the question was asked in, so a Marathi
-            # question is answered in Marathi even when the app is in English.
-            language=voice_engine.detect_language(payload.message),
+            # Answer in the language chosen in the UI. When the caller does not
+            # send one (older clients, or a bare API call), fall back to the
+            # question's own language so a Marathi question is still answered in
+            # Marathi even when the app is in English.
+            language=payload.language or voice_engine.detect_language(payload.message),
             # Recent turns let follow-up questions ("which medicine for it?")
             # resolve against the subject of the previous turn.
             history=payload.history,

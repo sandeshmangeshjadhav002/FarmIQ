@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import useLanguage from "@/i18n/useLanguage";
 import { API_BASE_URL } from "@/config/api";
 import Icon from "@/components/common/Icon";
 import Logo from "@/components/common/Logo";
@@ -22,6 +23,9 @@ import { PrimaryButton } from "@/components/common/Button";
  */
 export default function RegisterScreen({ navigate, onLogin }) {
   const { t } = useTranslation();
+  // The language the visitor is already using — saved on the new account so a
+  // Marathi speaker is not switched back to English after signing up.
+  const { language } = useLanguage();
 
   // ── form fields ──────────────────────────────────────────────────────────
   const [fullName, setFullName] = useState("");
@@ -94,6 +98,8 @@ export default function RegisterScreen({ navigate, onLogin }) {
           // `role` is intentionally omitted — the backend defaults it to
           // "farmer" and the profile screen lets the user change it.
           password,
+          // Persist the interface language chosen before signing up.
+          language,
         }),
       });
 

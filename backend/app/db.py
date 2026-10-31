@@ -55,7 +55,8 @@ def get_profile_by_mobile(client: Any, mobile: str) -> dict[str, Any] | None:
 
 
 def create_profile(
-    client: Any, uid: str, full_name: str, email: str, mobile: str, role: str
+    client: Any, uid: str, full_name: str, email: str, mobile: str, role: str,
+    language: str = "en",
 ) -> dict[str, Any]:
     row = {
         "id": uid,
@@ -63,6 +64,7 @@ def create_profile(
         "email": email.lower(),
         "mobile": mobile,
         "role": role,
+        "language": language,
         "created_at": _now_iso(),
     }
     try:

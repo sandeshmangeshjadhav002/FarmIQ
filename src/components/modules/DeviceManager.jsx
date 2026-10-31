@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Metric, ModuleButton, SelectField } from "./ModuleShared";
 import ModuleIcon from "./ModuleIcon";
 import { apiPost } from "@/lib/apiClient";
@@ -9,18 +10,21 @@ import useApi from "@/hooks/useApi";
  * pairs new ones via POST /api/devices/pair.
  */
 export default function DeviceManager() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useApi("/api/devices");
   const devices = data?.items ?? [];
 
   const [pairing, setPairing] = useState(false);
-  const [farmAssign, setFarmAssign] = useState("Assign later");
+  const [farmAssign, setFarmAssign] = useState(() =>
+    t("deviceManager.assignLater"),
+  );
   const [config, setConfig] = useState("Soil sensor");
   const [saving, setSaving] = useState(false);
   const [pairError, setPairError] = useState(null);
 
   const farmsData = useApi("/api/farms");
   const farmNames = (farmsData.data?.items ?? []).map((f) => f.name);
-  const farmOptions = [...farmNames, "Assign later"];
+  const farmOptions = [...farmNames, t("deviceManager.assignLater")];
 
   const onlineCount = devices.filter((d) => d.is_online).length;
   const offlineCount = devices.filter((d) => !d.is_online).length;
@@ -44,7 +48,7 @@ export default function DeviceManager() {
       // Was silent before: a failed pairing left the panel looking unchanged,
       // so the user could not tell the device had not been added.
       setPairError(
-        err.message || "Could not pair the device. Please try again.",
+        err.message || t("deviceManager.pairError"),
       );
     } finally {
       setSaving(false);
@@ -57,19 +61,19 @@ export default function DeviceManager() {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
         <Metric
-          label="Connected"
+          label={t("deviceManager.connected")}
           value={String(onlineCount)}
-          note="Online now"
+          note={t("deviceManager.onlineNow")}
         />
         <Metric
-          label="Offline"
+          label={t("deviceManager.offline")}
           value={String(offlineCount)}
-          note="Needs attention"
+          note={t("deviceManager.needsAttention")}
         />
         <Metric
-          label="Total"
+          label={t("deviceManager.total")}
           value={String(devices.length)}
-          note="Paired devices"
+          note={t("deviceManager.pairedDevices")}
         />
       </div>
 
@@ -80,19 +84,19 @@ export default function DeviceManager() {
               role="alert"
               className="text-[12px] font-semibold text-[#9D4C3E]"
             >
-              {error.message || "Could not load your devices."}
+              {error.message || t("deviceManager.loadError")}
             </p>
             <button
               onClick={refetch}
               className="mt-2 text-[11px] font-extrabold text-[#216B45] underline underline-offset-2"
             >
-              Try again
+              {t("common.retry")}
             </button>
           </div>
         )}
         {!error && devices.length === 0 && (
           <p className="p-6 text-center text-[12px] text-[#7B8C82]">
-            No devices paired yet.
+            {t("deviceManager.noDevices")}
           </p>
         )}
         {!error &&
@@ -115,11 +119,15 @@ export default function DeviceManager() {
               <span className="min-w-0 flex-1">
                 <b className="block text-[11px] text-[#294234]">{item.name}</b>
                 <span className="text-[9px] text-[#829188]">
-                  {item.is_online ? "Online" : "Offline"}
+                  {item.is_online
+                    ? t("deviceManager.online")
+                    : t("deviceManager.offlineStatus")}
                   {item.last_seen_at
-                    ? ` · Last seen ${new Date(
-                        item.last_seen_at,
-                      ).toLocaleTimeString()}`
+                    ? t("deviceManager.lastSeen", {
+                        time: new Date(
+                          item.last_seen_at,
+                        ).toLocaleTimeString(),
+                      })
                     : ""}
                 </span>
               </span>
@@ -131,7 +139,7 @@ export default function DeviceManager() {
       {!pairing ? (
         <ModuleButton onClick={() => setPairing(true)}>
           <ModuleIcon name="plus" size={16} />
-          Add device
+          {t("deviceManager.addDevice")}
         </ModuleButton>
       ) : (
         <section className="rounded-[22px] border border-[#CFE0D4] bg-white p-4 text-center">
@@ -139,32 +147,46 @@ export default function DeviceManager() {
             <ModuleIcon name="signal" />
           </span>
           <h2 className="mt-3 text-[14px] font-extrabold text-[#213D2F]">
-            Pairing mode
+            {t("deviceManager.pairingMode")}
           </h2>
           <p className="mt-1 text-[10px] leading-5 text-[#73867A]">
-            Power on your ESP32/ESP8266 device and hold its PAIR button for 5
-            seconds.
+            {t("deviceManager.pairingHint")}
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <SelectField
-              label="Assign to farm"
+              label={t("deviceManager.assignToFarm")}
               value={farmAssign}
               onChange={setFarmAssign}
               options={farmOptions}
             />
             <SelectField
-              label="Configuration"
+              label={t("deviceManager.configuration")}
               value={config}
               onChange={setConfig}
-              options={["Soil sensor", "Weather node", "Tank level"]}
+              options={[
+                {
+                  value: "Soil sensor",
+                  label: t("deviceManager.configSoilSensor"),
+                },
+                {
+                  value: "Weather node",
+                  label: t("deviceManager.configWeatherNode"),
+                },
+                {
+                  value: "Tank level",
+                  label: t("deviceManager.configTankLevel"),
+                },
+              ]}
             />
           </div>
           <div className="mt-3 flex gap-2">
             <ModuleButton secondary onClick={() => setPairing(false)}>
-              Cancel
+              {t("common.cancel")}
             </ModuleButton>
             <ModuleButton onClick={simulatePair} disabled={saving}>
-              {saving ? "Pairing…" : "Simulate device found"}
+              {saving
+                ? t("deviceManager.pairing")
+                : t("deviceManager.simulateDeviceFound")}
             </ModuleButton>
           </div>
           {pairError && (

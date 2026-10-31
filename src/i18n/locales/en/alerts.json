@@ -1,0 +1,42 @@
+{
+  "alerts": {
+    "priority": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "kind": {
+      "weather": "Weather",
+      "irrigation": "Irrigation",
+      "sensor": "Sensor",
+      "prediction": "Prediction",
+      "reminder": "Reminder"
+    },
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "justNow": "just now",
+    "minAgo": "{{count}} min ago",
+    "hAgo": "{{count}} h ago",
+    "dAgo": "{{count}} d ago",
+    "loading": "Loading alerts…",
+    "unread": "Unread",
+    "total_one": "{{count}} total alert",
+    "total_other": "{{count}} total alerts",
+    "checking": "Checking…",
+    "checkNow": "Check now",
+    "markAllRead": "Mark all read",
+    "basedOnData": "Based only on your own farm data.",
+    "signIn": "Sign in to view your alerts.",
+    "loadError": "Could not load alerts.",
+    "simulatedData": "Simulated data",
+    "why": "Why:",
+    "read": "Read",
+    "markRead": "Mark read",
+    "markUnread": "Mark unread",
+    "noUnreadAlerts": "No unread alerts",
+    "noAlerts": "No alerts yet",
+    "noUnreadBody": "Everything here has been read. Switch to All to review past alerts.",
+    "noAlertsBody": "Alerts appear when something on your farm needs attention."
+  }
+}

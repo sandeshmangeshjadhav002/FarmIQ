@@ -1,0 +1,27 @@
+{
+  "deviceManager": {
+    "connected": "जोडलेले",
+    "onlineNow": "आता ऑनलाइन",
+    "offline": "ऑफलाइन",
+    "needsAttention": "लक्ष देणे आवश्यक",
+    "total": "एकूण",
+    "pairedDevices": "जोडलेली उपकरणे",
+    "loadError": "तुमची उपकरणे लोड करता आली नाहीत.",
+    "noDevices": "अद्याप कोणतेही उपकरण जोडलेले नाही.",
+    "online": "ऑनलाइन",
+    "offlineStatus": "ऑफलाइन",
+    "lastSeen": " · शेवटचे दर्शन {{time}}",
+    "addDevice": "उपकरण जोडा",
+    "pairingMode": "पेअरिंग मोड",
+    "pairingHint": "तुमचे ESP32/ESP8266 उपकरण चालू करा आणि 5 सेकंद त्याचे PAIR बटण दाबून धरा.",
+    "assignToFarm": "शेताला नियुक्त करा",
+    "configuration": "कॉन्फिगरेशन",
+    "assignLater": "नंतर नियुक्त करा",
+    "configSoilSensor": "माती सेन्सर",
+    "configWeatherNode": "हवामान नोड",
+    "configTankLevel": "टाकी पातळी",
+    "pairing": "पेअर होत आहे…",
+    "simulateDeviceFound": "उपकरण सापडले असे दाखवा",
+    "pairError": "उपकरण पेअर करता आले नाही. कृपया पुन्हा प्रयत्न करा."
+  }
+}

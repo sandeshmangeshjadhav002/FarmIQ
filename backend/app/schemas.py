@@ -17,6 +17,12 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 VALID_ROLES = ("farmer", "farm_manager", "agricultural_expert")
 
+# FarmIQ supports exactly two languages: English ("en") and Marathi ("mr").
+# The stored preference is a BCP-47 base code; "hi" and any other value is
+# rejected so an unsupported language can never be silently selected.
+SUPPORTED_LANGUAGES = ("en", "mr")
+DEFAULT_LANGUAGE = "en"
+
 
 class UserRegister(BaseModel):
     full_name: str = Field(min_length=2, max_length=200)
@@ -27,6 +33,9 @@ class UserRegister(BaseModel):
     # in the profile. The auth router still validates it against VALID_ROLES.
     role: str = Field(default="farmer", min_length=1, max_length=50)
     password: str = Field(min_length=8, max_length=128)
+    # The signup language, so a first-time Marathi speaker is not reset to
+    # English. Defaults to English when the client does not send one.
+    language: str = Field(default=DEFAULT_LANGUAGE, pattern=r"^(en|mr)$")
 
     model_config = ConfigDict(json_schema_extra={
         "example": {
@@ -51,6 +60,9 @@ class UserProfile(BaseModel):
     email: EmailStr
     mobile: str
     role: str
+    # The user's saved interface language ("en" | "mr"). Defaults to English so
+    # a profile created before this field existed still serialises cleanly.
+    language: str = DEFAULT_LANGUAGE
     created_at: Optional[str] = None
 
 
@@ -66,6 +78,7 @@ class AuthResponse(BaseModel):
     email: EmailStr
     mobile: str
     role: str
+    language: str = DEFAULT_LANGUAGE
     created_at: Optional[str] = None
     access_token: str = ""
     refresh_token: str = ""
@@ -76,6 +89,8 @@ class UserUpdate(BaseModel):
     # Role is changeable here so that dropping it from the signup form does not
     # leave "agricultural_expert" unreachable. Validated in the users router.
     role: Optional[str] = Field(default=None, max_length=50)
+    # Interface language preference. Rejected when it is not "en"/"mr".
+    language: Optional[str] = Field(default=None, pattern=r"^(en|mr)$")
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -369,6 +384,10 @@ class ChatRequest(BaseModel):
     ml_results: Optional[dict[str, Any]] = None
     top_k: Optional[int] = Field(default=None, ge=1, le=20)
     history: Optional[list[dict[str, Any]]] = Field(default=None, max_length=20)
+    # Answer language chosen in the UI ("en" | "mr"). Optional for backwards
+    # compatibility: when omitted the answer language is derived from the
+    # question itself (existing behaviour).
+    language: Optional[str] = Field(default=None, pattern=r"^(en|mr)$")
 
 
 class ChatSource(BaseModel):
@@ -720,6 +739,10 @@ class DroughtAssessmentRequest(BaseModel):
     # Persist result?
     save: bool = False
     farm_id: Optional[str] = Field(default=None, max_length=100)
+
+    # Language for the retrieved advisory text ("en" | "mr"). Defaults to
+    # English; the numerical assessment is language-independent.
+    language: str = Field(default=DEFAULT_LANGUAGE, pattern=r"^(en|mr)$")
 
 
 class DroughtRecommendationItem(BaseModel):

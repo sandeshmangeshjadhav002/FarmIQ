@@ -1,0 +1,28 @@
+{
+  "imageAnalysis": {
+    "cropOptions": {
+      "tomato": "Tomato",
+      "onion": "Onion",
+      "wheat": "Wheat",
+      "other": "Other"
+    },
+    "problemOptions": {
+      "leafSpots": "Leaf spots",
+      "curling": "Curling",
+      "yellowing": "Yellowing",
+      "notSure": "Not sure"
+    },
+    "aiDemonstration": "AI demonstration",
+    "uploadPrompt": "Upload a crop photograph",
+    "uploadHint": "JPG or PNG • Clear, close-up photos work best",
+    "cropLabel": "Crop",
+    "problemLabel": "Visible problem",
+    "checking": "Checking photograph...",
+    "analyze": "Analyze photograph",
+    "possibleCause": "Possible cause",
+    "resultTitle": "Possible early leaf spot",
+    "resultBody": "This is not a confirmed diagnosis. Similar marks can be caused by fungal infection, nutrient stress, or physical damage.",
+    "nextSteps": "Next steps:",
+    "nextStepsBody": "Isolate affected leaves, avoid overhead watering, and ask a local agronomist before applying treatment."
+  }
+}

@@ -12,6 +12,7 @@
  * No real user data is touched.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiPost } from "@/lib/apiClient";
 import useApi from "@/hooks/useApi";
 import ModuleIcon from "./ModuleIcon";
@@ -22,29 +23,30 @@ const PRIORITY_CONFIG = {
     bg: "bg-[#FCE9E5]",
     text: "text-[#9D3E2E]",
     badge: "bg-[#E8493B] text-white",
-    label: "Critical",
+    labelKey: "hackathonDemo.priorityCritical",
   },
   high: {
     bg: "bg-[#FFF5DE]",
     text: "text-[#8A6D2B]",
     badge: "bg-[#D99A2B] text-white",
-    label: "High",
+    labelKey: "hackathonDemo.priorityHigh",
   },
   moderate: {
     bg: "bg-[#E8EEF8]",
     text: "text-[#3F5A90]",
     badge: "bg-[#4F6590] text-white",
-    label: "Moderate",
+    labelKey: "hackathonDemo.priorityModerate",
   },
   low: {
     bg: "bg-white",
     text: "text-[#52665B]",
     badge: "bg-[#9ABBA6] text-white",
-    label: "Low",
+    labelKey: "hackathonDemo.priorityLow",
   },
 };
 
 export default function HackathonDemo() {
+  const { t } = useTranslation();
   const { data: farmsData, loading: farmsLoading } = useApi("/api/demo/farms");
   const [selectedFarm, setSelectedFarm] = useState(null);
   const [plan, setPlan] = useState(null);
@@ -83,7 +85,7 @@ export default function HackathonDemo() {
       }
       setPlan(result);
     } catch (err) {
-      setError(err.message || "Failed to run demo plan.");
+      setError(err.message || t("hackathonDemo.planFailed"));
     } finally {
       setBusy(false);
     }
@@ -104,11 +106,11 @@ export default function HackathonDemo() {
       <div className="rounded-[22px] border border-[#F0D090] bg-[#FFF8EA] p-4">
         <div className="flex items-center gap-2 mb-1">
           <span className="rounded-full bg-[#D99A2B] px-2.5 py-0.5 text-[9px] font-extrabold uppercase text-white">
-            Hackathon Demo Mode
+            {t("hackathonDemo.bannerTitle")}
           </span>
         </div>
         <p className="text-[11px] font-bold text-[#7A6428]">
-          Synthetic data for demonstration only — no real user data is used.
+          {t("hackathonDemo.bannerBody")}
         </p>
       </div>
 
@@ -125,7 +127,7 @@ export default function HackathonDemo() {
       ) : (
         <div className="space-y-2">
           <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[#5D7B6B]">
-            1. Select a demonstration farm
+            {t("hackathonDemo.step1")}
           </p>
           {farms.map((farm) => (
             <button
@@ -161,43 +163,43 @@ export default function HackathonDemo() {
       {selectedFarm && (
         <div className="rounded-[22px] border border-[#DDE6DF] bg-white p-4 space-y-3">
           <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[#5D7B6B]">
-            2. Adjust simulated sensor values
+            {t("hackathonDemo.step2")}
           </p>
           <p className="text-[9px] text-[#84938B]">
-            Leave blank to use defaults.
+            {t("hackathonDemo.leaveBlank")}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Field
-                label="Soil moisture (%)"
+                label={t("hackathonDemo.soilMoistureLabel")}
                 type="number"
                 value={soilMoisture ?? ""}
                 onChange={setSoilMoisture}
-                placeholder="e.g. 25"
+                placeholder={t("hackathonDemo.soilMoisturePlaceholder")}
               />
               <p className="text-[8px] text-[#9AA79F] mt-0.5">
-                Try: 15 (dry) · 50 (ok) · 80 (wet)
+                {t("hackathonDemo.soilMoistureHint")}
               </p>
             </div>
             <div>
               <Field
-                label="Temperature (°C)"
+                label={t("hackathonDemo.temperatureLabel")}
                 type="number"
                 value={temperature ?? ""}
                 onChange={setTemperature}
-                placeholder="e.g. 32"
+                placeholder={t("hackathonDemo.temperaturePlaceholder")}
               />
               <p className="text-[8px] text-[#9AA79F] mt-0.5">
-                Try: 25 (cool) · 38 (hot) · 42 (extreme)
+                {t("hackathonDemo.temperatureHint")}
               </p>
             </div>
             <div>
               <Field
-                label="Humidity (%)"
+                label={t("hackathonDemo.humidityLabel")}
                 type="number"
                 value={humidity ?? ""}
                 onChange={setHumidity}
-                placeholder="e.g. 45"
+                placeholder={t("hackathonDemo.humidityPlaceholder")}
               />
             </div>
           </div>
@@ -205,7 +207,9 @@ export default function HackathonDemo() {
             disabled={busy}
             onClick={() => runPlan(selectedFarm.id, true)}
           >
-            {busy ? "Running…" : "3. Generate Action Plan"}
+            {busy
+              ? t("hackathonDemo.running")
+              : t("hackathonDemo.generatePlan")}
           </ModuleButton>
         </div>
       )}
@@ -220,7 +224,7 @@ export default function HackathonDemo() {
       {plan && (
         <div className="space-y-3">
           <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[#5D7B6B]">
-            4. Farm action plan results
+            {t("hackathonDemo.step4")}
           </p>
 
           {/* Summary */}
@@ -231,21 +235,24 @@ export default function HackathonDemo() {
             <div className="mt-2 flex gap-3">
               {plan.critical_count > 0 && (
                 <span className="rounded-full bg-[#E8493B] px-2.5 py-1 text-[9px] font-extrabold text-white">
-                  {plan.critical_count} Critical
+                  {t("hackathonDemo.criticalCount", {
+                    n: plan.critical_count,
+                  })}
                 </span>
               )}
               {plan.high_count > 0 && (
                 <span className="rounded-full bg-[#D99A2B] px-2.5 py-1 text-[9px] font-extrabold text-white">
-                  {plan.high_count} High
+                  {t("hackathonDemo.highCount", { n: plan.high_count })}
                 </span>
               )}
             </div>
             {plan.sensor_values_used && (
               <div className="mt-2 rounded-xl bg-white/60 p-2.5 text-[9px] text-[#4C6355]">
-                Sensor values used: moisture{" "}
-                {plan.sensor_values_used.soil_moisture}% · temp{" "}
-                {plan.sensor_values_used.temperature}°C · humidity{" "}
-                {plan.sensor_values_used.humidity}%
+                {t("hackathonDemo.sensorValuesUsed", {
+                  moisture: plan.sensor_values_used.soil_moisture,
+                  temp: plan.sensor_values_used.temperature,
+                  humidity: plan.sensor_values_used.humidity,
+                })}
               </div>
             )}
           </div>
@@ -262,7 +269,7 @@ export default function HackathonDemo() {
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[8px] font-extrabold uppercase ${cfg.badge}`}
                   >
-                    {cfg.label}
+                    {t(cfg.labelKey)}
                   </span>
                   <span className="text-[9px] uppercase tracking-[.08em] text-[#7A8C82] font-semibold">
                     {action.category?.replace("_", " ")}
@@ -289,7 +296,7 @@ export default function HackathonDemo() {
           {plan.weather_summary && (
             <div className="rounded-[22px] border border-[#C5DCE4] bg-[#EBF6FA] p-4">
               <p className="text-[10px] font-bold text-[#1A4A5A] mb-2">
-                Weather conditions
+                {t("hackathonDemo.weatherConditions")}
               </p>
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 {plan.weather_summary.temperature_c != null && (
@@ -299,29 +306,31 @@ export default function HackathonDemo() {
                 )}
                 {plan.weather_summary.humidity_pct != null && (
                   <span>
-                    💧 {plan.weather_summary.humidity_pct.toFixed(0)}% humidity
+                    💧 {plan.weather_summary.humidity_pct.toFixed(0)}%{" "}
+                    {t("hackathonDemo.humidityUnit")}
                   </span>
                 )}
                 {plan.weather_summary.forecast_rain_7d_mm != null && (
                   <span className="text-[#D99A2B]">
-                    🌧 {plan.weather_summary.forecast_rain_7d_mm.toFixed(1)} mm
-                    forecast (7 days, unconfirmed)
+                    🌧 {plan.weather_summary.forecast_rain_7d_mm.toFixed(1)} mm{" "}
+                    {t("hackathonDemo.forecastUnconfirmed")}
                   </span>
                 )}
               </div>
               {!plan.weather_summary.temperature_c && (
                 <p className="text-[9px] text-[#5A8090]">
-                  Weather data unavailable — using sensor data only.
+                  {t("hackathonDemo.weatherUnavailable")}
                 </p>
               )}
             </div>
           )}
 
           <p className="text-[9px] text-[#9AA79F] text-right">
-            Generated:{" "}
-            {plan.generated_at
-              ? new Date(plan.generated_at).toLocaleTimeString("en-IN")
-              : "—"}
+            {t("hackathonDemo.generatedAt", {
+              time: plan.generated_at
+                ? new Date(plan.generated_at).toLocaleTimeString("en-IN")
+                : "—",
+            })}
           </p>
         </div>
       )}

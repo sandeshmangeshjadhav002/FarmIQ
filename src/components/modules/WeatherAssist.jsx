@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { apiGet } from "@/lib/apiClient";
 import { getCurrentPosition } from "@/lib/geolocation";
@@ -33,6 +34,7 @@ export default function WeatherAssist({
   onAutofill,
   farm = null,
 }) {
+  const { t } = useTranslation();
   const { location: sharedLocation, hasCoordinates: sharedHasCoords } = useLocation();
   const [location, setLocation] = useState("");
   const [report, setReport] = useState(null);
@@ -92,18 +94,15 @@ export default function WeatherAssist({
         if (requestId !== latestRequest.current) return;
         setReport(null);
         if (err.status === 503) {
-          setError(
-            "The weather service is unavailable right now. Auto-fill is off — " +
-              "type the values manually and the prediction still works.",
-          );
+          setError(t("weatherAssist.errorUnavailable"));
         } else {
-          setError(err.message || "Could not fetch weather for that location.");
+          setError(err.message || t("weatherAssist.errorFetch"));
         }
       } finally {
         if (requestId === latestRequest.current) setLoading(false);
       }
     },
-    [applyAutofill],
+    [applyAutofill, t],
   );
 
   /** Use the farm's stored coordinates — no geocoding, one fewer failure point. */
@@ -122,7 +121,7 @@ export default function WeatherAssist({
     } catch (err) {
       setLoading(false);
       setError(
-        err.message || "Location is unavailable. Enter a place name instead.",
+        err.message || t("weatherAssist.errorLocation"),
       );
     }
   };
@@ -130,7 +129,7 @@ export default function WeatherAssist({
   const lookUp = () => {
     const name = location.trim();
     if (name.length < 2) {
-      setError("Type at least 2 characters of a place name.");
+      setError(t("weatherAssist.errorShortName"));
       return;
     }
     load({ location: name, origin: "name" });
@@ -149,7 +148,7 @@ export default function WeatherAssist({
             <ModuleIcon name="drop" size={16} />
           </span>
           <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-            Auto-fill from weather
+            {t("weatherAssist.title")}
           </h2>
         </div>
         {lastQuery && (
@@ -158,7 +157,7 @@ export default function WeatherAssist({
             disabled={loading}
             className="rounded-full border border-[#D9E4DC] bg-white px-3 py-1.5 text-[10px] font-extrabold text-[#216B45] disabled:opacity-50"
           >
-            {loading ? "Refreshing…" : "Refresh"}
+            {loading ? t("weatherAssist.refreshing") : t("weatherAssist.refresh")}
           </button>
         )}
       </div>
@@ -173,7 +172,9 @@ export default function WeatherAssist({
             className="flex items-center gap-1.5 rounded-full border border-[#CDEBDA] bg-[#EAF6EF] px-3 py-1.5 text-[10px] font-extrabold text-[#1D4A33] disabled:opacity-50"
           >
             <ModuleIcon name="pin" size={13} />
-            Use {sharedLocation.label?.slice(0, 20) || "my location"}
+            {t("weatherAssist.useNamedLocation", {
+              name: sharedLocation.label?.slice(0, 20) || t("weatherAssist.myLocation"),
+            })}
           </button>
         )}
         {farmPoint && (
@@ -185,8 +186,8 @@ export default function WeatherAssist({
           >
             <ModuleIcon name="farm" size={13} />
             {farm?.name
-              ? `Use ${farm.name}'s saved location`
-              : "Use saved farm location"}
+              ? t("weatherAssist.useFarmSavedLocation", { farm: farm.name })
+              : t("weatherAssist.useSavedFarmLocation")}
           </button>
         )}
         <button
@@ -196,47 +197,45 @@ export default function WeatherAssist({
           className="flex items-center gap-1.5 rounded-full border border-[#D9E4DC] bg-white px-3 py-1.5 text-[10px] font-extrabold text-[#216B45] disabled:opacity-50"
         >
           <ModuleIcon name="pin" size={13} />
-          Use this phone's location
+          {t("weatherAssist.usePhoneLocation")}
         </button>
       </div>
 
       {usedOrigin === "farm" && (
         <p className="rounded-xl bg-[#EAF6EF] p-2.5 text-[9px] font-semibold leading-4 text-[#216B45]">
-          Using the saved point for {farm?.name ?? "this farm"} — the farm's own
-          location, not where this phone is. The farm's weather is what matters
-          for the field.
+          {t("weatherAssist.farmNote", { farm: farm?.name ?? "this farm" })}
         </p>
       )}
       {usedOrigin === "shared" && (
         <p className="rounded-xl bg-[#EAF6EF] p-2.5 text-[9px] font-semibold leading-4 text-[#216B45]">
-          Using your shared location ({sharedLocation?.label ?? "selected"}).
-          Change it from the home screen if needed.
+          {t("weatherAssist.sharedNote", {
+            label: sharedLocation?.label ?? "selected",
+          })}
         </p>
       )}
       {usedOrigin === "phone" && (
         <p className="rounded-xl bg-[#FFF5DE] p-2.5 text-[9px] font-semibold leading-4 text-[#8A6D2B]">
-          Using this phone's position. If you are not standing at the farm, the
-          weather may not match the field.
+          {t("weatherAssist.phoneNote")}
         </p>
       )}
 
       <div className="flex flex-wrap items-end gap-2">
         <label className="min-w-[140px] flex-1">
           <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">
-            Location
+            {t("weatherAssist.location")}
           </span>
           <input
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && lookUp()}
-            placeholder="e.g. Nashik"
+            placeholder={t("weatherAssist.locationPlaceholder")}
             className="h-10 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] text-[#203B2D] outline-none focus:border-[#76A58A]"
           />
         </label>
         <ModuleButton onClick={lookUp} disabled={loading}>
           <ModuleIcon name="search" size={15} />
-          {loading ? "Loading…" : "Look up"}
+          {loading ? t("weatherAssist.loading") : t("weatherAssist.lookUp")}
         </ModuleButton>
       </div>
 
@@ -250,7 +249,7 @@ export default function WeatherAssist({
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-[9px] text-[#75867C]">
             <span className="rounded-full bg-white px-2.5 py-1 font-extrabold text-[#216B45]">
-              Source: {report.source}
+              {t("weatherAssist.source", { source: report.source })}
             </span>
             {report.location?.name && <span>{report.location.name}</span>}
             <span>
@@ -261,23 +260,23 @@ export default function WeatherAssist({
           {/* Current observation — the only source used for temperature/humidity */}
           <div className="rounded-2xl border border-[#E0E8E2] bg-white p-3">
             <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8B82]">
-              {report.current?.label ?? "Current observation"}
+              {report.current?.label ?? t("weatherAssist.currentObservation")}
             </p>
             <div className="mt-2 grid grid-cols-4 gap-2 text-[11px]">
               <Readout
-                label="Temp"
+                label={t("weatherAssist.temp")}
                 value={fmt(report.current?.temperature_c, "°C")}
               />
               <Readout
-                label="Humidity"
+                label={t("weatherAssist.humidity")}
                 value={fmt(report.current?.humidity_pct, "%")}
               />
               <Readout
-                label="Rain now"
+                label={t("weatherAssist.rainNow")}
                 value={fmt(report.current?.precipitation_mm, "mm")}
               />
               <Readout
-                label="Observed"
+                label={t("weatherAssist.observed")}
                 value={
                   report.current?.observed_at
                     ? report.current.observed_at.slice(11, 16)
@@ -297,8 +296,10 @@ export default function WeatherAssist({
                 {fmt(report.historical_rainfall?.total_mm, "mm")}
               </p>
               <p className="mt-1 text-[9px] text-[#84938B]">
-                {report.historical_rainfall?.days} days · last 7 days{" "}
-                {fmt(report.historical_rainfall?.past_7_days_mm, "mm")}
+                {t("weatherAssist.lastSevenDays", {
+                  days: report.historical_rainfall?.days,
+                  value: fmt(report.historical_rainfall?.past_7_days_mm, "mm"),
+                })}
               </p>
             </div>
             <div className="rounded-2xl border border-[#E5EEF7] bg-white p-3">
@@ -309,7 +310,9 @@ export default function WeatherAssist({
                 {fmt(report.forecast_rainfall?.total_mm, "mm")}
               </p>
               <p className="mt-1 text-[9px] text-[#84938B]">
-                Next {report.forecast_rainfall?.days} days
+                {t("weatherAssist.nextDays", {
+                  days: report.forecast_rainfall?.days,
+                })}
               </p>
             </div>
           </div>
@@ -317,8 +320,7 @@ export default function WeatherAssist({
           {applied.length > 0 ? (
             <div className="rounded-2xl bg-[#EAF6EF] p-3">
               <p className="text-[10px] font-extrabold text-[#1D4A33]">
-                Filled {applied.length} field{applied.length > 1 ? "s" : ""} —
-                you can edit these
+                {t("weatherAssist.filled", { count: applied.length })}
               </p>
               <ul className="mt-2 space-y-1.5">
                 {applied.map(([formKey, autoKey]) => {
@@ -342,7 +344,7 @@ export default function WeatherAssist({
             </div>
           ) : (
             <p className="text-[10px] text-[#75867C]">
-              No matching form fields were auto-filled from this reading.
+              {t("weatherAssist.noneFilled")}
             </p>
           )}
 

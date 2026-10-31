@@ -12,6 +12,7 @@
  * - Priority, timestamp and read/unread state are always visible.
  */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiPatch, apiPost } from "@/lib/apiClient";
 import useApi from "@/hooks/useApi";
 import ScreenLoader from "@/components/common/ScreenLoader";
@@ -20,28 +21,28 @@ import { DemoBadge, ModuleButton } from "./ModuleShared";
 
 const PRIORITY = {
   critical: {
-    label: "Critical",
+    labelKey: "alerts.priority.critical",
     card: "bg-[#FCE9E5] border-[#E8B4AE]",
     title: "text-[#8E3527]",
     badge: "bg-[#E8493B] text-white",
     dot: "bg-[#E8493B]",
   },
   high: {
-    label: "High",
+    labelKey: "alerts.priority.high",
     card: "bg-[#FFF5DE] border-[#F0D090]",
     title: "text-[#8A6D2B]",
     badge: "bg-[#D99A2B] text-white",
     dot: "bg-[#D99A2B]",
   },
   medium: {
-    label: "Medium",
+    labelKey: "alerts.priority.medium",
     card: "bg-[#E8EEF8] border-[#C0CDE8]",
     title: "text-[#3F5A90]",
     badge: "bg-[#4F6590] text-white",
     dot: "bg-[#4F6590]",
   },
   low: {
-    label: "Low",
+    labelKey: "alerts.priority.low",
     card: "bg-white border-[#E2E9E4]",
     title: "text-[#3F5A4B]",
     badge: "bg-[#7A9585] text-white",
@@ -50,33 +51,34 @@ const PRIORITY = {
 };
 
 const KIND_LABEL = {
-  weather: "Weather",
-  irrigation: "Irrigation",
-  sensor: "Sensor",
-  prediction: "Prediction",
-  reminder: "Reminder",
+  weather: "alerts.kind.weather",
+  irrigation: "alerts.kind.irrigation",
+  sensor: "alerts.kind.sensor",
+  prediction: "alerts.kind.prediction",
+  reminder: "alerts.kind.reminder",
 };
 
 const FILTERS = [
-  { key: "all", label: "All" },
-  { key: "unread", label: "Unread" },
+  { key: "all", labelKey: "alerts.filterAll" },
+  { key: "unread", labelKey: "alerts.filterUnread" },
 ];
 
 /** Short relative time (e.g. "12 min ago"). Returns "" for a missing date. */
-function relativeTime(value) {
+function relativeTime(value, t) {
   if (!value) return "";
   const then = new Date(value).getTime();
   if (Number.isNaN(then)) return "";
   const minutes = Math.round((Date.now() - then) / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 1) return t("alerts.justNow");
+  if (minutes < 60) return t("alerts.minAgo", { count: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
+  if (hours < 24) return t("alerts.hAgo", { count: hours });
   const days = Math.round(hours / 24);
-  return `${days} d ago`;
+  return t("alerts.dAgo", { count: days });
 }
 
 export default function AlertsPanel() {
+  const { t } = useTranslation();
   const [version, setVersion] = useState(0);
   const [filter, setFilter] = useState("all");
   const [items, setItems] = useState([]);
@@ -119,7 +121,7 @@ export default function AlertsPanel() {
     runAction(() => apiPost("/api/alerts/read-all", {}));
 
   if (loading && items.length === 0) {
-    return <ScreenLoader label="Loading alerts…" />;
+    return <ScreenLoader label={t("alerts.loading")} />;
   }
 
   const unreadCount = items.filter((a) => !a.is_read).length;
@@ -132,32 +134,32 @@ export default function AlertsPanel() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[#7A8B82]">
-              Unread
+              {t("alerts.unread")}
             </p>
             <p className="mt-1 text-[26px] font-extrabold tracking-[-.03em] text-[#1D3A2B]">
               {unreadCount}
             </p>
             <p className="text-[9px] text-[#84938B]">
-              {items.length} total alert{items.length === 1 ? "" : "s"}
+              {t("alerts.total", { count: items.length })}
             </p>
           </div>
           <div className="flex flex-col gap-2">
             <ModuleButton onClick={handleRefresh} disabled={busy}>
               <ModuleIcon name="refresh" size={15} />
-              {busy ? "Checking…" : "Check now"}
+              {busy ? t("alerts.checking") : t("alerts.checkNow")}
             </ModuleButton>
             <ModuleButton
               secondary
               onClick={handleReadAll}
               disabled={busy || unreadCount === 0}
             >
-              Mark all read
+              {t("alerts.markAllRead")}
             </ModuleButton>
           </div>
         </div>
 
         <p className="mt-3 text-[9px] leading-relaxed text-[#84938B]">
-          Based only on your own farm data.
+          {t("alerts.basedOnData")}
         </p>
 
         <div className="mt-3 flex gap-2">
@@ -171,16 +173,16 @@ export default function AlertsPanel() {
                   : "border border-[#D9E4DC] bg-white text-[#216B45]"
               }`}
             >
-              {f.label}
+              {t(f.labelKey)}
             </button>
           ))}
         </div>
       </section>
 
       {/* ── Errors ────────────────────────────────────────────────────── */}
-      {needsAuth && <Notice tone="amber">Sign in to view your alerts.</Notice>}
+      {needsAuth && <Notice tone="amber">{t("alerts.signIn")}</Notice>}
       {error && !needsAuth && (
-        <Notice tone="red">{error.message || "Could not load alerts."}</Notice>
+        <Notice tone="red">{error.message || t("alerts.loadError")}</Notice>
       )}
       {actionError && <Notice tone="red">{actionError.message}</Notice>}
 
@@ -204,6 +206,7 @@ export default function AlertsPanel() {
 }
 
 function AlertCard({ alert, busy, onToggleRead }) {
+  const { t } = useTranslation();
   const tone = PRIORITY[alert.priority] || PRIORITY.low;
   return (
     <li
@@ -218,12 +221,12 @@ function AlertCard({ alert, busy, onToggleRead }) {
             <span
               className={`rounded-full px-2 py-[3px] text-[8px] font-extrabold uppercase tracking-[.06em] ${tone.badge}`}
             >
-              {tone.label}
+              {t(tone.labelKey)}
             </span>
             <span className="rounded-full bg-white/70 px-2 py-[3px] text-[8px] font-extrabold uppercase tracking-[.06em] text-[#52665B]">
-              {KIND_LABEL[alert.kind] || alert.kind}
+              {KIND_LABEL[alert.kind] ? t(KIND_LABEL[alert.kind]) : alert.kind}
             </span>
-            {alert.is_demo && <DemoBadge status="Simulated data" />}
+            {alert.is_demo && <DemoBadge status={t("alerts.simulatedData")} />}
           </div>
 
           <h3
@@ -238,21 +241,21 @@ function AlertCard({ alert, busy, onToggleRead }) {
           )}
           {alert.reason && (
             <p className="mt-2 rounded-xl bg-white/60 px-2.5 py-2 text-[9px] leading-relaxed text-[#6D7F74]">
-              <span className="font-extrabold">Why:</span> {alert.reason}
+              <span className="font-extrabold">{t("alerts.why")}</span> {alert.reason}
             </p>
           )}
 
           <div className="mt-3 flex items-center justify-between gap-2">
             <span className="text-[9px] font-semibold text-[#84938B]">
-              {relativeTime(alert.created_at) ||
-                (alert.is_read ? "Read" : "Unread")}
+              {relativeTime(alert.created_at, t) ||
+                (alert.is_read ? t("alerts.read") : t("alerts.unread"))}
             </span>
             <button
               onClick={onToggleRead}
               disabled={busy}
               className="rounded-full border border-[#D9E4DC] bg-white px-3 py-1 text-[9px] font-extrabold text-[#216B45] transition active:scale-[.98] disabled:opacity-50"
             >
-              {alert.is_read ? "Mark unread" : "Mark read"}
+              {alert.is_read ? t("alerts.markUnread") : t("alerts.markRead")}
             </button>
           </div>
         </div>
@@ -262,6 +265,7 @@ function AlertCard({ alert, busy, onToggleRead }) {
 }
 
 function EmptyState({ filter, hasAny }) {
+  const { t } = useTranslation();
   const unreadFilter = filter === "unread";
   return (
     <div className="rounded-[22px] border border-[#E2E9E4] bg-white p-6 text-center">
@@ -269,12 +273,14 @@ function EmptyState({ filter, hasAny }) {
         <ModuleIcon name="bell" size={20} />
       </span>
       <h3 className="mt-3 text-[13px] font-extrabold text-[#1D3A2B]">
-        {unreadFilter && hasAny ? "No unread alerts" : "No alerts yet"}
+        {unreadFilter && hasAny
+          ? t("alerts.noUnreadAlerts")
+          : t("alerts.noAlerts")}
       </h3>
       <p className="mx-auto mt-1 max-w-[260px] text-[10px] leading-relaxed text-[#7B8C82]">
         {unreadFilter && hasAny
-          ? "Everything here has been read. Switch to All to review past alerts."
-          : "Alerts appear when something on your farm needs attention."}
+          ? t("alerts.noUnreadBody")
+          : t("alerts.noAlertsBody")}
       </p>
     </div>
   );

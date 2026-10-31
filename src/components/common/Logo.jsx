@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import Icon from "./Icon";
 
 /**
@@ -7,6 +9,7 @@ import Icon from "./Icon";
  * @param {boolean} [props.compact] - Hide the tagline when true.
  */
 export default function Logo({ compact = false }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2">
       <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#216B45] text-white shadow-[0_5px_14px_rgba(33,107,69,.22)]">
@@ -18,7 +21,7 @@ export default function Logo({ compact = false }) {
         </div>
         {!compact && (
           <div className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#698073]">
-            Intelligent Farm Management
+            {t("nav.appTagline")}
           </div>
         )}
       </div>

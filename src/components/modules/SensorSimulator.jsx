@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { apiPost } from "@/lib/apiClient";
 import useApi from "@/hooks/useApi";
@@ -22,6 +23,7 @@ import { DemoBadge, ModuleButton, SelectField } from "./ModuleShared";
  * ESP32/ESP8266 node would POST to /api/sensor-readings/ingest.
  */
 export default function SensorSimulator() {
+  const { t } = useTranslation();
   const { data: config } = useApi("/api/simulator/config");
   const channels = config?.channels ?? {};
 
@@ -79,7 +81,7 @@ export default function SensorSimulator() {
       const data = await apiPost("/api/simulator/readings", body);
       setReading(data);
     } catch (err) {
-      setError(err.message || "Could not generate a demo reading.");
+      setError(err.message || t("sensorSimulator.generateError"));
     } finally {
       setGenerating(false);
     }
@@ -90,7 +92,7 @@ export default function SensorSimulator() {
     if (!persistDeviceId) {
       setPersistNote({
         tone: "error",
-        text: "Choose a device to store the demo reading against.",
+        text: t("sensorSimulator.chooseDevice"),
       });
       return;
     }
@@ -113,12 +115,12 @@ export default function SensorSimulator() {
       setReading(data);
       setPersistNote({
         tone: "ok",
-        text: `Stored as DEMO row ${data.record_id}. It is marked is_demo and is not a hardware reading.`,
+        text: t("sensorSimulator.storedAsDemo", { recordId: data.record_id }),
       });
     } catch (err) {
       setPersistNote({
         tone: "error",
-        text: err.message || "Could not store the demo reading.",
+        text: err.message || t("sensorSimulator.storeError"),
       });
     } finally {
       setPersisting(false);
@@ -130,13 +132,17 @@ export default function SensorSimulator() {
       {/* Source switch */}
       <div className="flex items-center justify-between">
         <DemoBadge
-          status={mode === "demo" ? "Demo data" : "Connected sensors"}
+          status={
+            mode === "demo"
+              ? t("sensorSimulator.demoData")
+              : t("sensorSimulator.connectedSensors")
+          }
         />
         <div className="flex rounded-xl border border-[#DDE6DF] bg-white p-0.5">
           {[
-            ["demo", "Demo data"],
-            ["real", "Connected sensors"],
-          ].map(([key, label]) => (
+            ["demo", "sensorSimulator.demoData"],
+            ["real", "sensorSimulator.connectedSensors"],
+          ].map(([key, labelKey]) => (
             <button
               key={key}
               onClick={() => setMode(key)}
@@ -144,7 +150,7 @@ export default function SensorSimulator() {
                 mode === key ? "bg-[#216B45] text-white" : "text-[#52675B]"
               }`}
             >
-              {label}
+              {t(labelKey)}
             </button>
           ))}
         </div>
@@ -153,18 +159,16 @@ export default function SensorSimulator() {
       {mode === "demo" ? (
         <>
           <p className="rounded-2xl bg-[#FFF5DE] p-3 text-[10px] font-semibold leading-5 text-[#8A6D2B]">
-            {config?.note ??
-              "Readings produced here are simulated DEMO DATA, not measurements from physical hardware."}
+            {config?.note ?? t("sensorSimulator.demoNote")}
           </p>
 
           {/* Configurable channel values */}
           <section className="space-y-3 rounded-[22px] border border-[#DCE6DF] bg-white p-4">
             <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-              Configurable channel values
+              {t("sensorSimulator.configurableChannels")}
             </h2>
             <p className="text-[9px] leading-4 text-[#84938B]">
-              Leave a field blank to draw a realistic random value from the
-              model's training range.
+              {t("sensorSimulator.blankHint")}
             </p>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(channels).map(([channel, spec]) => (
@@ -190,7 +194,7 @@ export default function SensorSimulator() {
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">
-                  Noise ± fraction (0–1)
+                  {t("sensorSimulator.noiseLabel")}
                 </span>
                 <input
                   type="number"
@@ -204,14 +208,14 @@ export default function SensorSimulator() {
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">
-                  Seed (optional, reproducible)
+                  {t("sensorSimulator.seedLabel")}
                 </span>
                 <input
                   type="number"
                   min="0"
                   value={seed}
                   onChange={(e) => setSeed(e.target.value)}
-                  placeholder="e.g. 42"
+                  placeholder={t("sensorSimulator.seedPlaceholder")}
                   className="h-10 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] text-[#203B2D] outline-none focus:border-[#76A58A]"
                 />
               </label>
@@ -220,7 +224,7 @@ export default function SensorSimulator() {
             {/* Failure injection */}
             <div>
               <p className="mb-1.5 text-[10px] font-bold text-[#52675B]">
-                Simulate sensor failure
+                {t("sensorSimulator.simulateFailure")}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.keys(channels).map((channel) => (
@@ -242,7 +246,9 @@ export default function SensorSimulator() {
                   }
                   className="rounded-full bg-[#FCE9E5] px-2.5 py-1 text-[9px] font-extrabold text-[#A55243]"
                 >
-                  {failed.length ? "Clear failures" : "Fail all"}
+                  {failed.length
+                    ? t("sensorSimulator.clearFailures")
+                    : t("sensorSimulator.failAll")}
                 </button>
               </div>
             </div>
@@ -250,7 +256,9 @@ export default function SensorSimulator() {
             <div className="flex flex-wrap gap-2">
               <ModuleButton onClick={generate} disabled={generating}>
                 <ModuleIcon name="signal" size={16} />
-                {generating ? "Generating…" : "Generate demo reading"}
+                {generating
+                  ? t("sensorSimulator.generating")
+                  : t("sensorSimulator.generate")}
               </ModuleButton>
             </div>
             {error && (
@@ -267,23 +275,21 @@ export default function SensorSimulator() {
           {reading && (
             <section className="space-y-3 rounded-[22px] border border-[#DCE6DF] bg-white p-4">
               <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-                Store this reading (optional)
+                {t("sensorSimulator.storeTitle")}
               </h2>
               <p className="text-[9px] leading-4 text-[#84938B]">
-                Stored with <b>is_demo = true</b> against one of your devices.
-                It never overwrites real sensor records, and real readings never
-                show it in the connected-sensor view.
+                {t("sensorSimulator.storeBodyPrefix")} <b>is_demo = true</b>{" "}
+                {t("sensorSimulator.storeBodySuffix")}
               </p>
               {devices.length === 0 ? (
                 <p className="text-[10px] text-[#8A6D2B]">
-                  No devices paired yet. Add one in Device Management to store
-                  demo rows.
+                  {t("sensorSimulator.noDevices")}
                 </p>
               ) : (
                 <div className="flex flex-wrap items-end gap-2">
                   <div className="min-w-[160px] flex-1">
                     <SelectField
-                      label="Device"
+                      label={t("sensorSimulator.deviceLabel")}
                       value={persistDeviceId}
                       onChange={setPersistDeviceId}
                       options={["", ...devices.map((d) => d.id)]}
@@ -294,7 +300,9 @@ export default function SensorSimulator() {
                     onClick={persist}
                     disabled={persisting}
                   >
-                    {persisting ? "Storing…" : "Store as demo"}
+                    {persisting
+                      ? t("sensorSimulator.storing")
+                      : t("sensorSimulator.storeAsDemo")}
                   </ModuleButton>
                 </div>
               )}
@@ -324,6 +332,7 @@ export default function SensorSimulator() {
 }
 
 function DemoReadingCard({ reading }) {
+  const { t } = useTranslation();
   const entries = Object.entries(reading.reading ?? {});
   return (
     <section className="space-y-3 rounded-[22px] border border-[#F2DCB0] bg-[#FFFBF0] p-4">
@@ -332,7 +341,7 @@ function DemoReadingCard({ reading }) {
           {reading.label}
         </h3>
         <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#916112]">
-          Simulated
+          {t("sensorSimulator.simulated")}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -358,23 +367,27 @@ function DemoReadingCard({ reading }) {
               {channel}
             </p>
             <p className="mt-1 text-[13px] font-extrabold text-[#A55243]">
-              no signal
+              {t("sensorSimulator.noSignal")}
             </p>
           </div>
         ))}
       </div>
       <div className="flex flex-wrap gap-2 text-[9px] text-[#8A6D2B]">
         <span className="rounded-full bg-white px-2.5 py-1 font-extrabold">
-          Generated {new Date(reading.generated_at).toLocaleTimeString()}
+          {t("sensorSimulator.generatedAt", {
+            time: new Date(reading.generated_at).toLocaleTimeString(),
+          })}
         </span>
         {reading.seed != null && (
           <span className="rounded-full bg-white px-2.5 py-1 font-extrabold">
-            seed {reading.seed}
+            {t("sensorSimulator.seedBadge", { seed: reading.seed })}
           </span>
         )}
         {reading.failed_channels?.length > 0 && (
           <span className="rounded-full bg-white px-2.5 py-1 font-extrabold">
-            {reading.failed_channels.length} failed channel(s)
+            {t("sensorSimulator.failedChannels", {
+              count: reading.failed_channels.length,
+            })}
           </span>
         )}
       </div>
@@ -390,6 +403,7 @@ function DemoReadingCard({ reading }) {
 }
 
 function RealReadings({ loading, error, items }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="space-y-3">
@@ -405,7 +419,7 @@ function RealReadings({ loading, error, items }) {
   if (error) {
     return (
       <p className="rounded-2xl bg-[#FCE9E5] p-4 text-[11px] font-semibold text-[#9D4C3E]">
-        Could not load connected-sensor readings
+        {t("sensorSimulator.realLoadError")}
         {error.status ? ` (${error.status})` : ""}.
       </p>
     );
@@ -414,8 +428,7 @@ function RealReadings({ loading, error, items }) {
     <section className="overflow-hidden rounded-[22px] border border-[#E0E8E2] bg-white">
       {items.length === 0 ? (
         <p className="p-6 text-center text-[12px] text-[#7B8C82]">
-          No real sensor readings yet. Readings you simulate in Demo mode are
-          stored separately and will not appear here.
+          {t("sensorSimulator.noRealReadings")}
         </p>
       ) : (
         items.map((item, index) => (
@@ -430,7 +443,7 @@ function RealReadings({ loading, error, items }) {
             </span>
             <span className="min-w-0 flex-1">
               <b className="block text-[11px] text-[#294234]">
-                {summarise(item)}
+                {summarise(item, t)}
               </b>
               <span className="text-[9px] text-[#829188]">
                 {item.created_at
@@ -439,7 +452,9 @@ function RealReadings({ loading, error, items }) {
                 {item.device_id ? ` · ${item.device_id.slice(0, 8)}` : ""}
               </span>
             </span>
-            <b className="text-[9px] font-extrabold text-[#557064]">REAL</b>
+            <b className="text-[9px] font-extrabold text-[#557064]">
+              {t("sensorSimulator.realBadge")}
+            </b>
           </div>
         ))
       )}
@@ -447,11 +462,12 @@ function RealReadings({ loading, error, items }) {
   );
 }
 
-function summarise(item) {
+function summarise(item, t) {
   const parts = [];
   if (item.temperature != null) parts.push(`${item.temperature}°C`);
   if (item.humidity != null) parts.push(`${item.humidity}% RH`);
-  if (item.soil_moisture != null) parts.push(`moisture ${item.soil_moisture}%`);
+  if (item.soil_moisture != null)
+    parts.push(`${t("sensorSimulator.moistureLabel")} ${item.soil_moisture}%`);
   if (item.ph != null) parts.push(`pH ${item.ph}`);
-  return parts.length ? parts.join(" · ") : "Reading recorded";
+  return parts.length ? parts.join(" · ") : t("sensorSimulator.readingRecorded");
 }

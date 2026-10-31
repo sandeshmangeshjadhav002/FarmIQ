@@ -1,0 +1,17 @@
+{
+  "schemes": {
+    "loadError": "Could not load scheme information",
+    "tryAgain": "Try again",
+    "confirmed": "Confirmed",
+    "needsVerification": "Needs verification",
+    "lastVerified": "Last verified: {{date}}",
+    "otherSupport": "Other useful support",
+    "purpose": "Purpose",
+    "eligibility": "Eligibility",
+    "benefits": "Benefits",
+    "howToApply": "How to apply",
+    "officialLink": "Official link",
+    "confirmedBadge": "confirmed",
+    "verifyBadge": "verify"
+  }
+}

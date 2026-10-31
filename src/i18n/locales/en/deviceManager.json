@@ -1,0 +1,27 @@
+{
+  "deviceManager": {
+    "connected": "Connected",
+    "onlineNow": "Online now",
+    "offline": "Offline",
+    "needsAttention": "Needs attention",
+    "total": "Total",
+    "pairedDevices": "Paired devices",
+    "loadError": "Could not load your devices.",
+    "noDevices": "No devices paired yet.",
+    "online": "Online",
+    "offlineStatus": "Offline",
+    "lastSeen": " · Last seen {{time}}",
+    "addDevice": "Add device",
+    "pairingMode": "Pairing mode",
+    "pairingHint": "Power on your ESP32/ESP8266 device and hold its PAIR button for 5 seconds.",
+    "assignToFarm": "Assign to farm",
+    "configuration": "Configuration",
+    "assignLater": "Assign later",
+    "configSoilSensor": "Soil sensor",
+    "configWeatherNode": "Weather node",
+    "configTankLevel": "Tank level",
+    "pairing": "Pairing…",
+    "simulateDeviceFound": "Simulate device found",
+    "pairError": "Could not pair the device. Please try again."
+  }
+}

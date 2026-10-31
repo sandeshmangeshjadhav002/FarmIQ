@@ -1,0 +1,33 @@
+{
+  "hackathonDemo": {
+    "priorityCritical": "गंभीर",
+    "priorityHigh": "उच्च",
+    "priorityModerate": "मध्यम",
+    "priorityLow": "कमी",
+    "bannerTitle": "हॅकाथॉन डेमो मोड",
+    "bannerBody": "केवळ प्रात्यक्षिकासाठी कृत्रिम डेटा — कोणताही खरा वापरकर्ता डेटा वापरला जात नाही.",
+    "step1": "1. प्रात्यक्षिक शेत निवडा",
+    "step2": "2. अनुकरण केलेली सेन्सर मूल्ये समायोजित करा",
+    "leaveBlank": "डीफॉल्ट वापरण्यासाठी रिकामे ठेवा.",
+    "soilMoistureLabel": "माती ओलावा (%)",
+    "soilMoisturePlaceholder": "उदा. 25",
+    "soilMoistureHint": "प्रयत्न करा: 15 (कोरडे) · 50 (ठीक) · 80 (ओले)",
+    "temperatureLabel": "तापमान (°C)",
+    "temperaturePlaceholder": "उदा. 32",
+    "temperatureHint": "प्रयत्न करा: 25 (थंड) · 38 (गरम) · 42 (अति)",
+    "humidityLabel": "आर्द्रता (%)",
+    "humidityPlaceholder": "उदा. 45",
+    "running": "चालू आहे…",
+    "generatePlan": "3. कृती योजना तयार करा",
+    "planFailed": "डेमो योजना चालवता आली नाही.",
+    "step4": "4. शेत कृती योजना निकाल",
+    "criticalCount": "{{n}} गंभीर",
+    "highCount": "{{n}} उच्च",
+    "sensorValuesUsed": "वापरलेली सेन्सर मूल्ये: ओलावा {{moisture}}% · तापमान {{temp}}°C · आर्द्रता {{humidity}}%",
+    "weatherConditions": "हवामान परिस्थिती",
+    "humidityUnit": "आर्द्रता",
+    "forecastUnconfirmed": "अंदाज (7 दिवस, अप्रमाणित)",
+    "weatherUnavailable": "हवामान डेटा उपलब्ध नाही — केवळ सेन्सर डेटा वापरत आहे.",
+    "generatedAt": "तयार केले: {{time}}"
+  }
+}

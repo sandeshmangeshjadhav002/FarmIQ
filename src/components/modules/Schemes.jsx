@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import useApi from "@/hooks/useApi";
 import ModuleIcon from "./ModuleIcon";
@@ -13,6 +14,7 @@ import { ModuleButton } from "./ModuleShared";
  * last-verified date and (where available) the official link.
  */
 export default function Schemes() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useApi("/api/schemes");
   const [openId, setOpenId] = useState(null);
 
@@ -30,10 +32,11 @@ export default function Schemes() {
     return (
       <div className="space-y-3">
         <p className="rounded-2xl bg-[#FCE9E5] p-4 text-[11px] font-semibold text-[#9D4C3E]">
-          Could not load scheme information{error.status ? ` (${error.status})` : ""}.
+          {t("schemes.loadError")}
+          {error.status ? ` (${error.status})` : ""}.
         </p>
         <ModuleButton secondary onClick={refetch}>
-          Try again
+          {t("schemes.tryAgain")}
         </ModuleButton>
       </div>
     );
@@ -55,10 +58,10 @@ export default function Schemes() {
           {data?.metadata?.verification_note}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Legend tone="ok" text="Confirmed" />
-          <Legend tone="warn" text="Needs verification" />
+          <Legend tone="ok" text={t("schemes.confirmed")} />
+          <Legend tone="warn" text={t("schemes.needsVerification")} />
           <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold text-[#52675B]">
-            Last verified: {data?.metadata?.last_verified}
+            {t("schemes.lastVerified", { date: data?.metadata?.last_verified })}
           </span>
         </div>
       </section>
@@ -74,7 +77,7 @@ export default function Schemes() {
 
       {data?.additional_support?.length > 0 && (
         <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
-          <h2 className="text-[13px] font-extrabold text-[#203C2E]">Other useful support</h2>
+          <h2 className="text-[13px] font-extrabold text-[#203C2E]">{t("schemes.otherSupport")}</h2>
           <ul className="mt-3 space-y-2">
             {data.additional_support.map((item) => (
               <li key={item.name} className="flex items-start gap-2">
@@ -101,6 +104,7 @@ export default function Schemes() {
 }
 
 function SchemeCard({ scheme, open, onToggle }) {
+  const { t } = useTranslation();
   return (
     <section className="overflow-hidden rounded-[22px] border border-[#E0E8E2] bg-white">
       <button onClick={onToggle} className="flex w-full items-start gap-3 p-4 text-left">
@@ -119,11 +123,11 @@ function SchemeCard({ scheme, open, onToggle }) {
 
       {open && (
         <div className="space-y-3 border-t border-[#EDF1EE] p-4">
-          <Field label="Purpose" item={scheme.purpose} />
-          <Field label="Eligibility" item={scheme.eligibility} />
+          <Field label={t("schemes.purpose")} item={scheme.purpose} />
+          <Field label={t("schemes.eligibility")} item={scheme.eligibility} />
 
           <div>
-            <FieldLabel label="Benefits" />
+            <FieldLabel label={t("schemes.benefits")} />
             <ul className="mt-1.5 space-y-1.5">
               {scheme.benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-2">
@@ -135,7 +139,7 @@ function SchemeCard({ scheme, open, onToggle }) {
           </div>
 
           <div>
-            <FieldLabel label="How to apply" />
+            <FieldLabel label={t("schemes.howToApply")} />
             <ol className="mt-1.5 space-y-1.5">
               {scheme.application_process.map((step, i) => (
                 <li key={i} className="flex items-start gap-2">
@@ -153,7 +157,7 @@ function SchemeCard({ scheme, open, onToggle }) {
 
           {scheme.official_links?.length > 0 && (
             <div>
-              <FieldLabel label="Official link" />
+              <FieldLabel label={t("schemes.officialLink")} />
               <div className="mt-1.5 flex flex-col gap-1.5">
                 {scheme.official_links.map((link) => (
                   <a
@@ -176,7 +180,9 @@ function SchemeCard({ scheme, open, onToggle }) {
             </p>
           )}
 
-          <p className="text-[9px] text-[#9AA79F]">Last verified: {scheme.last_verified}</p>
+          <p className="text-[9px] text-[#9AA79F]">
+            {t("schemes.lastVerified", { date: scheme.last_verified })}
+          </p>
         </div>
       )}
     </section>
@@ -198,6 +204,7 @@ function Field({ label, item }) {
 }
 
 function FieldLabel({ label, checked }) {
+  const { t } = useTranslation();
   return (
     <span className="flex items-center gap-2">
       <span className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8B82]">
@@ -205,7 +212,7 @@ function FieldLabel({ label, checked }) {
       </span>
       {checked && (
         <span className="rounded-full bg-[#EAF6EF] px-1.5 py-0.5 text-[8px] font-extrabold text-[#216B45]">
-          confirmed
+          {t("schemes.confirmedBadge")}
         </span>
       )}
     </span>
@@ -213,9 +220,10 @@ function FieldLabel({ label, checked }) {
 }
 
 function VerifyBadge() {
+  const { t } = useTranslation();
   return (
     <span className="ml-1.5 whitespace-nowrap rounded-full bg-[#FFF5DE] px-1.5 py-0.5 text-[8px] font-extrabold text-[#916112]">
-      verify
+      {t("schemes.verifyBadge")}
     </span>
   );
 }

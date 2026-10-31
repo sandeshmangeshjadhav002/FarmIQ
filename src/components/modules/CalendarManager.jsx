@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ModuleButton } from "./ModuleShared";
 import ModuleIcon from "./ModuleIcon";
 import { defaultReminders } from "@/data/modules";
@@ -8,6 +9,7 @@ import { defaultReminders } from "@/data/modules";
  * Reminder data is seeded from `data/modules.js`.
  */
 export default function CalendarManager() {
+  const { t } = useTranslation();
   const [reminders, setReminders] = useState(defaultReminders);
   const [newTitle, setNewTitle] = useState("");
 
@@ -24,7 +26,7 @@ export default function CalendarManager() {
       {
         id: Date.now(),
         title: newTitle.trim(),
-        date: "Tomorrow • 8:00 AM",
+        date: t("calendarManager.tomorrowMorning"),
         done: false,
       },
       ...prev,
@@ -39,7 +41,10 @@ export default function CalendarManager() {
   };
 
   const editReminder = (item) => {
-    const updated = window.prompt("Edit reminder", item.title);
+    const updated = window.prompt(
+      t("calendarManager.editReminderPrompt"),
+      item.title,
+    );
     if (updated?.trim()) {
       setReminders((prev) =>
         prev.map((r) =>
@@ -65,27 +70,27 @@ export default function CalendarManager() {
           {today}
         </p>
         <p className="mt-1 text-[20px] font-extrabold tracking-[-.02em]">
-          {pending} reminder{pending === 1 ? "" : "s"} pending
+          {t("calendarManager.pendingCount", { count: pending })}
         </p>
       </section>
 
       {/* Add reminder */}
       <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
         <h2 className="text-[14px] font-extrabold text-[#213D2F]">
-          Add reminder
+          {t("calendarManager.addReminder")}
         </h2>
         <div className="mt-3 flex gap-2">
           <input
-            aria-label="New reminder title"
+            aria-label={t("calendarManager.newReminderTitle")}
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Reminder title..."
+            placeholder={t("calendarManager.reminderTitlePlaceholder")}
             className="h-11 min-w-0 flex-1 rounded-xl border border-[#DDE6DF] px-3 text-[11px] outline-none"
           />
           <ModuleButton onClick={addReminder}>
             <ModuleIcon name="plus" size={16} />
-            Add
+            {t("calendarManager.add")}
           </ModuleButton>
         </div>
       </section>
@@ -94,8 +99,7 @@ export default function CalendarManager() {
       <div className="space-y-2">
         {reminders.length === 0 && (
           <p className="rounded-2xl border border-dashed border-[#D8E3DA] bg-white p-6 text-center text-[12px] leading-5 text-[#7B8C82]">
-            No reminders yet. Add one above to keep track of sowing, spraying
-            and harvest dates.
+            {t("calendarManager.emptyState")}
           </p>
         )}
         {reminders.map((item) => (
@@ -104,7 +108,11 @@ export default function CalendarManager() {
             className="flex items-center gap-3 rounded-2xl border border-[#E0E8E2] bg-white p-3"
           >
             <button
-              aria-label={item.done ? "Mark as not done" : "Mark as done"}
+              aria-label={
+                item.done
+                  ? t("calendarManager.markAsNotDone")
+                  : t("calendarManager.markAsDone")
+              }
               onClick={() => toggleDone(item.id)}
               className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border ${
                 item.done
@@ -127,14 +135,18 @@ export default function CalendarManager() {
             </span>
 
             <button
-              aria-label={`Edit reminder: ${item.title}`}
+              aria-label={t("calendarManager.editReminderAria", {
+                title: item.title,
+              })}
               onClick={() => editReminder(item)}
               className="grid h-8 w-8 place-items-center text-[#4F6B5C]"
             >
               <ModuleIcon name="edit" size={15} />
             </button>
             <button
-              aria-label={`Delete reminder: ${item.title}`}
+              aria-label={t("calendarManager.deleteReminderAria", {
+                title: item.title,
+              })}
               onClick={() => deleteReminder(item.id)}
               className="grid h-8 w-8 place-items-center text-[#9D5A4B]"
             >

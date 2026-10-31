@@ -1,0 +1,17 @@
+{
+  "schemes": {
+    "loadError": "योजनेची माहिती लोड करता आली नाही",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "confirmed": "पुष्टी केलेले",
+    "needsVerification": "पडताळणी आवश्यक",
+    "lastVerified": "शेवटची पडताळणी: {{date}}",
+    "otherSupport": "इतर उपयुक्त सहाय्य",
+    "purpose": "उद्देश",
+    "eligibility": "पात्रता",
+    "benefits": "फायदे",
+    "howToApply": "अर्ज कसा करावा",
+    "officialLink": "अधिकृत दुवा",
+    "confirmedBadge": "पुष्टी",
+    "verifyBadge": "पडताळा"
+  }
+}

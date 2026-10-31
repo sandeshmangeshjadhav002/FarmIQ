@@ -1,185 +1,40 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import useApi from "@/hooks/useApi";
 import { apiPost } from "@/lib/apiClient";
 import { useLocation } from "@/lib/locationStore";
+import i18n from "@/i18n";
 import ModuleIcon from "./ModuleIcon";
 import { Field, ModuleButton } from "./ModuleShared";
 
 // ── Static educational content ───────────────────────────────────────────────
 
-const PRACTICE_CARDS = [
-  {
-    id: "composting",
-    name: "Composting",
-    icon: "soil",
-    color: "bg-[#EDF5E6] text-[#3C6A4D]",
-    explanation:
-      "Composting converts crop residues, kitchen waste, and animal manure into stable organic matter that enriches soil.",
-    advantages: [
-      "Gradually improves soil structure and water-holding capacity",
-      "Provides slow-release nutrients that reduce the need for synthetic fertilisers",
-      "Supports beneficial soil microorganisms",
-    ],
-    whenUseful: "Most useful when crop residues or farm waste are available; especially valuable in sandy or degraded soils.",
-    precautions:
-      "Compost takes 2–4 months to mature. Immature compost can harm crops. Avoid including diseased plant material. Nutrient content varies — do not substitute for soil testing.",
-  },
+// Only presentation metadata lives in code; the visible copy is translated.
+const PRACTICE_CARD_META = [
+  { id: "composting", icon: "soil", color: "bg-[#EDF5E6] text-[#3C6A4D]" },
   {
     id: "vermicomposting",
-    name: "Vermicomposting",
     icon: "soil",
     color: "bg-[#EDF5E6] text-[#3C6A4D]",
-    explanation:
-      "Vermicomposting uses earthworms to break down organic matter into nutrient-rich castings (worm manure).",
-    advantages: [
-      "Produces castings with higher microbial activity than regular compost",
-      "Can be done on a small scale with limited space",
-      "Castings improve soil aeration and water retention",
-    ],
-    whenUseful: "Suitable for small to medium farms; useful for vegetable or horticultural crops where soil quality is a priority.",
-    precautions:
-      "Requires regular moisture management and shade. Earthworms are sensitive to chemicals — avoid pesticide-contaminated material. Results depend on worm species, temperature, and inputs.",
   },
-  {
-    id: "green-manuring",
-    name: "Green Manuring",
-    icon: "crop",
-    color: "bg-[#E6F3E8] text-[#216B45]",
-    explanation:
-      "Green manuring involves growing leguminous crops (such as dhaincha, sunhemp, or cowpea) and incorporating them into the soil while still green.",
-    advantages: [
-      "Legumes fix atmospheric nitrogen, which may partially reduce synthetic nitrogen needs",
-      "Improves soil organic matter over successive seasons",
-      "Helps suppress weeds when cover is dense",
-    ],
-    whenUseful: "Most useful before the main crop is sown, or during fallow periods. Works best in regions with adequate pre-season rainfall.",
-    precautions:
-      "Requires additional water for the green manure crop. Benefits are gradual — do not expect immediate yield improvements. In dry regions, the green manure crop may compete for scarce moisture.",
-  },
-  {
-    id: "mulching",
-    name: "Mulching",
-    icon: "drop",
-    color: "bg-[#E5F3F7] text-[#28778A]",
-    explanation:
-      "Mulching covers the soil surface with organic material (straw, dry leaves, crop residues) or plastic film to conserve moisture and regulate temperature.",
-    advantages: [
-      "Reduces soil-surface evaporation, helping conserve moisture during dry spells",
-      "Lowers soil temperature in summer and retains warmth in cooler periods",
-      "Organic mulch adds to soil organic matter as it decomposes",
-    ],
-    whenUseful: "Valuable in water-stressed areas, during dry spells, and for vegetable or horticultural crops. Particularly useful on sandy soils prone to moisture loss.",
-    precautions:
-      "Mulch that is too thick or improperly applied can harbour pests or prevent water infiltration. Plastic mulch does not add organic matter and requires disposal. Cover crops used as living mulch may compete with the main crop for water.",
-  },
-  {
-    id: "crop-rotation",
-    name: "Crop Rotation",
-    icon: "crop",
-    color: "bg-[#E6F3E8] text-[#216B45]",
-    explanation:
-      "Crop rotation involves growing different crops on the same land in successive seasons rather than planting the same crop year after year.",
-    advantages: [
-      "Can help break pest and disease cycles associated with continuous monocultures",
-      "Legume phases may improve soil nitrogen for subsequent crops",
-      "Reduces the risk of soil nutrient depletion associated with a single crop",
-    ],
-    whenUseful: "Effective when a sequence of crops with different nutrient needs and pest profiles is planned across seasons or years.",
-    precautions:
-      "Benefits depend on the specific rotation design, crop selection, and local pest pressure. Rotation alone does not eliminate pests or replace soil testing and nutrient management.",
-  },
-  {
-    id: "intercropping",
-    name: "Intercropping",
-    icon: "farm",
-    color: "bg-[#FFF2DA] text-[#986313]",
-    explanation:
-      "Intercropping grows two or more crops simultaneously on the same field, often pairing a main crop with a legume or low-growing companion.",
-    advantages: [
-      "Can improve total land productivity compared with growing a single crop",
-      "Legume companions may partially supply nitrogen to associated crops",
-      "Diverse canopy may reduce some pest pressures",
-    ],
-    whenUseful: "Most commonly used by smallholder farmers to spread risk and make use of light, water, and space more efficiently.",
-    precautions:
-      "Crop combinations must be chosen carefully — incompatible crops compete for water and nutrients. Harvest and mechanisation become more complex. Not all intercrop combinations improve productivity.",
-  },
-  {
-    id: "biofertilizers",
-    name: "Biofertilizers",
-    icon: "flask",
-    color: "bg-[#F0EAFC] text-[#6B42A2]",
-    explanation:
-      "Biofertilizers are preparations of living microorganisms (such as Rhizobium, Azotobacter, or mycorrhizal fungi) that can support nutrient availability in the soil.",
-    advantages: [
-      "Some strains help fix atmospheric nitrogen or solubilise phosphorus",
-      "May reduce the quantity of synthetic fertiliser required when used appropriately",
-      "Low cost relative to conventional fertilisers when applied correctly",
-    ],
-    whenUseful: "Most supported by evidence for legume crops (Rhizobium inoculants). Less predictable in non-legume crops. Effective only when combined with good soil conditions.",
-    precautions:
-      "Results vary with soil type, pH, temperature, and existing microbial populations. Biofertilizers do not replace soil testing or balanced fertilisation. Quality and viability of commercial products varies — purchase from certified suppliers.",
-  },
-  {
-    id: "ipm",
-    name: "Integrated Pest Management (IPM)",
-    icon: "shield",
-    color: "bg-[#FCE9E5] text-[#A55243]",
-    explanation:
-      "IPM combines monitoring, cultural practices, biological controls, and targeted chemical use to manage pests in a way that minimises harm to the environment and non-target organisms.",
-    advantages: [
-      "Can reduce reliance on broad-spectrum pesticides over time",
-      "Biological controls (natural predators, parasitoids) can provide sustained pest suppression",
-      "May reduce input costs compared with calendar-based spraying",
-    ],
-    whenUseful: "Applicable across most crops; especially valuable when pest resistance to chemical treatments is developing, or where environmental concerns are high.",
-    precautions:
-      "IPM requires regular crop monitoring and local expertise. Results are not immediate — biological controls take time to establish. Some pests and crops may still require targeted chemical intervention under IPM.",
-  },
+  { id: "green-manuring", icon: "crop", color: "bg-[#E6F3E8] text-[#216B45]" },
+  { id: "mulching", icon: "drop", color: "bg-[#E5F3F7] text-[#28778A]" },
+  { id: "crop-rotation", icon: "crop", color: "bg-[#E6F3E8] text-[#216B45]" },
+  { id: "intercropping", icon: "farm", color: "bg-[#FFF2DA] text-[#986313]" },
+  { id: "biofertilizers", icon: "flask", color: "bg-[#F0EAFC] text-[#6B42A2]" },
+  { id: "ipm", icon: "shield", color: "bg-[#FCE9E5] text-[#A55243]" },
 ];
 
-const ADVANTAGES_LIMITATIONS = [
-  {
-    aspect: "Soil Health",
-    potential: "Organic inputs (compost, FYM, green manure) can gradually improve soil structure, organic matter, and microbial activity.",
-    consideration: "Improvement is slow — typically 2–5 years of consistent management. Benefits depend on soil type, climate, and input quality.",
-  },
-  {
-    aspect: "Water Conservation",
-    potential: "Higher organic matter content can improve water-holding capacity, reducing irrigation frequency over time.",
-    consideration: "Effect is gradual and depends on initial soil condition. Green manure and cover crops may compete for water in dry regions.",
-  },
-  {
-    aspect: "Input Costs",
-    potential: "Reduced purchase of synthetic fertilisers and pesticides may lower input costs in the medium to long term.",
-    consideration: "Transition period often increases costs as new practices are learned and organic inputs are established. Local prices of organic inputs vary widely.",
-  },
-  {
-    aspect: "Labour Requirements",
-    potential: "On-farm composting and biological practices can reduce repeat purchases.",
-    consideration: "Organic methods typically require more labour than conventional approaches. Smallholder capacity must be considered.",
-  },
-  {
-    aspect: "Nutrient Availability",
-    potential: "Organic matter provides slow-release nutrients that feed crops over time.",
-    consideration: "Nutrient release from organic sources is slower and less predictable than synthetic fertilisers. Deficiencies can occur, especially in the first 1–3 years of transition.",
-  },
-  {
-    aspect: "Pest and Disease Management",
-    potential: "Diverse cropping systems and biological controls can reduce some pest pressures.",
-    consideration: "Organic methods do not eliminate pests. Some crops and pest complexes require chemical intervention even under IPM. Organic-approved inputs may be less effective or less available.",
-  },
-  {
-    aspect: "Yield During Transition",
-    potential: "Some farmers report stable or improved yields after a full transition, particularly for legumes and vegetables.",
-    consideration: "Many farms experience a yield dip (10–30%) during the transition period (typically 2–3 years). Yields vary significantly with management quality and local conditions.",
-  },
-  {
-    aspect: "Certification & Markets",
-    potential: "Certified organic products can command premium prices in some markets.",
-    consideration: "Certification involves cost, paperwork, and a transition period. Premium markets are geographically uneven and not guaranteed to materialise.",
-  },
+const ADVANTAGE_ASPECTS = [
+  "soilHealth",
+  "waterConservation",
+  "inputCosts",
+  "labourRequirements",
+  "nutrientAvailability",
+  "pestDisease",
+  "yieldTransition",
+  "certificationMarkets",
 ];
 
 /**
@@ -202,13 +57,6 @@ const STATUS_TONE = {
   unavailable: "bg-[#FFF5DE] text-[#916112]",
 };
 
-const STATUS_LABEL = {
-  guidance: "Guidance",
-  verified: "Verified",
-  estimate: "Estimate",
-  unavailable: "Unavailable",
-};
-
 const EMPTY_FORM = {
   crop: "",
   location: "",
@@ -224,18 +72,18 @@ const EMPTY_FORM = {
   save: false,
 };
 
-// ── Tab configuration ─────────────────────────────────────────────────────────
-const TABS = [
-  { key: "learn", label: "Learn" },
-  { key: "practices", label: "Practices" },
-  { key: "compare", label: "Compare" },
-  { key: "assess", label: "My Farm" },
-];
-
 export default function OrganicFarmingAdvisor({ onAsk }) {
+  const { t } = useTranslation();
   const { location: sharedLocation } = useLocation();
   const [activeTab, setActiveTab] = useState("learn");
   const { data, loading, error, refetch } = useApi("/api/farming-methods");
+
+  const TABS = [
+    { key: "learn", label: t("organicAdvisor.tabs.learn") },
+    { key: "practices", label: t("organicAdvisor.tabs.practices") },
+    { key: "compare", label: t("organicAdvisor.tabs.compare") },
+    { key: "assess", label: t("organicAdvisor.tabs.assess") },
+  ];
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -276,10 +124,10 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
 
   const validate = () => {
     const errs = {};
-    if (!form.crop) errs.crop = "Select a crop.";
-    if (!form.soil_type) errs.soil_type = "Select a soil type.";
+    if (!form.crop) errs.crop = t("organicAdvisor.validation.selectCrop");
+    if (!form.soil_type) errs.soil_type = t("organicAdvisor.validation.selectSoil");
     if (!form.area_acres || Number(form.area_acres) <= 0)
-      errs.area_acres = "Enter a farm size greater than zero.";
+      errs.area_acres = t("organicAdvisor.validation.areaPositive");
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -325,25 +173,17 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
             <ModuleIcon name="leaf" size={16} />
           </span>
-          <h2 className="text-[13px] font-extrabold text-[#213D2F]">What is Organic Farming?</h2>
+          <h2 className="text-[13px] font-extrabold text-[#213D2F]">{t("organicAdvisor.learn.title")}</h2>
         </div>
         <p className="text-[11px] leading-[1.65] text-[#3C5248]">
-          Organic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.
+          {t("organicAdvisor.learn.intro1")}
         </p>
         <p className="mt-2 text-[11px] leading-[1.65] text-[#3C5248]">
-          It is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.
+          {t("organicAdvisor.learn.intro2")}
         </p>
 
         <div className="mt-4 space-y-2">
-          {[
-            { label: "Soil health", text: "Organic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management." },
-            { label: "Water retention", text: "Higher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions." },
-            { label: "Soil biodiversity", text: "Reduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate." },
-            { label: "Reduced synthetic inputs", text: "A goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used." },
-            { label: "Composting", text: "Composting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time." },
-            { label: "Mulching", text: "Covering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose." },
-            { label: "Natural pest management", text: "IPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides." },
-          ].map((item) => (
+          {t("organicAdvisor.learn.items", { returnObjects: true }).map((item) => (
             <div key={item.label} className="rounded-xl border border-[#DDE9E1] bg-white p-3">
               <p className="text-[10px] font-extrabold text-[#216B45] mb-1">{item.label}</p>
               <p className="text-[10px] leading-5 text-[#5B6F63]">{item.text}</p>
@@ -352,15 +192,9 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
         </div>
 
         <div className="mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3">
-          <p className="text-[10px] font-extrabold text-[#8A6D2B] mb-1">Important limitations</p>
+          <p className="text-[10px] font-extrabold text-[#8A6D2B] mb-1">{t("organicAdvisor.learn.limitationsTitle")}</p>
           <ul className="space-y-1">
-            {[
-              "Transitioning to organic farming takes time — typically 2–3 years before soil responds fully.",
-              "Yields may decline during the transition period, especially if synthetic inputs are reduced abruptly.",
-              "Organic farming is not automatically cheaper, easier, or more productive than conventional farming.",
-              "Benefits depend heavily on soil type, climate, crop selection, water availability, and management quality.",
-              "Organic farming does not eliminate pests or guarantee a pest-free crop.",
-            ].map((item, i) => (
+            {t("organicAdvisor.learn.limitations", { returnObjects: true }).map((item, i) => (
               <li key={i} className="flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]">
                 <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]" />
                 {item}
@@ -377,24 +211,20 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
             <span className="grid h-7 w-7 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
               <ModuleIcon name="sparkles" size={15} />
             </span>
-            <h3 className="text-[12px] font-extrabold text-[#213D2F]">Ask FarmIQ about organic farming</h3>
+            <h3 className="text-[12px] font-extrabold text-[#213D2F]">{t("organicAdvisor.learn.askTitle")}</h3>
           </div>
           <p className="text-[10px] leading-5 text-[#5B6F63] mb-3">
-            Have a specific question? Ask the AI assistant for practical, balanced guidance on organic practices, soil health, or transitioning methods.
+            {t("organicAdvisor.learn.askBody")}
           </p>
           <div className="space-y-1.5 mb-3">
-            {[
-              "How can I improve soil health without relying entirely on synthetic fertilisers?",
-              "What are the pros and cons of switching to organic farming for cotton?",
-              "How does composting help with soil water retention?",
-            ].map((q, i) => (
+            {t("organicAdvisor.learn.askQuestions", { returnObjects: true }).map((q, i) => (
               <p key={i} className="rounded-lg bg-white border border-[#DDE9E1] px-3 py-2 text-[10px] italic text-[#5B6F63]">
                 "{q}"
               </p>
             ))}
           </div>
           <ModuleButton onClick={onAsk}>
-            Open AI Assistant
+            {t("organicAdvisor.learn.openAssistant")}
           </ModuleButton>
         </section>
       )}
@@ -404,9 +234,9 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
   const renderPracticesTab = () => (
     <div className="space-y-3">
       <p className="rounded-xl border border-[#E0E8E2] bg-white p-3 text-[10px] leading-5 text-[#5B6F63]">
-        The following practices are commonly used in organic and integrated farming. Each has specific conditions where it works well, and important limitations to consider. Results depend on your soil, climate, and management.
+        {t("organicAdvisor.practices.intro")}
       </p>
-      {PRACTICE_CARDS.map((card) => (
+      {PRACTICE_CARD_META.map((card) => (
         <PracticeCard key={card.id} card={card} />
       ))}
     </div>
@@ -419,25 +249,25 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]">
             <ModuleIcon name="report" size={16} />
           </span>
-          <h2 className="text-[13px] font-extrabold text-[#213D2F]">Advantages & Limitations</h2>
+          <h2 className="text-[13px] font-extrabold text-[#213D2F]">{t("organicAdvisor.compare.title")}</h2>
         </div>
         <p className="text-[10px] leading-5 text-[#5B6F63] mb-4">
-          This table summarises what organic approaches may offer and what challenges they involve. Outcomes depend on your specific conditions — no farming method is universally better than another.
+          {t("organicAdvisor.compare.intro")}
         </p>
         <div className="space-y-3">
-          {ADVANTAGES_LIMITATIONS.map((row) => (
-            <div key={row.aspect} className="rounded-xl border border-[#DDE9E1] bg-white overflow-hidden">
+          {ADVANTAGE_ASPECTS.map((id) => (
+            <div key={id} className="rounded-xl border border-[#DDE9E1] bg-white overflow-hidden">
               <div className="bg-[#E6F3E8] px-3 py-2">
-                <p className="text-[10px] font-extrabold text-[#216B45]">{row.aspect}</p>
+                <p className="text-[10px] font-extrabold text-[#216B45]">{t(`organicAdvisor.compare.rows.${id}.aspect`)}</p>
               </div>
               <div className="grid grid-cols-1 gap-0 sm:grid-cols-2">
                 <div className="p-3 border-b border-[#EDF1EE] sm:border-b-0 sm:border-r">
-                  <p className="text-[9px] font-extrabold uppercase tracking-[.06em] text-[#216B45] mb-1">Potential benefit</p>
-                  <p className="text-[10px] leading-5 text-[#3C5248]">{row.potential}</p>
+                  <p className="text-[9px] font-extrabold uppercase tracking-[.06em] text-[#216B45] mb-1">{t("organicAdvisor.compare.potentialBenefit")}</p>
+                  <p className="text-[10px] leading-5 text-[#3C5248]">{t(`organicAdvisor.compare.rows.${id}.potential`)}</p>
                 </div>
                 <div className="p-3">
-                  <p className="text-[9px] font-extrabold uppercase tracking-[.06em] text-[#8A6D2B] mb-1">Consideration</p>
-                  <p className="text-[10px] leading-5 text-[#7C6428]">{row.consideration}</p>
+                  <p className="text-[9px] font-extrabold uppercase tracking-[.06em] text-[#8A6D2B] mb-1">{t("organicAdvisor.compare.consideration")}</p>
+                  <p className="text-[10px] leading-5 text-[#7C6428]">{t(`organicAdvisor.compare.rows.${id}.consideration`)}</p>
                 </div>
               </div>
             </div>
@@ -445,9 +275,9 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
         </div>
       </section>
       <section className="rounded-[22px] border border-[#E0E8E2] bg-[#F7FAF8] p-4">
-        <p className="text-[10px] font-extrabold text-[#52665B] mb-2">How to use this table</p>
+        <p className="text-[10px] font-extrabold text-[#52665B] mb-2">{t("organicAdvisor.compare.howToUseTitle")}</p>
         <p className="text-[10px] leading-5 text-[#5B6F63]">
-          This comparison is based on published research and field guidance. Individual results will differ. Use the "My Farm" tab to get a comparison tailored to your crop, soil, and available resources — and always consult local agricultural extension or KVK advisors before making major changes.
+          {t("organicAdvisor.compare.howToUseBody")}
         </p>
       </section>
     </div>
@@ -467,9 +297,11 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
       return (
         <div className="space-y-3">
           <p className="rounded-2xl bg-[#FCE9E5] p-4 text-[11px] font-semibold text-[#9D4C3E]">
-            Could not load the farming methods{error.status ? ` (${error.status})` : ""}.
+            {t("organicAdvisor.error.loadMethods", {
+              status: error.status ? ` (${error.status})` : "",
+            })}
           </p>
-          <ModuleButton secondary onClick={refetch}>Try again</ModuleButton>
+          <ModuleButton secondary onClick={refetch}>{t("organicAdvisor.error.tryAgain")}</ModuleButton>
         </div>
       );
     }
@@ -479,7 +311,7 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
     if (!crops.length || !soilTypes.length) {
       return (
         <p className="rounded-2xl bg-[#F4F7F3] p-4 text-[11px] font-semibold text-[#5B6F63]">
-          No farming-method reference data is available yet.
+          {t("organicAdvisor.error.noData")}
         </p>
       );
     }
@@ -491,84 +323,84 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
               <ModuleIcon name="leaf" size={16} />
             </span>
             <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-              Tell us about your farm
+              {t("organicAdvisor.assess.title")}
             </h2>
           </div>
 
         <div className="mt-3 space-y-3">
           <SelectInput
-            label="Crop"
+            label={t("organicAdvisor.assess.crop")}
             value={form.crop}
             onChange={(v) => set("crop", v)}
             options={crops}
-            placeholder="Select a crop"
+            placeholder={t("organicAdvisor.assess.cropPlaceholder")}
             error={fieldErrors.crop}
           />
           <Field
-            label="Farm location"
+            label={t("organicAdvisor.assess.farmLocation")}
             value={form.location}
             onChange={(v) => set("location", v)}
-            placeholder="Village, district, state"
+            placeholder={t("organicAdvisor.assess.farmLocationPlaceholder")}
           />
           <SelectInput
-            label="Soil type"
+            label={t("organicAdvisor.assess.soilType")}
             value={form.soil_type}
             onChange={(v) => set("soil_type", v)}
             options={soilTypes}
-            placeholder="Select a soil type"
+            placeholder={t("organicAdvisor.assess.soilTypePlaceholder")}
             error={fieldErrors.soil_type}
           />
           <Field
-            label="Farm size (acres)"
+            label={t("organicAdvisor.assess.farmSize")}
             type="number"
             value={form.area_acres}
             onChange={(v) => set("area_acres", v)}
-            placeholder="e.g. 2.5"
+            placeholder={t("organicAdvisor.assess.farmSizePlaceholder")}
           />
           {fieldErrors.area_acres && (
             <FieldError text={fieldErrors.area_acres} />
           )}
           <Field
-            label="Current fertiliser use"
+            label={t("organicAdvisor.assess.currentFertiliser")}
             value={form.current_fertilizer}
             onChange={(v) => set("current_fertilizer", v)}
-            placeholder="e.g. Urea 18 kg/acre, DAP 12 kg/acre"
+            placeholder={t("organicAdvisor.assess.currentFertiliserPlaceholder")}
           />
           <Field
-            label="Current pesticide use"
+            label={t("organicAdvisor.assess.currentPesticide")}
             value={form.current_pesticide}
             onChange={(v) => set("current_pesticide", v)}
-            placeholder="e.g. Imidacloprid as needed"
+            placeholder={t("organicAdvisor.assess.currentPesticidePlaceholder")}
           />
         </div>
 
         <fieldset className="mt-4">
           <legend className="text-[10px] font-bold text-[#52675B]">
-            Organic materials available on your farm
+            {t("organicAdvisor.assess.organicMaterialsLegend")}
           </legend>
           <div className="mt-2 space-y-2">
             <Check
-              label="Cow dung / farmyard manure"
+              label={t("organicAdvisor.assess.cowDung")}
               checked={form.cow_dung}
               onChange={(v) => set("cow_dung", v)}
             />
             <Check
-              label="Compost"
+              label={t("organicAdvisor.assess.compost")}
               checked={form.compost}
               onChange={(v) => set("compost", v)}
             />
             <Check
-              label="Crop residues"
+              label={t("organicAdvisor.assess.cropResidues")}
               checked={form.crop_residues}
               onChange={(v) => set("crop_residues", v)}
             />
           </div>
           <div className="mt-3">
             <Field
-              label="Other organic materials"
+              label={t("organicAdvisor.assess.otherMaterials")}
               value={form.other}
               onChange={(v) => set("other", v)}
-              placeholder="Vermicompost, green manure... (comma separated)"
+              placeholder={t("organicAdvisor.assess.otherMaterialsPlaceholder")}
             />
           </div>
         </fieldset>
@@ -576,7 +408,7 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
         <div className="mt-4">
           <label className="block">
             <span className="mb-1.5 block text-[10px] font-bold text-[#52675B]">
-              Farming preference
+              {t("organicAdvisor.assess.preference")}
             </span>
             <select
               value={form.preference}
@@ -602,7 +434,7 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
             onChange={(e) => set("save", e.target.checked)}
             className="h-4 w-4 rounded border-[#DDE6DF]"
           />
-          Save the result to my account
+          {t("organicAdvisor.assess.save")}
         </label>
 
         {submitError && (
@@ -610,12 +442,12 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
             role="alert"
             className="mt-3 rounded-2xl bg-[#FCE9E5] p-3 text-[10px] font-semibold leading-5 text-[#9D4C3E]"
           >
-            {submitError.message || "Something went wrong. Please try again."}
+            {submitError.message || t("organicAdvisor.assess.somethingWrong")}
           </div>
         )}
         {savedId && (
           <p className="mt-3 rounded-2xl bg-[#EAF6EF] p-3 text-[10px] font-semibold text-[#216B45]">
-            Saved to your account.
+            {t("organicAdvisor.assess.saved")}
           </p>
         )}
 
@@ -624,7 +456,7 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
             disabled={busy === "compare"}
             onClick={() => submit("/api/farming-methods/compare", "compare")}
           >
-            {busy === "compare" ? "Comparing..." : "Compare Farming Methods"}
+            {busy === "compare" ? t("organicAdvisor.assess.comparing") : t("organicAdvisor.assess.compare")}
           </ModuleButton>
           {comparison && (
             <ModuleButton
@@ -635,8 +467,8 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
               }
             >
               {busy === "plan"
-                ? "Preparing plan..."
-                : "Generate transition plan"}
+                ? t("organicAdvisor.assess.preparingPlan")
+                : t("organicAdvisor.assess.generatePlan")}
             </ModuleButton>
           )}
         </div>
@@ -680,7 +512,14 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
 /* ── Practice Card ─────────────────────────────────────────────────────── */
 
 function PracticeCard({ card }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const base = `organicAdvisor.practices.cards.${card.id}`;
+  const name = t(`${base}.name`);
+  const explanation = t(`${base}.explanation`);
+  const advantages = t(`${base}.advantages`, { returnObjects: true });
+  const whenUseful = t(`${base}.whenUseful`);
+  const precautions = t(`${base}.precautions`);
   return (
     <div className={`rounded-[22px] border border-white/60 bg-white overflow-hidden`}>
       <button
@@ -691,21 +530,21 @@ function PracticeCard({ card }) {
           <ModuleIcon name={card.icon} size={17} />
         </span>
         <span className="flex-1 min-w-0">
-          <p className="text-[12px] font-extrabold text-[#213D2F]">{card.name}</p>
-          <p className="text-[10px] text-[#84938B] leading-4 mt-0.5 line-clamp-1">{card.explanation}</p>
+          <p className="text-[12px] font-extrabold text-[#213D2F]">{name}</p>
+          <p className="text-[10px] text-[#84938B] leading-4 mt-0.5 line-clamp-1">{explanation}</p>
         </span>
         <span className="text-[10px] text-[#84938B]">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
         <div className="border-t border-[#EDF1EE] p-4 space-y-3">
           <div>
-            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#7A8B82] mb-1">What it is</p>
-            <p className="text-[10px] leading-5 text-[#5B6F63]">{card.explanation}</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#7A8B82] mb-1">{t("organicAdvisor.practiceCard.whatItIs")}</p>
+            <p className="text-[10px] leading-5 text-[#5B6F63]">{explanation}</p>
           </div>
           <div>
-            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#216B45] mb-1">Main potential advantages</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#216B45] mb-1">{t("organicAdvisor.practiceCard.advantages")}</p>
             <ul className="space-y-1">
-              {card.advantages.map((a, i) => (
+              {advantages.map((a, i) => (
                 <li key={i} className="flex items-start gap-1.5 text-[10px] leading-5 text-[#3C5248]">
                   <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#3F9C6A]" />
                   {a}
@@ -714,12 +553,12 @@ function PracticeCard({ card }) {
             </ul>
           </div>
           <div>
-            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#5A8090] mb-1">When it may be useful</p>
-            <p className="text-[10px] leading-5 text-[#5B6F63]">{card.whenUseful}</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#5A8090] mb-1">{t("organicAdvisor.practiceCard.whenUseful")}</p>
+            <p className="text-[10px] leading-5 text-[#5B6F63]">{whenUseful}</p>
           </div>
           <div className="rounded-xl bg-[#FFF8EA] border border-[#F0DFC0] p-3">
-            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#8A6D2B] mb-1">Important precautions</p>
-            <p className="text-[10px] leading-5 text-[#7C6428]">{card.precautions}</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[.07em] text-[#8A6D2B] mb-1">{t("organicAdvisor.practiceCard.precautions")}</p>
+            <p className="text-[10px] leading-5 text-[#7C6428]">{precautions}</p>
           </div>
         </div>
       )}
@@ -730,11 +569,12 @@ function PracticeCard({ card }) {
 /* ── Sub-views ─────────────────────────────────────────────────────────── */
 
 function ComparisonView({ data }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <section className="rounded-[22px] border border-[#DCE6DF] bg-[#F7FAF8] p-4">
         <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-          Comparison for {data.crop}
+          {t("organicAdvisor.comparison.title", { crop: data.crop })}
         </h2>
         <p className="mt-1 text-[10px] leading-5 text-[#75867C]">
           {data.recommendation.summary}
@@ -750,7 +590,7 @@ function ComparisonView({ data }) {
       {data.warnings?.length > 0 && (
         <section className="rounded-[22px] border border-[#F0DFC0] bg-[#FFF8EA] p-4">
           <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">
-            Things to be careful about
+            {t("organicAdvisor.comparison.warningsTitle")}
           </h3>
           <ul className="mt-2 space-y-1.5">
             {data.warnings.map((w, i) => (
@@ -774,7 +614,7 @@ function ComparisonView({ data }) {
 
       <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
         <h3 className="text-[12px] font-extrabold text-[#203C2E]">
-          Your resources and how they can be used
+          {t("organicAdvisor.comparison.resourcesTitle")}
         </h3>
         <ul className="mt-3 space-y-2">
           {data.resource_assessment.map((r) => (
@@ -786,9 +626,17 @@ function ComparisonView({ data }) {
               />
               <span className="text-[10px] leading-5 text-[#5B6F63]">
                 <b>{r.resource}</b> —{" "}
-                {r.available ? "available" : "not reported"}
+                {r.available
+                  ? t("organicAdvisor.comparison.available")
+                  : t("organicAdvisor.comparison.notReported")}
                 {r.usable_for?.length > 0 && (
-                  <> · usable for: {r.usable_for.join(", ")}</>
+                  <>
+                    {" "}
+                    ·{" "}
+                    {t("organicAdvisor.comparison.usableFor", {
+                      list: r.usable_for.join(", "),
+                    })}
+                  </>
                 )}
               </span>
             </li>
@@ -809,14 +657,18 @@ function ComparisonView({ data }) {
 }
 
 function PlanView({ plan }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <section className="rounded-[22px] border border-[#DCE6DF] bg-[#F7FAF8] p-4">
         <h2 className="text-[13px] font-extrabold text-[#213D2F]">
-          Gradual transition plan for {plan.crop}
+          {t("organicAdvisor.plan.title", { crop: plan.crop })}
         </h2>
         <p className="mt-1 text-[10px] leading-5 text-[#75867C]">
-          Preference: {plan.preference_title} · {plan.area_acres} acres
+          {t("organicAdvisor.plan.preference", {
+            title: plan.preference_title,
+            area: plan.area_acres,
+          })}
         </p>
         <p className="mt-2 rounded-xl bg-white p-3 text-[10px] leading-5 text-[#4C6355]">
           {plan.uncertainty_note}
@@ -854,22 +706,23 @@ function PlanView({ plan }) {
 
       <section className="rounded-[22px] border border-[#F0DFC0] bg-[#FFF8EA] p-4">
         <h3 className="text-[11px] font-extrabold text-[#8A6D2B]">
-          Costs and resources
+          {t("organicAdvisor.plan.costsTitle")}
         </h3>
         <p className="mt-1 text-[10px] leading-5 text-[#7C6428]">
           {plan.costs_and_resources.note}
         </p>
         {plan.costs_and_resources.reported_on_farm_materials?.length > 0 && (
           <p className="mt-2 text-[10px] leading-5 text-[#7C6428]">
-            You reported:{" "}
-            {plan.costs_and_resources.reported_on_farm_materials.join(", ")}.
+            {t("organicAdvisor.plan.reported", {
+              list: plan.costs_and_resources.reported_on_farm_materials.join(", "),
+            })}
           </p>
         )}
       </section>
 
       <section className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
         <h3 className="text-[12px] font-extrabold text-[#203C2E]">
-          Indicators for continuing or adjusting
+          {t("organicAdvisor.plan.indicatorsTitle")}
         </h3>
         <ul className="mt-2 space-y-1.5">
           {plan.decision_indicators.map((d) => (
@@ -893,6 +746,7 @@ function PlanView({ plan }) {
 }
 
 function MethodCard({ method }) {
+  const { t } = useTranslation();
   return (
     <article className="rounded-[22px] border border-[#E0E8E2] bg-white p-4">
       <div className="flex items-start gap-2">
@@ -918,36 +772,36 @@ function MethodCard({ method }) {
       )}
 
       <LabeledList
-        label="Recommended practices"
+        label={t("organicAdvisor.method.recommendedPractices")}
         block={method.recommended_practices}
       />
       <Labeled
-        label="Fertiliser & nutrition"
+        label={t("organicAdvisor.method.fertiliser")}
         item={method.fertilizer_and_nutrition}
       />
       <Labeled
-        label="Pest management"
+        label={t("organicAdvisor.method.pestManagement")}
         item={method.pest_and_disease_management}
       />
       <CostBlock item={method.estimated_cost_per_acre} />
-      <Labeled label="Labour requirement" item={method.labour_requirement} />
-      <Labeled label="Water requirement" item={method.water_requirement} />
-      <LabeledList label="Benefits" block={method.benefits} />
-      <LabeledList label="Limitations" block={method.limitations} />
-      <Labeled label="Soil health" item={method.soil_health} />
-      <Labeled label="Yield impact" item={method.yield_impact} />
+      <Labeled label={t("organicAdvisor.method.labour")} item={method.labour_requirement} />
+      <Labeled label={t("organicAdvisor.method.water")} item={method.water_requirement} />
+      <LabeledList label={t("organicAdvisor.method.benefits")} block={method.benefits} />
+      <LabeledList label={t("organicAdvisor.method.limitations")} block={method.limitations} />
+      <Labeled label={t("organicAdvisor.method.soilHealth")} item={method.soil_health} />
+      <Labeled label={t("organicAdvisor.method.yieldImpact")} item={method.yield_impact} />
       <Labeled
-        label="Environmental impact"
+        label={t("organicAdvisor.method.environmentalImpact")}
         item={method.environmental_impact}
       />
       <Labeled
-        label="Transition difficulty"
+        label={t("organicAdvisor.method.transitionDifficulty")}
         item={method.transition_difficulty}
       />
 
       <div className="mt-3 border-t border-[#EDF1EE] pt-3">
         <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8B82]">
-          Sources
+          {t("organicAdvisor.method.sources")}
         </p>
         <ul className="mt-1 space-y-0.5">
           {method.sources?.map((s, i) => (

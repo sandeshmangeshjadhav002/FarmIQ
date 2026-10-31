@@ -1,0 +1,6 @@
+{
+  "locationStore": {
+    "savedFarm": "Saved farm",
+    "detectError": "Could not detect your location."
+  }
+}

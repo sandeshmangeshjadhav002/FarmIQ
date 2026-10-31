@@ -1,0 +1,33 @@
+{
+  "hackathonDemo": {
+    "priorityCritical": "Critical",
+    "priorityHigh": "High",
+    "priorityModerate": "Moderate",
+    "priorityLow": "Low",
+    "bannerTitle": "Hackathon Demo Mode",
+    "bannerBody": "Synthetic data for demonstration only — no real user data is used.",
+    "step1": "1. Select a demonstration farm",
+    "step2": "2. Adjust simulated sensor values",
+    "leaveBlank": "Leave blank to use defaults.",
+    "soilMoistureLabel": "Soil moisture (%)",
+    "soilMoisturePlaceholder": "e.g. 25",
+    "soilMoistureHint": "Try: 15 (dry) · 50 (ok) · 80 (wet)",
+    "temperatureLabel": "Temperature (°C)",
+    "temperaturePlaceholder": "e.g. 32",
+    "temperatureHint": "Try: 25 (cool) · 38 (hot) · 42 (extreme)",
+    "humidityLabel": "Humidity (%)",
+    "humidityPlaceholder": "e.g. 45",
+    "running": "Running…",
+    "generatePlan": "3. Generate Action Plan",
+    "planFailed": "Failed to run demo plan.",
+    "step4": "4. Farm action plan results",
+    "criticalCount": "{{n}} Critical",
+    "highCount": "{{n}} High",
+    "sensorValuesUsed": "Sensor values used: moisture {{moisture}}% · temp {{temp}}°C · humidity {{humidity}}%",
+    "weatherConditions": "Weather conditions",
+    "humidityUnit": "humidity",
+    "forecastUnconfirmed": "forecast (7 days, unconfirmed)",
+    "weatherUnavailable": "Weather data unavailable — using sensor data only.",
+    "generatedAt": "Generated: {{time}}"
+  }
+}

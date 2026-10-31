@@ -1,0 +1,13 @@
+{
+  "knowledgeCenter": {
+    "backToArticles": "Back to articles",
+    "verifiedSource": "Verified source",
+    "assistantNote": "Ask the assistant about this topic and it will answer from the stored guide and its sources.",
+    "noteLabel": "Note:",
+    "noteBody": "Always verify high-impact advice with a local expert.",
+    "askAboutArticle": "Ask FarmIQ about this article",
+    "searchAria": "Search knowledge articles",
+    "searchPlaceholder": "Search crops, soil, pests, schemes...",
+    "noArticles": "No articles match your search."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "calendarManager": {
+    "pendingCount_one": "{{count}} स्मरणपत्र प्रलंबित",
+    "pendingCount_other": "{{count}} स्मरणपत्रे प्रलंबित",
+    "addReminder": "स्मरणपत्र जोडा",
+    "newReminderTitle": "नवीन स्मरणपत्राचे शीर्षक",
+    "reminderTitlePlaceholder": "स्मरणपत्राचे शीर्षक...",
+    "add": "जोडा",
+    "emptyState": "अद्याप स्मरणपत्रे नाहीत. पेरणी, फवारणी आणि कापणीच्या तारखांचा मागोवा ठेवण्यासाठी वर एक जोडा.",
+    "markAsDone": "पूर्ण म्हणून चिन्हांकित करा",
+    "markAsNotDone": "अपूर्ण म्हणून चिन्हांकित करा",
+    "editReminderAria": "स्मरणपत्र संपादित करा: {{title}}",
+    "deleteReminderAria": "स्मरणपत्र हटवा: {{title}}",
+    "editReminderPrompt": "स्मरणपत्र संपादित करा",
+    "tomorrowMorning": "उद्या • सकाळी 8:00"
+  }
+}

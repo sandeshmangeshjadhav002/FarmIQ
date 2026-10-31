@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends
 from app import db
 from app.config import VALID_ROLES
 from app.errors import AppError, ConflictError
-from app.schemas import AuthResponse, UserLogin, UserRegister
+from app.schemas import DEFAULT_LANGUAGE, AuthResponse, UserLogin, UserRegister
 from app.supabase_client import get_admin_client, get_login_client
 
 logger = logging.getLogger("farmiq.auth.router")
@@ -37,6 +37,7 @@ def _profile_to_auth(profile: dict, access_token: str, refresh_token: str) -> Au
         email=profile.get("email"),
         mobile=profile.get("mobile"),
         role=profile.get("role"),
+        language=profile.get("language") or DEFAULT_LANGUAGE,
         created_at=profile.get("created_at"),
         access_token=access_token,
         refresh_token=refresh_token,
@@ -84,7 +85,15 @@ def register(
     if not uid:
         raise AppError(502, "Supabase did not return a user id.")
     try:
-        db.create_profile(client, uid, payload.full_name, payload.email, payload.mobile, payload.role)
+        db.create_profile(
+            client,
+            uid,
+            payload.full_name,
+            payload.email,
+            payload.mobile,
+            payload.role,
+            language=payload.language,
+        )
     except ConflictError:
         raise
     except Exception as exc:  # noqa: BLE001

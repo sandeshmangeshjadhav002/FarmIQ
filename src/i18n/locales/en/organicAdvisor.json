@@ -1,0 +1,322 @@
+{
+  "organicAdvisor": {
+    "tabs": {
+      "learn": "Learn",
+      "practices": "Practices",
+      "compare": "Compare",
+      "assess": "My Farm"
+    },
+    "status": {
+      "guidance": "Guidance",
+      "verified": "Verified",
+      "estimate": "Estimate",
+      "unavailable": "Unavailable"
+    },
+    "learn": {
+      "title": "What is Organic Farming?",
+      "intro1": "Organic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.",
+      "intro2": "It is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.",
+      "items": [
+        {
+          "label": "Soil health",
+          "text": "Organic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management."
+        },
+        {
+          "label": "Water retention",
+          "text": "Higher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions."
+        },
+        {
+          "label": "Soil biodiversity",
+          "text": "Reduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate."
+        },
+        {
+          "label": "Reduced synthetic inputs",
+          "text": "A goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used."
+        },
+        {
+          "label": "Composting",
+          "text": "Composting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time."
+        },
+        {
+          "label": "Mulching",
+          "text": "Covering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose."
+        },
+        {
+          "label": "Natural pest management",
+          "text": "IPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides."
+        }
+      ],
+      "limitationsTitle": "Important limitations",
+      "limitations": [
+        "Transitioning to organic farming takes time — typically 2–3 years before soil responds fully.",
+        "Yields may decline during the transition period, especially if synthetic inputs are reduced abruptly.",
+        "Organic farming is not automatically cheaper, easier, or more productive than conventional farming.",
+        "Benefits depend heavily on soil type, climate, crop selection, water availability, and management quality.",
+        "Organic farming does not eliminate pests or guarantee a pest-free crop."
+      ],
+      "askTitle": "Ask FarmIQ about organic farming",
+      "askBody": "Have a specific question? Ask the AI assistant for practical, balanced guidance on organic practices, soil health, or transitioning methods.",
+      "askQuestions": [
+        "How can I improve soil health without relying entirely on synthetic fertilisers?",
+        "What are the pros and cons of switching to organic farming for cotton?",
+        "How does composting help with soil water retention?"
+      ],
+      "openAssistant": "Open AI Assistant"
+    },
+    "practices": {
+      "intro": "The following practices are commonly used in organic and integrated farming. Each has specific conditions where it works well, and important limitations to consider. Results depend on your soil, climate, and management.",
+      "cards": {
+        "composting": {
+          "name": "Composting",
+          "explanation": "Composting converts crop residues, kitchen waste, and animal manure into stable organic matter that enriches soil.",
+          "advantages": [
+            "Gradually improves soil structure and water-holding capacity",
+            "Provides slow-release nutrients that reduce the need for synthetic fertilisers",
+            "Supports beneficial soil microorganisms"
+          ],
+          "whenUseful": "Most useful when crop residues or farm waste are available; especially valuable in sandy or degraded soils.",
+          "precautions": "Compost takes 2–4 months to mature. Immature compost can harm crops. Avoid including diseased plant material. Nutrient content varies — do not substitute for soil testing."
+        },
+        "vermicomposting": {
+          "name": "Vermicomposting",
+          "explanation": "Vermicomposting uses earthworms to break down organic matter into nutrient-rich castings (worm manure).",
+          "advantages": [
+            "Produces castings with higher microbial activity than regular compost",
+            "Can be done on a small scale with limited space",
+            "Castings improve soil aeration and water retention"
+          ],
+          "whenUseful": "Suitable for small to medium farms; useful for vegetable or horticultural crops where soil quality is a priority.",
+          "precautions": "Requires regular moisture management and shade. Earthworms are sensitive to chemicals — avoid pesticide-contaminated material. Results depend on worm species, temperature, and inputs."
+        },
+        "green-manuring": {
+          "name": "Green Manuring",
+          "explanation": "Green manuring involves growing leguminous crops (such as dhaincha, sunhemp, or cowpea) and incorporating them into the soil while still green.",
+          "advantages": [
+            "Legumes fix atmospheric nitrogen, which may partially reduce synthetic nitrogen needs",
+            "Improves soil organic matter over successive seasons",
+            "Helps suppress weeds when cover is dense"
+          ],
+          "whenUseful": "Most useful before the main crop is sown, or during fallow periods. Works best in regions with adequate pre-season rainfall.",
+          "precautions": "Requires additional water for the green manure crop. Benefits are gradual — do not expect immediate yield improvements. In dry regions, the green manure crop may compete for scarce moisture."
+        },
+        "mulching": {
+          "name": "Mulching",
+          "explanation": "Mulching covers the soil surface with organic material (straw, dry leaves, crop residues) or plastic film to conserve moisture and regulate temperature.",
+          "advantages": [
+            "Reduces soil-surface evaporation, helping conserve moisture during dry spells",
+            "Lowers soil temperature in summer and retains warmth in cooler periods",
+            "Organic mulch adds to soil organic matter as it decomposes"
+          ],
+          "whenUseful": "Valuable in water-stressed areas, during dry spells, and for vegetable or horticultural crops. Particularly useful on sandy soils prone to moisture loss.",
+          "precautions": "Mulch that is too thick or improperly applied can harbour pests or prevent water infiltration. Plastic mulch does not add organic matter and requires disposal. Cover crops used as living mulch may compete with the main crop for water."
+        },
+        "crop-rotation": {
+          "name": "Crop Rotation",
+          "explanation": "Crop rotation involves growing different crops on the same land in successive seasons rather than planting the same crop year after year.",
+          "advantages": [
+            "Can help break pest and disease cycles associated with continuous monocultures",
+            "Legume phases may improve soil nitrogen for subsequent crops",
+            "Reduces the risk of soil nutrient depletion associated with a single crop"
+          ],
+          "whenUseful": "Effective when a sequence of crops with different nutrient needs and pest profiles is planned across seasons or years.",
+          "precautions": "Benefits depend on the specific rotation design, crop selection, and local pest pressure. Rotation alone does not eliminate pests or replace soil testing and nutrient management."
+        },
+        "intercropping": {
+          "name": "Intercropping",
+          "explanation": "Intercropping grows two or more crops simultaneously on the same field, often pairing a main crop with a legume or low-growing companion.",
+          "advantages": [
+            "Can improve total land productivity compared with growing a single crop",
+            "Legume companions may partially supply nitrogen to associated crops",
+            "Diverse canopy may reduce some pest pressures"
+          ],
+          "whenUseful": "Most commonly used by smallholder farmers to spread risk and make use of light, water, and space more efficiently.",
+          "precautions": "Crop combinations must be chosen carefully — incompatible crops compete for water and nutrients. Harvest and mechanisation become more complex. Not all intercrop combinations improve productivity."
+        },
+        "biofertilizers": {
+          "name": "Biofertilizers",
+          "explanation": "Biofertilizers are preparations of living microorganisms (such as Rhizobium, Azotobacter, or mycorrhizal fungi) that can support nutrient availability in the soil.",
+          "advantages": [
+            "Some strains help fix atmospheric nitrogen or solubilise phosphorus",
+            "May reduce the quantity of synthetic fertiliser required when used appropriately",
+            "Low cost relative to conventional fertilisers when applied correctly"
+          ],
+          "whenUseful": "Most supported by evidence for legume crops (Rhizobium inoculants). Less predictable in non-legume crops. Effective only when combined with good soil conditions.",
+          "precautions": "Results vary with soil type, pH, temperature, and existing microbial populations. Biofertilizers do not replace soil testing or balanced fertilisation. Quality and viability of commercial products varies — purchase from certified suppliers."
+        },
+        "ipm": {
+          "name": "Integrated Pest Management (IPM)",
+          "explanation": "IPM combines monitoring, cultural practices, biological controls, and targeted chemical use to manage pests in a way that minimises harm to the environment and non-target organisms.",
+          "advantages": [
+            "Can reduce reliance on broad-spectrum pesticides over time",
+            "Biological controls (natural predators, parasitoids) can provide sustained pest suppression",
+            "May reduce input costs compared with calendar-based spraying"
+          ],
+          "whenUseful": "Applicable across most crops; especially valuable when pest resistance to chemical treatments is developing, or where environmental concerns are high.",
+          "precautions": "IPM requires regular crop monitoring and local expertise. Results are not immediate — biological controls take time to establish. Some pests and crops may still require targeted chemical intervention under IPM."
+        }
+      }
+    },
+    "practiceCard": {
+      "whatItIs": "What it is",
+      "advantages": "Main potential advantages",
+      "whenUseful": "When it may be useful",
+      "precautions": "Important precautions"
+    },
+    "compare": {
+      "title": "Advantages & Limitations",
+      "intro": "This table summarises what organic approaches may offer and what challenges they involve. Outcomes depend on your specific conditions — no farming method is universally better than another.",
+      "potentialBenefit": "Potential benefit",
+      "consideration": "Consideration",
+      "howToUseTitle": "How to use this table",
+      "howToUseBody": "This comparison is based on published research and field guidance. Individual results will differ. Use the \"My Farm\" tab to get a comparison tailored to your crop, soil, and available resources — and always consult local agricultural extension or KVK advisors before making major changes.",
+      "rows": {
+        "soilHealth": {
+          "aspect": "Soil Health",
+          "potential": "Organic inputs (compost, FYM, green manure) can gradually improve soil structure, organic matter, and microbial activity.",
+          "consideration": "Improvement is slow — typically 2–5 years of consistent management. Benefits depend on soil type, climate, and input quality."
+        },
+        "waterConservation": {
+          "aspect": "Water Conservation",
+          "potential": "Higher organic matter content can improve water-holding capacity, reducing irrigation frequency over time.",
+          "consideration": "Effect is gradual and depends on initial soil condition. Green manure and cover crops may compete for water in dry regions."
+        },
+        "inputCosts": {
+          "aspect": "Input Costs",
+          "potential": "Reduced purchase of synthetic fertilisers and pesticides may lower input costs in the medium to long term.",
+          "consideration": "Transition period often increases costs as new practices are learned and organic inputs are established. Local prices of organic inputs vary widely."
+        },
+        "labourRequirements": {
+          "aspect": "Labour Requirements",
+          "potential": "On-farm composting and biological practices can reduce repeat purchases.",
+          "consideration": "Organic methods typically require more labour than conventional approaches. Smallholder capacity must be considered."
+        },
+        "nutrientAvailability": {
+          "aspect": "Nutrient Availability",
+          "potential": "Organic matter provides slow-release nutrients that feed crops over time.",
+          "consideration": "Nutrient release from organic sources is slower and less predictable than synthetic fertilisers. Deficiencies can occur, especially in the first 1–3 years of transition."
+        },
+        "pestDisease": {
+          "aspect": "Pest and Disease Management",
+          "potential": "Diverse cropping systems and biological controls can reduce some pest pressures.",
+          "consideration": "Organic methods do not eliminate pests. Some crops and pest complexes require chemical intervention even under IPM. Organic-approved inputs may be less effective or less available."
+        },
+        "yieldTransition": {
+          "aspect": "Yield During Transition",
+          "potential": "Some farmers report stable or improved yields after a full transition, particularly for legumes and vegetables.",
+          "consideration": "Many farms experience a yield dip (10–30%) during the transition period (typically 2–3 years). Yields vary significantly with management quality and local conditions."
+        },
+        "certificationMarkets": {
+          "aspect": "Certification & Markets",
+          "potential": "Certified organic products can command premium prices in some markets.",
+          "consideration": "Certification involves cost, paperwork, and a transition period. Premium markets are geographically uneven and not guaranteed to materialise."
+        }
+      }
+    },
+    "assess": {
+      "title": "Tell us about your farm",
+      "crop": "Crop",
+      "cropPlaceholder": "Select a crop",
+      "farmLocation": "Farm location",
+      "farmLocationPlaceholder": "Village, district, state",
+      "soilType": "Soil type",
+      "soilTypePlaceholder": "Select a soil type",
+      "farmSize": "Farm size (acres)",
+      "farmSizePlaceholder": "e.g. 2.5",
+      "currentFertiliser": "Current fertiliser use",
+      "currentFertiliserPlaceholder": "e.g. Urea 18 kg/acre, DAP 12 kg/acre",
+      "currentPesticide": "Current pesticide use",
+      "currentPesticidePlaceholder": "e.g. Imidacloprid as needed",
+      "organicMaterialsLegend": "Organic materials available on your farm",
+      "cowDung": "Cow dung / farmyard manure",
+      "compost": "Compost",
+      "cropResidues": "Crop residues",
+      "otherMaterials": "Other organic materials",
+      "otherMaterialsPlaceholder": "Vermicompost, green manure... (comma separated)",
+      "preference": "Farming preference",
+      "save": "Save the result to my account",
+      "somethingWrong": "Something went wrong. Please try again.",
+      "saved": "Saved to your account.",
+      "compare": "Compare Farming Methods",
+      "comparing": "Comparing...",
+      "generatePlan": "Generate transition plan",
+      "preparingPlan": "Preparing plan..."
+    },
+    "error": {
+      "loadMethods": "Could not load the farming methods{{status}}.",
+      "tryAgain": "Try again",
+      "noData": "No farming-method reference data is available yet.",
+      "invalidValue": "Invalid value."
+    },
+    "validation": {
+      "selectCrop": "Select a crop.",
+      "selectSoil": "Select a soil type.",
+      "areaPositive": "Enter a farm size greater than zero."
+    },
+    "comparison": {
+      "title": "Comparison for {{crop}}",
+      "warningsTitle": "Things to be careful about",
+      "resourcesTitle": "Your resources and how they can be used",
+      "available": "available",
+      "notReported": "not reported",
+      "usableFor": "usable for: {{list}}"
+    },
+    "alternatives": {
+      "title": "Organic alternatives for {{crop}}",
+      "emptyTitle": "Organic alternatives",
+      "emptyBody": "No curated alternatives apply to {{crop}} yet.",
+      "whatItDoes": "What it does",
+      "howUsed": "How it is used",
+      "limitations": "Limitations",
+      "precautions": "Precautions",
+      "nutrientContent": "Nutrient content"
+    },
+    "cautions": {
+      "title": "Important cautions"
+    },
+    "sources": {
+      "source": "Source: {{note}}",
+      "integrity": "Integrity: {{note}}",
+      "updated": "Reference content last updated: {{date}}. Content served from: {{source}}."
+    },
+    "legend": {
+      "title": "How to read these labels"
+    },
+    "plan": {
+      "title": "Gradual transition plan for {{crop}}",
+      "preference": "Preference: {{title}} · {{area}} acres",
+      "costsTitle": "Costs and resources",
+      "reported": "You reported: {{list}}.",
+      "indicatorsTitle": "Indicators for continuing or adjusting"
+    },
+    "method": {
+      "recommendedPractices": "Recommended practices",
+      "fertiliser": "Fertiliser & nutrition",
+      "pestManagement": "Pest management",
+      "labour": "Labour requirement",
+      "water": "Water requirement",
+      "benefits": "Benefits",
+      "limitations": "Limitations",
+      "soilHealth": "Soil health",
+      "yieldImpact": "Yield impact",
+      "environmentalImpact": "Environmental impact",
+      "transitionDifficulty": "Transition difficulty",
+      "sources": "Sources"
+    },
+    "cost": {
+      "label": "Estimated cost per acre",
+      "notEstimated": "Not estimated by FarmIQ"
+    },
+    "dashboard": {
+      "title": "Side-by-side comparison — {{crop}}",
+      "feature": "Feature",
+      "costPerAcre": "Estimated cost / acre",
+      "labour": "Labour",
+      "water": "Water",
+      "soilHealth": "Soil health",
+      "yieldImpact": "Yield impact",
+      "environment": "Environment",
+      "transition": "Transition",
+      "notEstimated": "Not estimated"
+    }
+  }
+}

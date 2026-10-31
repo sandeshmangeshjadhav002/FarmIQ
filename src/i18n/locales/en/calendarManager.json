@@ -1,0 +1,17 @@
+{
+  "calendarManager": {
+    "pendingCount_one": "{{count}} reminder pending",
+    "pendingCount_other": "{{count}} reminders pending",
+    "addReminder": "Add reminder",
+    "newReminderTitle": "New reminder title",
+    "reminderTitlePlaceholder": "Reminder title...",
+    "add": "Add",
+    "emptyState": "No reminders yet. Add one above to keep track of sowing, spraying and harvest dates.",
+    "markAsDone": "Mark as done",
+    "markAsNotDone": "Mark as not done",
+    "editReminderAria": "Edit reminder: {{title}}",
+    "deleteReminderAria": "Delete reminder: {{title}}",
+    "editReminderPrompt": "Edit reminder",
+    "tomorrowMorning": "Tomorrow • 8:00 AM"
+  }
+}

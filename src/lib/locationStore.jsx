@@ -19,6 +19,8 @@
  */
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
+import i18n from "@/i18n";
+
 import { getCurrentPosition } from "@/lib/geolocation";
 import { apiGet } from "@/lib/apiClient";
 
@@ -102,7 +104,7 @@ export function LocationProvider({ children }) {
         if (cancelled) return;
         if (farm?.latitude != null && farm?.longitude != null) {
           const synced = {
-            label: farm.location || farm.name || "Saved farm",
+            label: farm.location || farm.name || i18n.t("locationStore.savedFarm"),
             latitude: farm.latitude,
             longitude: farm.longitude,
             source: "farm",
@@ -165,7 +167,7 @@ export function LocationProvider({ children }) {
         source: "gps",
       });
     } catch (err) {
-      setLocationError(err.message || "Could not detect your location.");
+      setLocationError(err.message || i18n.t("locationStore.detectError"));
       throw err;
     } finally {
       setLocating(false);

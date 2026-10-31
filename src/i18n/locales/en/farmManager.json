@@ -1,0 +1,56 @@
+{
+  "farmManager": {
+    "noFarms": "No farms yet",
+    "noFarmsBody": "Add your first farm to get started.",
+    "locationSaved": "Location saved — weather uses this point",
+    "selected": "SELECTED",
+    "select": "SELECT",
+    "areaNotSet": "Area not set",
+    "noCrop": "No crop added",
+    "addFarm": "Add Farm",
+    "addFarmTitle": "Add a farm",
+    "stepHeader": "Step 1 of 3 • Skip anything you do not know.",
+    "farmName": "Farm name *",
+    "farmNamePlaceholder": "Example: Sunrise Farm",
+    "farmLocation": "Farm location *",
+    "farmLocationPlaceholder": "Village, district, state",
+    "gettingLocation": "Getting location…",
+    "useCurrentLocation": "Use my current location",
+    "permissionHint": "Fills the location from where you are now. The permission is only asked when you tap this, and you can always type the location instead.",
+    "savedPoint": "Saved point: {{lat}}, {{lon}}",
+    "clear": "Clear",
+    "locFilled": "Location filled from the device: {{label}}",
+    "locKept": "Coordinates saved. The detected name is \"{{label}}\" — your typed location was kept.",
+    "locNoName": "Coordinates saved, but no place name could be looked up. Please type the location.",
+    "locError": "Could not get your location.",
+    "nameLocationRequired": "Farm name and location are required.",
+    "saveFailed": "Could not save farm. Please try again.",
+    "areaUnit": "Area unit",
+    "irrigation": "Irrigation",
+    "units": {
+      "acres": "Acres",
+      "hectares": "Hectares",
+      "guntha": "Guntha"
+    },
+    "irrigationTypes": {
+      "drip": "Drip",
+      "sprinkler": "Sprinkler",
+      "flood": "Flood",
+      "notKnown": "Not known"
+    },
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "saveFarm": "Save farm",
+    "checklistTitle": "Farm details checklist",
+    "loadError": "Could not load farms.",
+    "retry": "Try again",
+    "checklist": [
+      "Crop management",
+      "Growth stage",
+      "Soil information",
+      "Irrigation method",
+      "Farm area & units",
+      "GPS location"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DemoBadge, ModuleButton } from "./ModuleShared";
 import ModuleIcon from "./ModuleIcon";
-import { knowledgeArticles, knowledgeTopicTags } from "@/data/modules";
 
 /**
  * Knowledge Center module — searchable article list with a detail view.
@@ -10,15 +10,20 @@ import { knowledgeArticles, knowledgeTopicTags } from "@/data/modules";
  * @param {Function} props.onAsk - Navigate to the assistant screen.
  */
 export default function KnowledgeCenter({ onAsk }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [article, setArticle] = useState(null);
 
+  // Article/tag content lives in the translation files so it is available in
+  // both English and Marathi; `returnObjects` keeps the array shape intact.
+  const knowledgeTopicTags = t("data.knowledgeTopicTags", { returnObjects: true });
+
   const filteredArticles = useMemo(
     () =>
-      knowledgeArticles.filter((item) =>
+      t("data.knowledgeArticles", { returnObjects: true }).filter((item) =>
         item.join(" ").toLowerCase().includes(query.toLowerCase()),
       ),
-    [query],
+    [query, t],
   );
 
   if (article) {
@@ -30,11 +35,11 @@ export default function KnowledgeCenter({ onAsk }) {
           className="flex items-center gap-2 text-[11px] font-bold text-[#216B45]"
         >
           <ModuleIcon name="back" size={16} />
-          Back to articles
+          {t("knowledgeCenter.backToArticles")}
         </button>
 
         <article className="rounded-[22px] border border-[#E0E8E2] bg-white p-5">
-          <DemoBadge status="Verified source" />
+          <DemoBadge status={t("knowledgeCenter.verifiedSource")} />
           <h2 className="mt-4 text-[21px] font-extrabold leading-tight text-[#1D3A2B]">
             {title}
           </h2>
@@ -42,16 +47,16 @@ export default function KnowledgeCenter({ onAsk }) {
             {category} • {source}
           </p>
           <p className="mt-5 text-[12px] leading-6 text-[#4F6559]">
-            Ask the assistant about this topic and it will answer from the
-            stored guide and its sources.
+            {t("knowledgeCenter.assistantNote")}
           </p>
           <div className="mt-4 rounded-xl bg-[#F1F6F2] p-4 text-[11px] leading-5 text-[#486050]">
-            <b>Note:</b> Always verify high-impact advice with a local expert.
+            <b>{t("knowledgeCenter.noteLabel")}</b>{" "}
+            {t("knowledgeCenter.noteBody")}
           </div>
         </article>
 
         <ModuleButton onClick={onAsk}>
-          Ask FarmIQ about this article
+          {t("knowledgeCenter.askAboutArticle")}
         </ModuleButton>
       </div>
     );
@@ -63,11 +68,11 @@ export default function KnowledgeCenter({ onAsk }) {
       <label className="flex h-12 items-center gap-3 rounded-2xl border border-[#DFE7E1] bg-white px-4">
         <ModuleIcon name="search" size={18} />
         <input
-          aria-label="Search knowledge articles"
+          aria-label={t("knowledgeCenter.searchAria")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="min-w-0 flex-1 bg-transparent text-[12px] outline-none"
-          placeholder="Search crops, soil, pests, schemes..."
+          placeholder={t("knowledgeCenter.searchPlaceholder")}
         />
       </label>
 
@@ -109,7 +114,7 @@ export default function KnowledgeCenter({ onAsk }) {
           ))
         ) : (
           <p className="p-6 text-center text-[11px] text-[#829188]">
-            No articles match your search.
+            {t("knowledgeCenter.noArticles")}
           </p>
         )}
       </div>
