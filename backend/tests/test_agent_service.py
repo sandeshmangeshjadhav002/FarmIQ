@@ -17,7 +17,6 @@ an LLM.
 """
 from __future__ import annotations
 
-import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -1247,69 +1246,3 @@ def test_retrieval_outage_makes_the_answer_fall_back_not_pretend(fake_client, mo
     assert result["llm_used"] is False
     assert result["fallback"] is True
     assert result["answer"]
-
-
-# ── Wall-clock budget: the agent must answer before the client gives up ───────
-#
-# The web/app client aborts a chat request after 90s (CHAT_TIMEOUT_MS), so one
-# request's LLM work (tool plan + direct answer + retrieval) shares a single
-# deadline. A slow or hung provider must degrade to the deterministic answer
-# instead of holding the request open.
-
-
-def test_answer_gives_the_planner_a_bounded_timeout(fake_client, monkeypatch):
-    _seed(fake_client, reading=_reading())
-    seen: dict = {}
-    real_plan = agent_service.plan_tools
-
-    def _capture(question, **kwargs):
-        seen.update(kwargs)
-        return real_plan(question, **kwargs)
-
-    monkeypatch.setattr(agent_service, "plan_tools", _capture)
-    # No planner reply: _assistant_offline stubs llm_generate to None.
-    _ask(fake_client, "What is the soil moisture level?")
-
-    timeout = seen.get("timeout")
-    assert isinstance(timeout, float)
-    assert 0 < timeout <= agent_service.get_settings().llm_planner_timeout_seconds
-
-
-def test_slow_planner_degrades_to_the_deterministic_router(fake_client, monkeypatch):
-    _seed(fake_client, reading=_reading())
-    settings = agent_service.get_settings()
-    monkeypatch.setattr(settings, "llm_planner_timeout_seconds", 0.05)
-    monkeypatch.setattr(settings, "assistant_llm_budget_seconds", 0.3)
-    monkeypatch.setattr(
-        "app.rag_service.llm_generate",
-        lambda *_, **__: time.sleep(0.5)
-        or '{"intent": "sensors", "tools": ["get_sensor_readings"]}',
-    )
-
-    started = time.monotonic()
-    result = _ask(fake_client, "What is the soil moisture level?")
-    elapsed = time.monotonic() - started
-
-    assert elapsed < 3.0, "a hung planner must not hold the request open"
-    # The deterministic router took over and the real sensor data still answered.
-    assert result["tools_used"] == ["get_sensor_readings"]
-    assert "20" in result["answer"]
-
-
-def test_explainer_shares_the_same_request_budget(fake_client, monkeypatch):
-    _seed(fake_client, reading=_reading())
-    monkeypatch.setattr(
-        agent_service, "plan_tools", lambda *_, **__: _plan("sensors", ("get_sensor_readings",))
-    )
-    seen: dict = {}
-
-    def _direct(*_, **kwargs):
-        seen.update(kwargs)
-        return {"answer": "Your soil is dry — irrigate soon.", "llm_used": True, "sources": []}
-
-    monkeypatch.setattr("app.rag_service.direct_llm_answer", _direct)
-    _ask(fake_client, "What is the soil moisture level?")
-
-    timeout = seen.get("timeout")
-    assert isinstance(timeout, float)
-    assert 0 < timeout <= agent_service.get_settings().assistant_llm_budget_seconds

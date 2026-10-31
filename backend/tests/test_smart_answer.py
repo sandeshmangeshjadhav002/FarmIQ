@@ -20,7 +20,6 @@ Covers all the scenarios specified in the upgrade requirements:
 """
 from __future__ import annotations
 
-import time
 from typing import Any, Dict, List, Optional
 from unittest.mock import patch, MagicMock
 
@@ -503,7 +502,7 @@ def test_existing_chat_test_suite_still_uses_smart_answer_pathway(
         return _llm_result("", llm_used=False)
 
     def _answer_q(question, ml_results=None, *, top_k=None, language=None,
-                  history=None, farm_context=None, **kw):
+                  history=None, farm_context=None):
         answer_q_called.append(question)
         return _rag_ok_result("Soil pH between 6 and 7 is ideal for most crops.")
 
@@ -516,99 +515,3 @@ def test_existing_chat_test_suite_still_uses_smart_answer_pathway(
     assert r.status_code == 200
     assert answer_q_called == ["What soil pH is best?"]
     assert "soil" in r.json()["answer"].lower()
-
-
-# ── 16. Wall-clock budgeting: never leave the client waiting ─────────────────
-#
-# One assistant request may make several LLM calls. Their HTTP timeouts can add
-# up past the client's 90s deadline (CHAT_TIMEOUT_MS), which is what produced
-# "the server did not respond within 90s". These tests pin the mechanism that
-# bounds each call and abandons the whole answer once the budget is spent.
-
-def test_call_bounded_returns_the_value_when_it_finishes_in_time():
-    assert rag_service._call_bounded(lambda: "ok", 5.0) == "ok"
-    # No budget means the previous unbounded behaviour.
-    assert rag_service._call_bounded(lambda: "unbounded", None) == "unbounded"
-
-
-def test_call_bounded_abandons_a_call_that_overruns_its_budget():
-    def _slow():
-        time.sleep(0.5)
-        return "too late"
-
-    started = time.monotonic()
-    with pytest.raises(rag_service.LLMTimeoutError):
-        rag_service._call_bounded(_slow, 0.05)
-    assert time.monotonic() - started < 0.4
-
-
-def test_call_bounded_skips_work_when_no_budget_is_left():
-    called = []
-
-    def _work():
-        called.append(1)
-        return "x"
-
-    with pytest.raises(rag_service.LLMTimeoutError):
-        rag_service._call_bounded(_work, 0)
-    assert called == []
-
-
-def test_call_bounded_propagates_the_callables_own_error():
-    """A provider that raises its own TimeoutError is a failure, not a budget miss."""
-
-    def _boom():
-        raise TimeoutError("provider gave up")
-
-    with pytest.raises(TimeoutError) as exc:
-        rag_service._call_bounded(_boom, 5.0)
-    assert not isinstance(exc.value, rag_service.LLMTimeoutError)
-
-
-class _SlowClient:
-    is_configured = True
-
-    def generate(self, *_, **__):
-        time.sleep(0.5)
-        return "too late"
-
-
-class _SlowSettings:
-    llm_temperature = 0.2
-    llm_max_tokens = 100
-
-
-class _SlowPipeline:
-    llm_client = _SlowClient()
-    settings = _SlowSettings()
-
-    def answer(self, *_, **__):
-        time.sleep(0.5)
-
-
-def test_llm_generate_returns_none_when_the_budget_elapses(monkeypatch):
-    monkeypatch.setattr(rag_service, "get_pipeline", lambda: _SlowPipeline())
-    assert rag_service.llm_generate("plan this", timeout=0.05) is None
-
-
-def test_direct_llm_answer_reports_a_timeout_instead_of_hanging(monkeypatch):
-    monkeypatch.setattr(rag_service, "get_pipeline", lambda: _SlowPipeline())
-    result = direct_llm_answer("Hi", timeout=0.05)
-    assert result["llm_used"] is False
-    assert result["retrieval_status"] == "LLM_TIMEOUT"
-    assert result["answer"] == ""
-
-
-def test_smart_answer_returns_before_the_provider_can_hang(monkeypatch):
-    monkeypatch.setattr(rag_service.get_settings(), "assistant_llm_budget_seconds", 0.2)
-    monkeypatch.setattr(rag_service, "get_pipeline", lambda: _SlowPipeline())
-
-    started = time.monotonic()
-    result = smart_answer("hi")
-    elapsed = time.monotonic() - started
-
-    assert elapsed < 2.0, "a slow provider must not hold the request open"
-    assert result["answer"]
-    assert result["llm_used"] is False
-    for leak in ("data/raw/", "ingest_documents", "TimeoutError", "budget"):
-        assert leak not in result["answer"]

@@ -24,12 +24,9 @@ import logging
 import re
 import sys
 import threading
-import time
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as _FutureTimeout
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from app.config import Settings, get_settings
 
@@ -42,72 +39,6 @@ class RagUnavailableError(RuntimeError):
     The message is safe to show to an operator (it never contains secrets) and
     explains how to enable the assistant.
     """
-
-
-class RagTimeoutError(RagUnavailableError):
-    """Raised when an answer was abandoned because it ran over its budget.
-
-    A subclass of :class:`RagUnavailableError` so callers that already treat an
-    unavailable assistant gracefully keep working; callers that want to tell
-    "too slow" apart from "not installed" can catch this first.
-    """
-
-
-class LLMTimeoutError(TimeoutError):
-    """A single LLM call did not finish inside the budget its caller allowed."""
-
-
-# ── Wall-clock budgeting for LLM calls ────────────────────────────────────
-# One assistant request may make several LLM calls (tool plan, direct answer,
-# RAG answer). Each call has its own HTTP timeout, but their *sum* can exceed
-# the web/app client's 90s deadline (CHAT_TIMEOUT_MS) when a provider is slow,
-# so the farmer sees a network timeout instead of an answer. These helpers let
-# a caller impose a hard wall-clock cap per call: once it is spent the request
-# stops waiting and the assistant returns its deterministic, structured answer.
-#
-# The worker thread cannot be interrupted, so a genuinely stuck provider keeps
-# running until its own HTTP timeout expires — but the *request* returns on
-# time, which is what the client deadline cares about.
-_budget_pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix="farmiq-llm")
-
-
-def _call_bounded(fn: Callable[[], Any], timeout: Optional[float]) -> Any:
-    """Run ``fn()`` and stop waiting after ``timeout`` seconds.
-
-    ``None`` runs the call unbounded (previous behaviour). A non-positive
-    ``timeout`` means the budget is already spent, so the call is skipped and
-    :class:`LLMTimeoutError` is raised without starting any work. Any exception
-    raised by ``fn`` itself propagates unchanged.
-    """
-    if timeout is None:
-        return fn()
-    if timeout <= 0:
-        raise LLMTimeoutError("The LLM budget for this request is exhausted.")
-    future = _budget_pool.submit(fn)
-    try:
-        return future.result(timeout=timeout)
-    except _FutureTimeout as exc:
-        # ``concurrent.futures.TimeoutError`` is an alias of the builtin in
-        # modern Python, so a callable that raised its *own* TimeoutError would
-        # land here too. Only a future that is still running means the budget
-        # elapsed; a finished future means the provider really failed.
-        if future.done():
-            raise
-        future.cancel()
-        raise LLMTimeoutError(
-            f"LLM call exceeded its {timeout:.1f}s budget."
-        ) from exc
-
-
-def remaining_budget(deadline: Optional[float]) -> Optional[float]:
-    """Seconds left before *deadline* (a ``time.monotonic()`` value).
-
-    Returns ``None`` when no deadline is set, and ``0.0`` once it has passed so
-    callers can skip work rather than start a call they cannot finish.
-    """
-    if deadline is None:
-        return None
-    return max(0.0, deadline - time.monotonic())
 
 
 _lock = threading.Lock()
@@ -281,7 +212,6 @@ def answer_question(
     language: Optional[str] = None,
     history: Optional[List[Dict[str, Any]]] = None,
     farm_context: Optional[Dict[str, Any]] = None,
-    timeout: Optional[float] = None,
 ) -> Dict[str, Any]:
     """Answer *question* through the RAG pipeline and return a JSON-ready dict.
 
@@ -299,32 +229,21 @@ def answer_question(
     are passed to the model, as background — never as predictions, and never
     filled in when they are missing.
 
-    ``timeout`` is an optional wall-clock cap in seconds. When the retrieval and
-    generation together exceed it the call is abandoned and
-    :class:`RagTimeoutError` is raised, so the assistant can answer from its
-    deterministic path instead of leaving the client waiting.
-
     Raises :class:`RagUnavailableError` when the assistant is not available.
     """
     pipeline = get_pipeline()
     try:
-        result = _call_bounded(
-            lambda: pipeline.answer(
-                question,
-                ml_results,
-                top_k=top_k,
-                relevance_threshold=relevance_threshold,
-                language=language,
-                history=history,
-                farm_context=farm_context,
-            ),
-            timeout,
+        result = pipeline.answer(
+            question,
+            ml_results,
+            top_k=top_k,
+            relevance_threshold=relevance_threshold,
+            language=language,
+            history=history,
+            farm_context=farm_context,
         )
     except RagUnavailableError:
         raise
-    except LLMTimeoutError as exc:
-        logger.warning("RAG answer abandoned: %s", exc)
-        raise RagTimeoutError("The assistant took too long to answer.") from exc
     except Exception as exc:
         detail = _redact_secrets(f"{type(exc).__name__}: {exc}")
         logger.error("RAG answer generation failed: %s", detail)
@@ -527,16 +446,11 @@ def direct_llm_answer(
     history: Optional[List[Dict[str, Any]]] = None,
     farm_context: Optional[Dict[str, Any]] = None,
     tool_results_summary: Optional[str] = None,
-    timeout: Optional[float] = None,
 ) -> Dict[str, Any]:
     """Call the LLM directly without knowledge-base retrieval.
 
     Suitable for greetings, general agricultural questions, and farm-specific
     questions where the agent's tool data is sufficient context.
-
-    ``timeout`` is an optional wall-clock cap in seconds; when the provider does
-    not answer in time the result carries ``retrieval_status="LLM_TIMEOUT"`` and
-    no text, so the caller can fall back instead of holding the client open.
 
     Returns a dict with the same keys as ``answer_question`` so callers can
     treat both paths uniformly.
@@ -621,26 +535,12 @@ def direct_llm_answer(
 
         settings = pipeline.settings
         try:
-            answer_text = _call_bounded(
-                lambda: llm.generate(
-                    prompt,
-                    system=_DIRECT_SYSTEM_PROMPT,
-                    temperature=settings.llm_temperature,
-                    max_tokens=settings.llm_max_tokens,
-                ),
-                timeout,
+            answer_text = llm.generate(
+                prompt,
+                system=_DIRECT_SYSTEM_PROMPT,
+                temperature=settings.llm_temperature,
+                max_tokens=settings.llm_max_tokens,
             )
-        except LLMTimeoutError:
-            logger.warning("Direct LLM answer abandoned after its budget elapsed.")
-            return {
-                "answer": "",
-                "sources": [],
-                "retrieval_status": "LLM_TIMEOUT",
-                "retrieval_message": "",
-                "llm_used": False,
-                "ml_context_provided": bool(ml_results),
-                "warnings": [],
-            }
         except Exception as exc:
             logger.warning("Direct LLM answer failed: %s", type(exc).__name__)
             return {
@@ -680,16 +580,14 @@ def llm_generate(
     system: Optional[str] = None,
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
-    timeout: Optional[float] = None,
 ) -> Optional[str]:
     """Generate a raw completion with the configured LLM client.
 
     A thin, **non-raising** wrapper around the RAG project's existing LLM
     client, for callers that need a completion but want to handle an unavailable
     provider themselves (for example the agent's tool planner). Returns ``None``
-    — never raising — when the LLM is not configured, the call fails, or the
-    optional ``timeout`` budget elapses, so the caller can fall back to a
-    deterministic path instead of surfacing an error.
+    — never raising — when the LLM is not configured or the call fails, so the
+    caller can fall back to a deterministic path instead of surfacing an error.
 
     Credentials stay in the backend environment; only the completion text is
     returned, and any provider error is logged with its credential redacted.
@@ -705,18 +603,11 @@ def llm_generate(
 
     settings = pipeline.settings
     try:
-        text = _call_bounded(
-            lambda: llm.generate(
-                prompt,
-                system=system,
-                temperature=(
-                    settings.llm_temperature if temperature is None else temperature
-                ),
-                max_tokens=(
-                    settings.llm_max_tokens if max_tokens is None else max_tokens
-                ),
-            ),
-            timeout,
+        text = llm.generate(
+            prompt,
+            system=system,
+            temperature=settings.llm_temperature if temperature is None else temperature,
+            max_tokens=settings.llm_max_tokens if max_tokens is None else max_tokens,
         )
     except Exception as exc:  # noqa: BLE001 — the caller falls back instead
         logger.warning(
@@ -857,16 +748,11 @@ def smart_answer(
         path is used. If retrieval fails, a farmer-friendly message is
         returned instead of the technical retrieval error.
 
-    Both phases share one wall-clock budget (``assistant_llm_budget_seconds``)
-    so the answer always arrives before the web/app client's own deadline,
-    even when the provider is slow.
-
     Raises :class:`RagUnavailableError` only when both the LLM AND the RAG
     pipeline are completely unavailable (pipeline import failed, dependencies
     missing, etc.).
     """
     lang = (language or "").strip().lower() or None
-    deadline = time.monotonic() + float(get_settings().assistant_llm_budget_seconds)
 
     # ── Phase 1: Try LLM-driven direct answer ─────────────────────────────
     phase1 = direct_llm_answer(
@@ -875,7 +761,6 @@ def smart_answer(
         language=lang,
         history=history,
         farm_context=farm_context,
-        timeout=remaining_budget(deadline),
     )
 
     llm_answer_text = (phase1.get("answer") or "").strip()
@@ -901,7 +786,6 @@ def smart_answer(
                 language=lang,
                 history=history,
                 farm_context=farm_context,
-                timeout=remaining_budget(deadline),
             )
             rag_answer = (rag_result.get("answer") or "").strip()
             rag_status = rag_result.get("retrieval_status", "")
@@ -964,22 +848,7 @@ def smart_answer(
             language=lang,
             history=history,
             farm_context=farm_context,
-            timeout=remaining_budget(deadline),
         )
-    except RagTimeoutError:
-        # Retrieval ran over budget and there is no LLM to phrase an answer, so
-        # return the farmer-friendly message instead of a 503.
-        friendly_lang = "mr" if lang == "mr" else "en"
-        logger.info("smart_answer: RAG fallback abandoned after its budget elapsed.")
-        return {
-            "answer": _RETRIEVAL_UNAVAILABLE_MESSAGES[friendly_lang],
-            "sources": [],
-            "retrieval_status": "LLM_TIMEOUT",
-            "retrieval_message": "",
-            "llm_used": False,
-            "ml_context_provided": bool(ml_results),
-            "warnings": [],
-        }
     except RagUnavailableError:
         raise  # Both LLM and RAG unavailable — let the endpoint return 503.
 
