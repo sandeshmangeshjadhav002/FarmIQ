@@ -74,8 +74,8 @@ static const char *WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 static const char *API_BASE_URL  = "http://192.168.1.42:8001";
 
 // From the POST /api/devices/pair response.
-static const char *DEVICE_ID     = "PASTE_DEVICE_UUID";
-static const char *DEVICE_TOKEN  = "PASTE_DEVICE_TOKEN";
+static const char *DEVICE_ID     = "bf8b1489-237e-4b0f-ac65-fa40048a4e4e";
+static const char *DEVICE_TOKEN  = "22EIGOZFsCd2c5A9w-VZtWjWblSAxQXBgX91IND2I3M";
 
 // How often a reading is taken and posted.
 static const uint32_t SEND_INTERVAL_MS = 5UL * 60UL * 1000UL;  // 5 minutes

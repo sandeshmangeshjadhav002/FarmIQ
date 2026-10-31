@@ -1,13 +1,17 @@
 """The unified agricultural AI agent engine.
 
 This is the reasoning layer that sits between the farmer's question and the
-nine tools in :mod:`app.agent_tools`. It has four jobs:
+eleven tools in :mod:`app.agent_tools`. It has four jobs:
 
-1. **Route** — decide which tools the question actually needs, with the same
-   weighted keyword matching the voice engine already uses
-   (``app/voice_engine.classify_intent``). No LLM decides tool use, so a
-   question can never make the agent read data it does not need, and a model
-   can never widen its own access.
+1. **Route** — the LLM decides which tools the message actually needs. It is
+   given the farmer's message, a little conversation context, and a catalogue
+   of the available tools, and returns a JSON selection. The selection is
+   validated here (unknown tool names are dropped, an unrecognised intent
+   becomes ``"unknown"``) before anything is read, so a model can never widen
+   its own access or make the agent read data the question does not need. When
+   the LLM is unavailable the deterministic keyword router
+   (:func:`classify_intent`) takes over as an offline fallback — it is never
+   the primary decision-maker.
 2. **Analyse** — turn the tool results into findings: what the farm/sensor/
    weather/model data says, where two sources disagree, what is missing and
    what is uncertain. Every statement is derived from a value a tool actually
@@ -23,8 +27,10 @@ nine tools in :mod:`app.agent_tools`. It has four jobs:
 
 Hard rules
 ----------
-* The LLM never calls tools and never touches the database. Only this module
-  (deterministically) invokes :class:`~app.agent_tools.FarmTools`.
+* The LLM *selects* tools but never calls them and never touches the database.
+  Only this module (deterministically) validates the selection and invokes
+  :class:`~app.agent_tools.FarmTools` — a model can never execute arbitrary
+  code, run an unrestricted query, or read a tool it did not ask for.
 * Actual sensor readings are labelled as readings and ML results as model
   output; the two are never merged into one statement.
 * A model result is described as a prediction, never as a guaranteed outcome.
@@ -238,8 +244,196 @@ def classify_intent(question: str) -> str:
 
 
 def tools_for_intent(intent: str) -> tuple[str, ...]:
-    """The tools an intent may call (empty for ``"unknown"``)."""
+    """The tools an intent may call (empty for ``"unknown"``).
+
+    Used only by the offline fallback in :func:`answer`; the primary path is
+    the LLM planner below.
+    """
     return _INTENT_TOOLS.get(intent, ())
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Tool planning (LLM-driven)
+# ─────────────────────────────────────────────────────────────────────────
+# "Which tools does this message need?" is decided by the LLM, not by keyword
+# matching. The planner receives the farmer's message (plus a little
+# conversation context) and a catalogue of the available tools, and returns a
+# JSON selection.
+#
+# The selection is validated *independently of the model*: an unknown tool name
+# is dropped, an unrecognised intent becomes "unknown", and a malformed reply
+# is ignored altogether. The keyword router above is used only as an offline
+# fallback when the LLM provider is not configured or unreachable.
+
+# One line per tool: what it reads. This is the catalogue the planner chooses
+# from — it carries no intent keywords, only capability descriptions.
+_TOOL_CATALOG: dict[str, str] = {
+    "get_farm_profile": "the farmer's saved farm details (name, location, area, soil type, current crop, irrigation type).",
+    "get_sensor_readings": "the newest IoT sensor reading (soil moisture, soil/air temperature, humidity, NPK, pH, pressure) with its age.",
+    "get_weather_information": "current weather and the rainfall totals/forecast for the farm's location.",
+    "get_crop_prediction": "the most recent stored crop-recommendation model output.",
+    "get_fertilizer_prediction": "the most recent stored fertilizer-recommendation model output.",
+    "get_irrigation_prediction": "the stored irrigation model output plus the rule-based irrigation baseline.",
+    "get_yield_prediction": "the most recent stored yield-prediction model output.",
+    "get_farm_history": "the farm's recent saved predictions, newest first.",
+    "get_available_farm_recommendations": "the actionable items the farm's current data supports (the farm plan).",
+    "get_drought_context": "the farmer's most recent saved drought assessment (severity and top actions).",
+    "get_organic_guidance": "the farmer's most recent saved organic-farming comparison or transition plan.",
+}
+
+_INTENTS_FOR_PLANNER = ", ".join((*_AGENT_INTENTS, "unknown"))
+
+_PLANNER_SYSTEM_PROMPT = (
+    "You are the planning step of FarmIQ, an agricultural assistant for farmers in India.\n"
+    "Your only job is to decide which of the assistant's data tools are needed to answer the "
+    "farmer's latest message, and whether reference documents should be consulted. You do not "
+    "answer the farmer yourself.\n\n"
+    "Available tools:\n"
+    + "\n".join(f"- {name}: {desc}" for name, desc in _TOOL_CATALOG.items())
+    + "\n\n"
+    "Rules:\n"
+    "- Greetings, thanks, small talk and non-agricultural questions need no tools.\n"
+    "- General agricultural knowledge can usually be answered without any tool; request a tool "
+    "only when the farmer's own farm data is needed.\n"
+    "- Request only the tools the message actually needs. Never request every tool.\n"
+    "- Questions about the farmer's own crop, soil, sensors, weather, predictions, farm plan, "
+    "drought or organic records need the matching farm tools listed above.\n"
+    "- Set \"needs_retrieval\" to true only when the answer depends on specific reference "
+    "documents (official schemes, government guidelines, certified standards or local "
+    "regulations). General knowledge does not need retrieval.\n"
+    "- Reply with a single JSON object and nothing else, in exactly this shape:\n"
+    "{\"intent\": \"<one of: " + _INTENTS_FOR_PLANNER + ">\", \"tools\": [\"<tool name>\", ...], "
+    "\"needs_retrieval\": false, \"reason\": \"<short>\"}"
+)
+
+
+def _extract_plan_json(raw: Any) -> Optional[dict[str, Any]]:
+    """Pull the first JSON object out of an LLM reply. Never raises."""
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    text = raw.strip()
+    if "```" in text:
+        # Keep the longest fenced block — models sometimes add prose around it.
+        text = max(text.split("```"), key=len)
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end <= start:
+        return None
+    try:
+        parsed = json.loads(text[start : end + 1])
+    except (ValueError, TypeError):
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _validate_plan(parsed: Any) -> Optional[dict[str, Any]]:
+    """Validate a planner reply independently of the model.
+
+    Unknown tool names are dropped and an unrecognised intent becomes
+    ``"unknown"``; a reply with no usable structure is rejected (``None``) so
+    the caller can fall back deterministically.
+    """
+    if not isinstance(parsed, dict):
+        return None
+    raw_tools = parsed.get("tools")
+    if not isinstance(raw_tools, list):
+        return None
+
+    tools: list[str] = []
+    for name in raw_tools:
+        if isinstance(name, str) and name.strip() in TOOL_NAMES:
+            cleaned = name.strip()
+            if cleaned not in tools:
+                tools.append(cleaned)
+
+    intent = parsed.get("intent")
+    intent = intent.strip().lower() if isinstance(intent, str) else ""
+    if intent not in _AGENT_INTENTS and intent != "unknown":
+        intent = "unknown"
+
+    return {
+        "intent": intent,
+        "tools": tuple(tools),
+        "needs_retrieval": bool(parsed.get("needs_retrieval")),
+    }
+
+
+def _history_fingerprint(history: Optional[list[dict]]) -> str:
+    """A short key for the most recent turn, so a follow-up plans separately."""
+    if not history or not isinstance(history, list):
+        return "-"
+    last = history[-1]
+    if isinstance(last, dict):
+        return str(last.get("text") or last.get("content") or "")[:120]
+    return "-"
+
+
+def _planner_prompt(
+    question: str,
+    *,
+    language: str,
+    history: Optional[list[dict]],
+) -> str:
+    parts: list[str] = []
+    if history:
+        turns: list[str] = []
+        for item in history[-4:]:
+            if not isinstance(item, dict):
+                continue
+            text = str(item.get("text") or item.get("content") or "").strip()
+            if not text:
+                continue
+            role = (
+                "Farmer"
+                if str(item.get("role") or "").lower() in {"farmer", "user"}
+                else "Assistant"
+            )
+            turns.append(f"{role}: {text[:300]}")
+        if turns:
+            parts.append("Recent conversation (context only):\n" + "\n".join(turns))
+    parts.append("Language: " + ("Marathi" if language == "mr" else "English"))
+    parts.append("Farmer's latest message:\n" + question)
+    return "\n\n".join(parts)
+
+
+def plan_tools(
+    question: str,
+    *,
+    owner_id: str = "",
+    language: str = "en",
+    history: Optional[list[dict]] = None,
+) -> Optional[dict[str, Any]]:
+    """Ask the LLM which tools this message needs.
+
+    Returns ``{"intent", "tools", "needs_retrieval"}`` or ``None`` when the LLM
+    is unavailable or its reply cannot be used — the caller then falls back to
+    :func:`classify_intent` / :func:`tools_for_intent`.
+    """
+    from app import rag_service
+
+    if not question or not question.strip():
+        return None
+
+    cache_key = (
+        f"{owner_id}|{language}|{question.strip().lower()}|"
+        f"{_history_fingerprint(history)}"
+    )
+    cached = _PLAN_CACHE.get(cache_key, _MISS)
+    if cached is not _MISS:
+        return cached
+
+    raw = rag_service.llm_generate(
+        _planner_prompt(question, language=language, history=history),
+        system=_PLANNER_SYSTEM_PROMPT,
+        temperature=0.0,
+        max_tokens=250,
+    )
+    plan = _validate_plan(_extract_plan_json(raw)) if raw else None
+    if plan is None:
+        return None
+
+    _PLAN_CACHE.set(cache_key, plan)
+    return plan
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -1142,12 +1336,16 @@ def ml_results(results: dict[str, dict]) -> Optional[dict]:
 # ─────────────────────────────────────────────────────────────────────────
 
 _CACHE: TTLCache = TTLCache(get_settings().agent_answer_cache_ttl_seconds, maxsize=512)
+# Tool selections are cached separately so a repeated question does not pay for
+# a second planner call before the answer cache is consulted.
+_PLAN_CACHE: TTLCache = TTLCache(get_settings().agent_answer_cache_ttl_seconds, maxsize=512)
 _MISS = object()
 
 
 def reset_cache() -> None:
-    """Drop cached answers (tests / after a data change)."""
+    """Drop cached answers and tool plans (tests / after a data change)."""
     _CACHE.clear()
+    _PLAN_CACHE.clear()
 
 
 def _cache_key(
@@ -1190,8 +1388,21 @@ def answer(
     lang = language if language in ("mr", "en") else "en"
     now = now or datetime.now(timezone.utc)
 
-    intent = classify_intent(question)
-    tools = tools_for_intent(intent)
+    # The LLM decides which tools (if any) this message needs. Only when it is
+    # unavailable or its reply is unusable does the deterministic router take
+    # over, so the agent keeps working with the LLM down.
+    plan = plan_tools(question, owner_id=owner_id, language=lang, history=history)
+    if plan is not None:
+        intent = plan["intent"]
+        tools = plan["tools"]
+        # The planner tells us whether reference documents would help. When it
+        # explicitly says no, the retrieval call is skipped entirely; when the
+        # planner is unavailable we still attempt it (previous behaviour).
+        allow_retrieval = plan["needs_retrieval"] is not False
+    else:
+        intent = classify_intent(question)
+        tools = tools_for_intent(intent)
+        allow_retrieval = True
 
     gathered = gather(tools, client=client, owner_id=owner_id, farm_id=farm_id, now=now)
     results = gathered["results"]
@@ -1214,13 +1425,14 @@ def answer(
             lang=lang,
             history=history,
             results=results,
+            allow_retrieval=allow_retrieval,
         )
 
     # The structured answer is the primary reply. The assistant's prose is used
-    # only when the routed agent had nothing structured to say: a general
-    # agricultural question the keyword router could not map to a tool, or a
-    # farm question with no data behind it. A failed explanation can therefore
-    # never hide a real ML result or sensor reading.
+    # only when the agent had nothing structured to say: a greeting or general
+    # question the planner routed to no tool, an agricultural question it could
+    # not map to a tool, or a farm question with no data behind it. A failed
+    # explanation can therefore never hide a real ML result or sensor reading.
     fallback = False
     if not text:
         if explanation:
@@ -1251,12 +1463,31 @@ def answer(
     return payload
 
 
+# Markers of a technical retrieval failure. These must never reach the farmer:
+# they expose internal paths and ingestion steps, and they are not an answer.
+_RETRIEVAL_FAILURE_MARKERS: tuple[str, ...] = (
+    "the knowledge base does not contain",
+    "the knowledge base is empty",
+    "please run the ingestion",
+    "re-running ingestion",
+    "consider adding relevant agricultural documents",
+    "data/raw/",
+)
+
+
+def _is_retrieval_error_message(text: str) -> bool:
+    """True when a reply is really a retrieval-failure notice, not an answer."""
+    low = (text or "").lower()
+    return any(marker in low for marker in _RETRIEVAL_FAILURE_MARKERS)
+
+
 def _explain(
     *,
     question: str,
     lang: str,
     history: Optional[list[dict]],
     results: dict[str, dict],
+    allow_retrieval: bool = True,
 ) -> tuple[Optional[str], bool, list[dict]]:
     """Ask the LLM to generate a natural answer from gathered evidence.
 
@@ -1268,10 +1499,12 @@ def _explain(
        greetings, general questions, and farm-specific questions equally well
        because it does **not** require the knowledge base to contain
        relevant documents.
-    3. Optionally attempt RAG retrieval and append any cited passages to
-       the answer.  If the knowledge base is empty or the question does not
-       match any document, this step is silently skipped — the direct answer
-       stands on its own.
+    3. When ``allow_retrieval`` is true, optionally attempt RAG retrieval and
+       append any cited passages to the answer.  If the knowledge base is empty
+       or the question does not match any document, this step is silently
+       skipped — the direct answer stands on its own.  The planner sets
+       ``allow_retrieval`` to false when it judged that reference documents
+       would not help, which also avoids a redundant model call.
 
     Never raises: when the LLM is unavailable the caller still has the
     structured section answer.
@@ -1301,32 +1534,37 @@ def _explain(
     rag_text: str = ""
     rag_used: bool = False
     rag_sources: list[dict] = []
-    try:
-        rag_resp = rag_service.answer_question(
-            question,
-            ml_results=ml_ctx,
-            language=lang,
-            history=history,
-            farm_context=farm_ctx,
-        )
-        status = rag_resp.get("retrieval_status", "")
-        raw_answer = str(rag_resp.get("answer") or "").strip()
-        # Use the RAG answer when:
-        # (a) the direct call produced nothing, OR
-        # (b) RAG found real documents (OK status) — append sources regardless.
-        if status == "OK" and raw_answer:
-            rag_text = raw_answer
-            rag_used = bool(rag_resp.get("llm_used"))
-            rag_sources = list(rag_resp.get("sources") or [])
-        elif not direct_text and raw_answer and not _is_retrieval_error_message(raw_answer):
-            # RAG returned something useful (e.g. a mocked answer in tests)
-            rag_text = raw_answer
-            rag_used = bool(rag_resp.get("llm_used"))
-            rag_sources = list(rag_resp.get("sources") or [])
-    except RagUnavailableError as exc:
-        logger.info("Agent RAG fallback unavailable: %s", exc)
-    except Exception as exc:  # noqa: BLE001 — the answer must survive this
-        logger.warning("Agent RAG fallback failed: %s", type(exc).__name__)
+    if allow_retrieval:
+        try:
+            rag_resp = rag_service.answer_question(
+                question,
+                ml_results=ml_ctx,
+                language=lang,
+                history=history,
+                farm_context=farm_ctx,
+            )
+            status = rag_resp.get("retrieval_status", "")
+            raw_answer = str(rag_resp.get("answer") or "").strip()
+            # Use the RAG answer when:
+            # (a) RAG found real documents (OK status), OR
+            # (b) the direct call produced nothing and RAG returned a real
+            #     answer (a retrieval-failure notice is never used).
+            if status == "OK" and raw_answer:
+                rag_text = raw_answer
+                rag_used = bool(rag_resp.get("llm_used"))
+                rag_sources = list(rag_resp.get("sources") or [])
+            elif (
+                not direct_text
+                and raw_answer
+                and not _is_retrieval_error_message(raw_answer)
+            ):
+                rag_text = raw_answer
+                rag_used = bool(rag_resp.get("llm_used"))
+                rag_sources = list(rag_resp.get("sources") or [])
+        except RagUnavailableError as exc:
+            logger.info("Agent RAG fallback unavailable: %s", exc)
+        except Exception as exc:  # noqa: BLE001 — the answer must survive this
+            logger.warning("Agent RAG fallback failed: %s", type(exc).__name__)
 
     # ── Combine ──────────────────────────────────────────────────────────
     # Direct LLM answer takes precedence; RAG sources are always appended

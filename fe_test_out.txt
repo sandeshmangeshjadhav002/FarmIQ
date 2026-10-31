@@ -1,0 +1,3064 @@
+
+> figma-make-app@1.0.0 test
+> vitest run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/shing/Documents/GitHub/FarmIQ-copy[39m
+
+ [31m❯[39m src/data/modules.test.js [2m([22m[2m13 tests[22m[2m | [22m[31m13 failed[39m[2m)[22m[90m 28[2mms[22m[39m
+[31m   [31m×[31m six-section model[2m > [22mexposes exactly the six consolidated sections, in order[90m 9[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m six-section model[2m > [22massigns every module in the catalogue to a known section[90m 2[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m six-section model[2m > [22mhas no duplicate module keys[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m navKeyForSection[2m > [22mmaps each section onto the tab that owns it[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m navKeyForSection[2m > [22mroutes the Knowledge and Admin sections through the More tab[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m navKeyForSection[2m > [22mfalls back to Home for an unknown section so a tab is always lit[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m admin gate[2m > [22mauthorises only the advisory role[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m browsableModules[2m > [22mhides contextual tools from the browse grid[90m 2[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m browsableModules[2m > [22mstill returns contextual tools when they are explicitly requested[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m browsableModules[2m > [22mhides the administrative tools from a farmer[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m browsableModules[2m > [22mshows the administrative tools to an authorised expert[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m browsableModules[2m > [22mkeeps the farmer-facing tools for both roles[90m 3[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m moduleByKey[2m > [22mresolves a key and returns undefined for an unknown one[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/lib/apiClient.test.js [2m([22m[2m0 test[22m[2m)[22m
+ [31m❯[39m src/lib/geolocation.test.js [2m([22m[2m10 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[90m 25[2mms[22m[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mresolves the device coordinates and the accuracy[90m 9[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mreports a null accuracy when the platform does not provide one[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mpasses conservative defaults to the platform[90m 4[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mforwards the caller's timeout and accuracy preference[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mrejects with 'unsupported' when the device has no geolocation API[90m 2[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mrejects with 'insecure' outside a secure context, without prompting[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mmaps platform error code 1 to 'denied'[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mmaps platform error code 2 to 'unavailable'[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mmaps platform error code 3 to 'timeout'[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m getCurrentPosition[2m > [22mmaps platform error code 99 to 'unavailable'[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/PredictionExplanation.test.jsx [2m([22m[2m7 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[33m 408[2mms[22m[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22mrenders nothing until there is a prediction to explain[90m 30[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22msends the model's own output to the assistant, once[90m 94[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22mshows the four labelled parts of the explanation[90m 43[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22mre-orders the parts even when the assistant replies out of sequence[90m 126[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22mkeeps the prediction visible and explains the gap when the assistant is down[90m 25[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22masks the farmer to sign in on a 401 instead of showing a raw error[90m 16[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m PredictionExplanation[2m > [22mretries the explanation without re-running the prediction[90m 72[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/WeatherAssist.test.jsx [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[33m 718[2mms[22m[39m
+[31m   [31m×[31m WeatherAssist coordinate sources[2m > [22muses the saved farm point on request, without asking for a permission[33m 310[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m WeatherAssist coordinate sources[2m > [22mwarns that the phone's own position may not match the field[90m 79[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m WeatherAssist coordinate sources[2m > [22mhides the farm shortcut when the farm has no stored coordinates[90m 21[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m WeatherAssist coordinate sources[2m > [22mstill looks up a hand-typed place name[90m 235[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m WeatherAssist coordinate sources[2m > [22msurfaces the weather service being down without blocking the form[90m 70[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/AlertsPanel.test.jsx [2m([22m[2m9 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[33m 756[2mms[22m[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mshows an honest empty state and never invents alert rows[90m 275[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mrenders each alert's priority, kind, reasoning and unread count[90m 58[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mbadges alerts that came from simulated readings[90m 44[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mhides read alerts under the unread filter and says so[90m 105[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mmarks a single alert read via PATCH and refetches[90m 93[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mmarks every alert read when unread alerts exist[90m 78[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22mre-derives alerts from the server when the farmer checks now[90m 64[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22masks the farmer to sign in on a 401 instead of showing a raw error[90m 23[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AlertsPanel[2m > [22msurfaces a transport failure verbatim[90m 14[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/FarmActionPlan.test.jsx [2m([22m[2m10 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[33m 820[2mms[22m[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mreads the plan from the existing decision-engine endpoint[90m 168[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mshows the priority, the action and the reasoning behind it[90m 27[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mreveals the supporting evidence on request[90m 256[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mlinks each action to the tool that owns it[90m 73[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mdoes not invent a link for a category that has no tool[90m 20[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mexpands past five actions instead of navigating away[90m 97[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mstates plainly what the plan could not assess[90m 20[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22mshows no gap list when the engine had everything it needed[90m 15[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22moffers farm setup when there is nothing to plan for[90m 77[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmActionPlan[2m > [22msurfaces a backend failure with a retry instead of an empty plan[90m 65[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/pages/AdvisorScreen.test.jsx [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[33m 846[2mms[22m[39m
+[31m   [31m×[31m AdvisorScreen[2m > [22mlists every advisory task as a shortcut on one screen[90m 239[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AdvisorScreen[2m > [22mopens the existing tool for the chosen task[90m 258[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AdvisorScreen[2m > [22mstates which farm the guidance is framed around[90m 68[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AdvisorScreen[2m > [22moffers farm setup when the account has no farm yet[90m 151[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m AdvisorScreen[2m > [22mkeeps the free-form assistant as one option, not the only one[90m 129[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/pages/HomeScreen.test.jsx [2m([22m[2m10 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[33m 1188[2mms[22m[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mgives a brand-new account a setup workflow instead of zero-valued cards[90m 156[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mdoes not run the decision engine when there is no farm to plan for[90m 43[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mstarts an account with no farm at farm setup[33m 335[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mleads with today's action plan once a farm exists[33m 447[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mlists only statistics backed by real records[90m 53[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22msurfaces unread alerts and opens the alerts panel[90m 60[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mshows no alert banner when everything has been read[90m 32[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mlists recent predictions from stored records only[90m 19[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mhides the recent predictions block when nothing has been predicted[90m 27[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m HomeScreen prioritisation[2m > [22mkeeps the AI Advisor shortcuts available on the first screen[90m 12[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/ModuleScreen.test.jsx [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[90m 156[2mms[22m[39m
+[31m   [31m×[31m ModuleScreen admin gate[2m > [22mrefuses an administrative tool to a farmer[90m 96[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m ModuleScreen admin gate[2m > [22mlets an authorised agricultural expert through[90m 21[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m ModuleScreen admin gate[2m > [22mlabels a module with its consolidated section, not its old group[90m 13[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m ModuleScreen admin gate[2m > [22mkeeps a plain farm tool open to a farmer[90m 24[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/FarmManager.test.jsx [2m([22m[2m6 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[33m 2944[2mms[22m[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mfills the location from the device and saves the point with the farm[33m 758[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mkeeps a typed location and still saves the detected point[33m 820[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mstill keeps the point when no place name can be looked up[90m 123[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mshows a permission message and leaves the form usable when denied[33m 562[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mdiscards the captured point when the farmer clears it[33m 662[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m FarmManager location capture[2m > [22mshows the saved-point hint on a farm that has coordinates[90m 15[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+ [31m❯[39m src/components/modules/OrganicFarmingAdvisor.test.jsx [2m([22m[2m9 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[33m 6240[2mms[22m[39m
+[31m   [31m×[31m mapServerErrors[2m > [22mmaps semantic (field) and schema (loc) errors to form keys[90m 8[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m mapServerErrors[2m > [22mkeeps the first error per field and ignores unusable entries[90m 1[2mms[22m[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mshows a loading skeleton before the reference content arrives[90m 89[2mms[22m[31m[39m
+[31m     → expected +0 to be 3 // Object.is equality[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mrenders the form once the options load[33m 1039[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: Tell us about your farm. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mrenders an error state with retry when the options fail to load[33m 1015[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: /Could not load the farming methods \(500\)/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mrenders an empty state when the reference catalogue is empty[33m 1018[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: /No farming-method reference data is available/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mblocks submission and shows validation errors for an incomplete form[33m 1033[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: Tell us about your farm. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mposts the built payload and renders the comparison[33m 1018[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: Tell us about your farm. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [31m×[31m OrganicFarmingAdvisor[2m > [22mmaps a 422 response onto the form fields[33m 1015[2mms[22m[31m[39m
+[31m     → Unable to find an element with the text: Tell us about your farm. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-1 overflow-x-auto rounded-[18px] border border-white/40 bg-white/50 p-1 backdrop-blur-md"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap bg-[#216B45] text-white shadow"[31m
+        [36m>[31m
+          [0mLearn[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mPractices[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mCompare[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 shrink-0 rounded-[14px] px-3 py-2 text-[11px] font-extrabold transition whitespace-nowrap text-[#52665B] hover:bg-white/60"[31m
+        [36m>[31m
+          [0mMy Farm[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<section[31m
+          [33mclass[31m=[32m"rounded-[22px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-2 mb-3"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"grid h-8 w-8 place-items-center rounded-xl bg-[#E6F3E8] text-[#216B45]"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"16"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"1.8"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"16"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M20 4C10 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 10-15Z"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M4 21c2-5 6-8 12-11"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</span>[31m
+            [36m<h2[31m
+              [33mclass[31m=[32m"text-[13px] font-extrabold text-[#213D2F]"[31m
+            [36m>[31m
+              [0mWhat is Organic Farming?[0m
+            [36m</h2>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mOrganic farming is an agricultural approach that emphasises the use of natural inputs and processes — such as compost, green manure, biological pest control, and crop rotation — while avoiding or minimising synthetic fertilisers and pesticides.[0m
+          [36m</p>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-2 text-[11px] leading-[1.65] text-[#3C5248]"[31m
+          [36m>[31m
+            [0mIt is not a single fixed method but rather a set of principles. The actual practices, results, and challenges vary greatly depending on soil conditions, climate, crop type, available resources, and the quality of management.[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 space-y-2"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil health[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mOrganic inputs can gradually improve soil structure, organic matter content, and the activity of beneficial soil microorganisms. Improvement takes time — typically several seasons of consistent management.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mWater retention[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mHigher organic matter content may improve a soil's ability to hold moisture, which can be beneficial during dry spells. This effect is gradual and depends on initial soil conditions.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mSoil biodiversity[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mReduced use of broad-spectrum chemicals can support earthworms, beneficial insects, and diverse microbial communities. Results vary with local soil and climate.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mReduced synthetic inputs[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mA goal of organic approaches is to reduce reliance on synthetic fertilisers and pesticides over time. This does not mean eliminating all purchased inputs — certified organic inputs and biological controls are also used.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mComposting[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mComposting converts organic waste into a soil amendment. It improves nutrient cycling and soil biology when applied consistently over time.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mMulching[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mCovering the soil surface helps conserve moisture, moderate temperature, and suppress weeds. Organic mulches also contribute to soil organic matter as they decompose.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"rounded-xl border border-[#DDE9E1] bg-white p-3"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] font-extrabold text-[#216B45] mb-1"[31m
+              [36m>[31m
+                [0mNatural pest management[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-[10px] leading-5 text-[#5B6F63]"[31m
+              [36m>[31m
+                [0mIPM combines monitoring, habitat management, biological controls, and careful use of approved inputs to reduce pest damage without relying solely on chemical pesticides.[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"mt-4 rounded-xl border border-[#F0DFC0] bg-[#FFF8EA] p-3"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-[10px] font-extrabold text-[#8A6D2B] mb-1"[31m
+            [36m>[31m
+              [0mImportant limitations[0m
+            [36m</p>[31m
+            [36m<ul[31m
+              [33mclass[31m=[32m"space-y-1"[31m
+            [36m>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mTransitioning to organic farming takes time — typically 2–3 years before soil responds fully.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mYields may decline during the transition period, especially if synthetic inputs are reduced abruptly.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming is not automatically cheaper, easier, or more productive than conventional farming.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mBenefits depend heavily on soil type, climate, crop selection, water availability, and management quality.[0m
+              [36m</li>[31m
+              [36m<li[31m
+                [33mclass[31m=[32m"flex items-start gap-1.5 text-[10px] leading-5 text-[#7C6428]"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#D99A2B]"[31m
+                [36m/>[31m
+                [0mOrganic farming does not eliminate pests or guarantee a pest-free crop.[0m
+              [36m</li>[31m
+            [36m</ul>[31m
+          [36m</div>[31m
+        [36m</section>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+
+[2m Test Files [22m [1m[31m12 failed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m88 failed[39m[22m[90m (88)[39m
+[2m   Start at [22m 05:26:16
+[2m   Duration [22m 10.04s[2m (transform 2.09s, setup 5.41s, collect 5.43s, tests 14.13s, environment 21.38s, prepare 3.03s)[22m
+

@@ -572,3 +572,321 @@ def direct_llm_answer(
         "ml_context_provided": bool(ml_results),
         "warnings": ["RAG pipeline not available."],
     }
+
+
+def llm_generate(
+    prompt: str,
+    *,
+    system: Optional[str] = None,
+    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = None,
+) -> Optional[str]:
+    """Generate a raw completion with the configured LLM client.
+
+    A thin, **non-raising** wrapper around the RAG project's existing LLM
+    client, for callers that need a completion but want to handle an unavailable
+    provider themselves (for example the agent's tool planner). Returns ``None``
+    — never raising — when the LLM is not configured or the call fails, so the
+    caller can fall back to a deterministic path instead of surfacing an error.
+
+    Credentials stay in the backend environment; only the completion text is
+    returned, and any provider error is logged with its credential redacted.
+    """
+    try:
+        pipeline = get_pipeline()
+    except RagUnavailableError:
+        return None
+
+    llm = getattr(pipeline, "llm_client", None)
+    if llm is None or not getattr(llm, "is_configured", False):
+        return None
+
+    settings = pipeline.settings
+    try:
+        text = llm.generate(
+            prompt,
+            system=system,
+            temperature=settings.llm_temperature if temperature is None else temperature,
+            max_tokens=settings.llm_max_tokens if max_tokens is None else max_tokens,
+        )
+    except Exception as exc:  # noqa: BLE001 — the caller falls back instead
+        logger.warning(
+            "LLM generation failed: %s: %s",
+            type(exc).__name__,
+            _redact_secrets(str(exc)),
+        )
+        return None
+
+    text = (text or "").strip()
+    return text or None
+
+
+# ---------------------------------------------------------------------------
+# LLM-Driven Smart Answer  (replaces the bare answer_question() call in the
+# chat endpoint)
+# ---------------------------------------------------------------------------
+# Design
+# ------
+# The goal is to eliminate the rule-based intent classification that currently
+# governs the chat endpoint's behavior and replace it with LLM-driven decision-
+# making.
+#
+# Strategy
+# ---------
+# 1. If the LLM is available, always ask it first with a two-part system
+#    prompt: (a) answer the question using general knowledge / farm context,
+#    and (b) if the answer would be significantly improved by consulting the
+#    agricultural knowledge base, output a special sentinel token so the
+#    router knows to also run RAG and produce a follow-up grounded answer.
+#
+# 2. If the LLM is not available (not configured or the pipeline is down),
+#    fall back to the existing answer_question() RAG path — this preserves
+#    full backward-compatibility.
+#
+# 3. If RAG is run (either because the LLM requested it or because the LLM
+#    was unavailable), and retrieval returns BELOW_THRESHOLD or EMPTY_INDEX,
+#    the technical retrieval message is NEVER sent to the farmer.  Instead:
+#    - If the LLM is available, it produces a direct answer anyway.
+#    - If the LLM is unavailable, a farmer-friendly message is returned.
+#
+# 4. The LLM never learns about internal file paths, ingestion commands, or
+#    ChromaDB implementation details.
+#
+# The sentinel approach is a lightweight, single-LLM-call mechanism that lets
+# the model decide whether retrieval is worth the extra latency.  It avoids:
+# - Two mandatory LLM calls for every message.
+# - A dedicated "classifier" LLM call separate from the answer.
+# - Any hardcoded keyword lists or intent labels.
+
+_SMART_SYSTEM_PROMPT = """\
+You are FarmIQ, a knowledgeable and friendly agricultural assistant serving \
+farmers in India. You support both English and Marathi (Devanagari script).
+
+Your primary duties:
+1. Respond warmly and naturally to greetings and everyday conversation.
+2. Answer general agricultural questions (crops, soil, fertilizers, irrigation, \
+pest management, organic farming, drought, weather, market information) using \
+your knowledge.
+3. Give personalised recommendations when farm data or ML model outputs are \
+provided, clearly labelling what is sensor data, what is a model prediction, \
+and what is your own guidance.
+4. Ask for the specific missing information when a farm-specific recommendation \
+truly requires it. Ask only one focused question.
+5. Politely redirect off-topic questions without repeating the redirection in \
+every turn.
+
+Rules:
+- Never invent sensor readings, model predictions, weather observations, or \
+government scheme details.
+- Label ML predictions as model output, not verified facts.
+- Label sensor readings as sensor readings, not measurements you made.
+- Keep answers concise and farmer-friendly. Avoid technical jargon unless \
+explaining it.
+- Answer in the language the farmer used (Marathi in Devanagari if they \
+wrote in Marathi; English otherwise).
+- For high-stakes decisions (pesticide doses, chemical applications, large \
+capital expenditure), recommend consulting a local agricultural officer or KVK.
+- Do not expose internal system details, file paths, error messages, or \
+ingestion instructions.
+
+IMPORTANT — Document retrieval signal:
+If your answer would be significantly improved by consulting specific \
+agricultural reference documents (e.g., official ICAR guidelines, state \
+agricultural policy, certified organic standards, government scheme details, \
+or specific disease/pest identification), include the exact token \
+<<NEEDS_RETRIEVAL>> somewhere in your response. The system will then retrieve \
+relevant documents and refine your answer. Do NOT include <<NEEDS_RETRIEVAL>> \
+for simple greetings, general knowledge questions, or when you already have \
+sufficient farm context to give a good answer.
+"""
+
+_RETRIEVAL_NEEDED_SENTINEL = "<<NEEDS_RETRIEVAL>>"
+
+# When a farmer-friendly message must replace a technical retrieval failure.
+_RETRIEVAL_UNAVAILABLE_MESSAGES = {
+    "en": (
+        "I don't have specific reference documents for that question right now, "
+        "but I can still help based on general agricultural knowledge. "
+        "For the most accurate local recommendations, consider consulting your "
+        "nearest KVK (Krishi Vigyan Kendra) or agricultural extension officer."
+    ),
+    "mr": (
+        "सध्या या प्रश्नासाठी माझ्याकडे विशिष्ट संदर्भ दस्तऐवज नाहीत, "
+        "परंतु सामान्य कृषी ज्ञानाच्या आधारे मी मदत करू शकतो. "
+        "अचूक स्थानिक शिफारशींसाठी तुमच्या जवळच्या KVK किंवा कृषी विस्तार "
+        "अधिकाऱ्याशी संपर्क साधा."
+    ),
+}
+
+
+def smart_answer(
+    question: str,
+    ml_results: Optional[Dict[str, Any]] = None,
+    *,
+    top_k: Optional[int] = None,
+    language: Optional[str] = None,
+    history: Optional[List[Dict[str, Any]]] = None,
+    farm_context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """LLM-driven answer: the model decides whether document retrieval is needed.
+
+    This is the main entry point for ``POST /api/chat``. It replaces the
+    previous unconditional RAG call with a two-phase approach:
+
+    Phase 1 — Direct LLM answer
+        The LLM is given the question, farm context, ML results, and
+        conversation history. It answers naturally. If it includes the
+        ``<<NEEDS_RETRIEVAL>>`` sentinel, Phase 2 is triggered.
+
+    Phase 2 — RAG enhancement (only when the LLM requested it)
+        The RAG pipeline retrieves relevant passages and the LLM re-answers
+        with those passages as additional evidence. If retrieval returns
+        nothing useful, the Phase 1 answer is used as-is.
+
+    Fallback — RAG-only (when LLM is unavailable)
+        When the LLM is not configured, the traditional ``answer_question()``
+        path is used. If retrieval fails, a farmer-friendly message is
+        returned instead of the technical retrieval error.
+
+    Raises :class:`RagUnavailableError` only when both the LLM AND the RAG
+    pipeline are completely unavailable (pipeline import failed, dependencies
+    missing, etc.).
+    """
+    lang = (language or "").strip().lower() or None
+
+    # ── Phase 1: Try LLM-driven direct answer ─────────────────────────────
+    phase1 = direct_llm_answer(
+        question,
+        ml_results=ml_results,
+        language=lang,
+        history=history,
+        farm_context=farm_context,
+    )
+
+    llm_answer_text = (phase1.get("answer") or "").strip()
+    llm_was_used = phase1.get("llm_used", False)
+
+    if llm_was_used and llm_answer_text:
+        # Check whether the LLM signalled that documents would help.
+        needs_retrieval = _RETRIEVAL_NEEDED_SENTINEL in llm_answer_text
+
+        # Remove the sentinel from the user-facing answer text.
+        clean_llm_answer = llm_answer_text.replace(_RETRIEVAL_NEEDED_SENTINEL, "").strip()
+
+        if not needs_retrieval:
+            # The LLM is confident without documents — return its answer.
+            return {**phase1, "answer": clean_llm_answer}
+
+        # ── Phase 2: RAG enhancement (LLM requested it) ───────────────────
+        try:
+            rag_result = answer_question(
+                question,
+                ml_results,
+                top_k=top_k,
+                language=lang,
+                history=history,
+                farm_context=farm_context,
+            )
+            rag_answer = (rag_result.get("answer") or "").strip()
+            rag_status = rag_result.get("retrieval_status", "")
+            rag_llm_used = rag_result.get("llm_used", False)
+
+            # ── Intercept unhelpful retrieval messages ─────────────────────
+            _bad_prefixes = (
+                "The knowledge base does not contain",
+                "The knowledge base is empty",
+                "Please run the ingestion script",
+                "Consider adding relevant agricultural documents",
+                "The assistant failed to answer",
+                "python scripts/ingest_documents.py",
+                "data/raw/",
+            )
+            retrieval_failed = (
+                not rag_answer
+                or rag_status in ("BELOW_THRESHOLD", "EMPTY_INDEX")
+                or not rag_llm_used
+                or any(rag_answer.startswith(p) for p in _bad_prefixes)
+                or any(p in rag_answer for p in _bad_prefixes)
+            )
+
+            if retrieval_failed:
+                # RAG couldn't add value — use the LLM's Phase 1 answer with
+                # a note that no specific reference documents were found.
+                logger.info(
+                    "smart_answer: RAG retrieval unhelpful (status=%s), "
+                    "using direct LLM answer.",
+                    rag_status,
+                )
+                return {
+                    **phase1,
+                    "answer": clean_llm_answer,
+                    "retrieval_status": rag_status or "BELOW_THRESHOLD",
+                    "retrieval_message": "",
+                }
+
+            # Good RAG answer — return it with full source context.
+            return {**rag_result}
+
+        except RagUnavailableError as exc:
+            logger.info(
+                "smart_answer: RAG unavailable during Phase 2 (%s), "
+                "using Phase 1 LLM answer.",
+                type(exc).__name__,
+            )
+            # RAG pipeline not available but we have a good LLM answer.
+            return {**phase1, "answer": clean_llm_answer}
+
+    # ── Fallback: LLM unavailable — use traditional RAG path ──────────────
+    logger.info("smart_answer: LLM not available (status=%s), using RAG fallback.",
+                phase1.get("retrieval_status", "unknown"))
+
+    try:
+        rag_result = answer_question(
+            question,
+            ml_results,
+            top_k=top_k,
+            language=lang,
+            history=history,
+            farm_context=farm_context,
+        )
+    except RagUnavailableError:
+        raise  # Both LLM and RAG unavailable — let the endpoint return 503.
+
+    rag_answer = (rag_result.get("answer") or "").strip()
+    rag_status = rag_result.get("retrieval_status", "")
+    rag_llm_used = rag_result.get("llm_used", False)
+
+    # Intercept unhelpful retrieval messages (same check as Phase 2 above).
+    _bad_prefixes = (
+        "The knowledge base does not contain",
+        "The knowledge base is empty",
+        "Please run the ingestion script",
+        "Consider adding relevant agricultural documents",
+        "The assistant failed to answer",
+        "python scripts/ingest_documents.py",
+        "data/raw/",
+    )
+    retrieval_failed = (
+        not rag_answer
+        or rag_status in ("BELOW_THRESHOLD", "EMPTY_INDEX")
+        or not rag_llm_used
+        or any(rag_answer.startswith(p) for p in _bad_prefixes)
+        or any(p in rag_answer for p in _bad_prefixes)
+    )
+
+    if retrieval_failed:
+        # Return a farmer-friendly message instead of the technical error.
+        friendly_lang = "mr" if lang == "mr" else "en"
+        friendly_msg = _RETRIEVAL_UNAVAILABLE_MESSAGES[friendly_lang]
+        logger.info(
+            "smart_answer: RAG retrieval unhelpful (status=%s), "
+            "returning friendly fallback message.",
+            rag_status,
+        )
+        return {
+            **rag_result,
+            "answer": friendly_msg,
+            "retrieval_message": "",
+        }
+
+    return rag_result

@@ -68,6 +68,9 @@ def _stubs(monkeypatch):
         "app.rag_service.answer_question",
         lambda *_, **__: {"answer": "", "llm_used": False, "sources": []},
     )
+    # The LLM tool planner is stubbed to None so the suite stays hermetic and
+    # exercises the deterministic fallback unless a test overrides it.
+    monkeypatch.setattr("app.rag_service.llm_generate", lambda *_, **__: None)
     yield
     ctx.reset_caches()
     agent_service.reset_cache()
@@ -165,6 +168,29 @@ def test_chat_returns_a_structured_answer_with_evidence(app_client, fake_client)
     assert body["freshness"]["get_sensor_readings"] == _iso(0.2)
     # A sensor question never fetches the farm profile (tool narrowing).
     assert body["context"]["farm"] is None
+
+
+def test_the_llm_planner_drives_tool_selection(app_client, fake_client, monkeypatch):
+    """The endpoint honours the planner's choice, not a keyword rule."""
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        "app.rag_service.llm_generate",
+        lambda *_, **__: '{"intent": "weather", "tools": ["get_weather_information"], '
+                         '"needs_retrieval": false}',
+    )
+
+    resp = app_client.post(
+        "/api/agent/chat",
+        json={"message": "how is the sky looking today"},
+        headers=fake_client.auth_header(UID),
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["intent"] == "weather"
+    assert body["tools_used"] == ["get_weather_information"]
+    # Only the planner-selected tool was read.
+    assert body["context"]["sensors"] is None
 
 
 def test_chat_surfaces_a_conflict_as_a_warning(app_client, fake_client):

@@ -86,13 +86,20 @@ def _isolated_state(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def _assistant_offline(monkeypatch):
-    """Default the assistant to unavailable; tests opt in to a stub."""
+    """Default the assistant to unavailable; tests opt in to a stub.
+
+    The LLM tool planner is stubbed to ``None`` as well, so the suite stays
+    hermetic (no provider call) and exercises the deterministic fallback router
+    unless a test patches :func:`app.agent_service.plan_tools` or
+    ``app.rag_service.llm_generate`` itself.
+    """
     from app.rag_service import RagUnavailableError
 
     def _unavailable(*_, **__):
         raise RagUnavailableError("knowledge base not loaded")
 
     monkeypatch.setattr("app.rag_service.answer_question", _unavailable)
+    monkeypatch.setattr("app.rag_service.llm_generate", lambda *_, **__: None)
 
 
 def _seed(fake_client, *, farm=True, reading=None, predictions=None):
@@ -138,7 +145,11 @@ def _ask(fake_client, question, *, owner=UID, language="en", farm_id=None, **kwa
     )
 
 
-# ── Routing ──────────────────────────────────────────────────────────────────
+# ── Offline fallback routing ─────────────────────────────────────────────────
+#
+# The primary routing decision is made by the LLM planner (see the LLM planner
+# tests below). These tests cover the deterministic fallback that runs when the
+# planner is unavailable, so the agent keeps working with the provider down.
 
 @pytest.mark.parametrize(
     "question,expected",
@@ -157,7 +168,7 @@ def _ask(fake_client, question, *, owner=UID, language="en", farm_id=None, **kwa
         ("What is the capital of France?", "unknown"),
     ],
 )
-def test_intent_routing(question, expected):
+def test_offline_fallback_intent_routing(question, expected):
     assert agent_service.classify_intent(question) == expected
 
 
@@ -777,7 +788,7 @@ def _farming_plan_row(crop="Wheat"):
         ("दुष्काळाचा धोका किती?", "drought_management"),
     ],
 )
-def test_organic_and_drought_intent_routing(question, expected):
+def test_offline_fallback_organic_and_drought_routing(question, expected):
     assert agent_service.classify_intent(question) == expected
 
 
@@ -989,3 +1000,249 @@ def test_organic_guidance_field_isolation(fake_client):
 
     organic = result["context"].get("organic")
     assert organic is None
+
+
+# ── LLM-driven tool planning ─────────────────────────────────────────────────
+#
+# The planner decides which tools a message needs; the agent must honour that
+# selection (and no more), and fall back deterministically when the reply is
+# unusable. These tests stub the planner directly so no provider is involved.
+
+def _plan(intent, tools, needs_retrieval=False):
+    return {"intent": intent, "tools": tuple(tools), "needs_retrieval": needs_retrieval}
+
+
+def test_planner_selection_is_honoured(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        agent_service,
+        "plan_tools",
+        lambda *_, **__: _plan("weather", ("get_weather_information",)),
+    )
+
+    result = _ask(fake_client, "anything at all")
+
+    assert result["intent"] == "weather"
+    assert result["tools_used"] == ["get_weather_information"]
+    # The planner's narrow selection means nothing else was read.
+    assert result["context"]["sensors"] is None
+    assert result["context"]["farm"] is None
+
+
+def test_planner_can_request_a_tool_the_keyword_router_would_not(fake_client, monkeypatch):
+    """The planner, not the keyword list, decides: an unrelated phrase still works."""
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        agent_service,
+        "plan_tools",
+        lambda *_, **__: _plan("sensors", ("get_sensor_readings",)),
+    )
+
+    # The fallback router has no keyword for this, so it would read nothing.
+    assert agent_service.classify_intent("how wet is the ground right now") != "sensors"
+
+    result = _ask(fake_client, "how wet is the ground right now")
+
+    assert result["tools_used"] == ["get_sensor_readings"]
+    assert "20" in result["answer"]
+
+
+def test_planner_greeting_reads_no_farm_data_and_answers_conversationally(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        agent_service, "plan_tools", lambda *_, **__: _plan("unknown", ())
+    )
+    monkeypatch.setattr(
+        "app.rag_service.direct_llm_answer",
+        lambda *_, **__: {"answer": "Hello! I'm FarmIQ. How can I help with your farm today?",
+                          "llm_used": True, "sources": []},
+    )
+
+    result = _ask(fake_client, "Hi")
+
+    assert result["tools_used"] == []
+    assert result["context"] == {
+        "farm": None, "sensors": None, "weather": None,
+        "predictions": {}, "drought": None, "organic": None,
+    }
+    assert result["answer"].startswith("Hello!")
+    assert result["llm_used"] is True
+    assert result["fallback"] is False
+
+
+def test_planner_skips_retrieval_when_it_says_documents_are_not_needed(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    calls = {"n": 0}
+
+    def _rag(*_, **__):
+        calls["n"] += 1
+        return {"answer": "unused", "retrieval_status": "OK", "llm_used": True, "sources": []}
+
+    monkeypatch.setattr("app.rag_service.answer_question", _rag)
+    monkeypatch.setattr(
+        agent_service,
+        "plan_tools",
+        lambda *_, **__: _plan("sensors", ("get_sensor_readings",), needs_retrieval=False),
+    )
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert calls["n"] == 0                       # no redundant retrieval call
+    assert result["tools_used"] == ["get_sensor_readings"]
+
+
+def test_planner_requests_retrieval_when_documents_would_help(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    calls = {"n": 0}
+
+    def _rag(*_, **__):
+        calls["n"] += 1
+        return {"answer": "Under the scheme, ...", "retrieval_status": "OK",
+                "llm_used": True, "sources": [{"title": "State scheme"}]}
+
+    monkeypatch.setattr("app.rag_service.answer_question", _rag)
+    monkeypatch.setattr(
+        agent_service,
+        "plan_tools",
+        lambda *_, **__: _plan("unknown", (), needs_retrieval=True),
+    )
+
+    result = _ask(fake_client, "Which government subsidy applies to my farm?")
+
+    assert calls["n"] == 1
+    assert result["sources"] == [{"title": "State scheme"}]
+
+
+def test_unusable_planner_reply_falls_back_to_the_deterministic_router(fake_client):
+    """A malformed reply is ignored; the offline router takes over (fixture default None)."""
+    _seed(fake_client, reading=_reading())
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    assert result["intent"] == "sensors"
+    assert result["tools_used"] == ["get_sensor_readings"]
+
+
+def test_planner_output_is_validated_independently_of_the_model():
+    # Unknown tool names are dropped; a bad intent becomes "unknown".
+    plan = agent_service._validate_plan(
+        {"intent": "make coffee", "tools": ["get_sensor_readings", "drop_table", 42]},
+    )
+    assert plan == {
+        "intent": "unknown",
+        "tools": ("get_sensor_readings",),
+        "needs_retrieval": False,
+    }
+
+    # A reply with no usable structure is rejected so the caller can fall back.
+    assert agent_service._validate_plan({"tools": "get_sensor_readings"}) is None
+    assert agent_service._validate_plan(None) is None
+
+
+def test_planner_json_is_extracted_from_prose_and_fences():
+    fenced = 'Sure!\n```json\n{"intent": "weather", "tools": ["get_weather_information"]}\n```\n'
+    assert agent_service._extract_plan_json(fenced) == {
+        "intent": "weather",
+        "tools": ["get_weather_information"],
+    }
+    assert agent_service._extract_plan_json("no json here") is None
+    assert agent_service._extract_plan_json("") is None
+
+
+def test_planner_runs_through_llm_generate(fake_client, monkeypatch):
+    """End-to-end: the JSON the provider returns drives the tool selection."""
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        "app.rag_service.llm_generate",
+        lambda *_, **__: '{"intent": "sensors", "tools": ["get_sensor_readings"], '
+                         '"needs_retrieval": false}',
+    )
+
+    result = _ask(fake_client, "how wet is the ground right now")
+
+    assert result["tools_used"] == ["get_sensor_readings"]
+    assert result["context"]["weather"] is None
+
+
+def test_planner_unavailable_and_bad_reply_both_keep_the_agent_working(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr("app.rag_service.llm_generate", lambda *_, **__: "not json at all")
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    # Fell back to the deterministic router and still answered from real data.
+    assert result["tools_used"] == ["get_sensor_readings"]
+    assert "20" in result["answer"]
+
+
+# ── The RAG failure message must never be the answer ──────────────────────────
+
+_RAG_FAILURE = (
+    "The knowledge base does not contain sufficient information to answer this "
+    "question confidently. Consider adding relevant agricultural documents to "
+    "data/raw/ and re-running ingestion."
+)
+
+
+def test_retrieval_failure_message_is_never_shown_to_the_farmer(fake_client, monkeypatch):
+    _seed(fake_client, reading=_reading())
+    monkeypatch.setattr(
+        "app.rag_service.answer_question",
+        lambda *_, **__: {
+            "answer": _RAG_FAILURE,
+            "retrieval_status": "BELOW_THRESHOLD",
+            "llm_used": False,
+            "sources": [],
+        },
+    )
+
+    result = _ask(fake_client, "What is the soil moisture level?")
+
+    answer = result["answer"].lower()
+    assert "knowledge base" not in answer
+    assert "ingestion" not in answer
+    assert "data/raw" not in answer
+    # The real sensor evidence still comes through.
+    assert "20" in result["answer"]
+
+
+def test_no_documents_still_yields_a_helpful_reply(fake_client, monkeypatch):
+    """A retrieval miss for a general question must not become a dead end."""
+    _seed(fake_client)
+    monkeypatch.setattr(
+        agent_service, "plan_tools", lambda *_, **__: _plan("unknown", ())
+    )
+    monkeypatch.setattr(
+        "app.rag_service.answer_question",
+        lambda *_, **__: {
+            "answer": _RAG_FAILURE,
+            "retrieval_status": "EMPTY_INDEX",
+            "llm_used": False,
+            "sources": [],
+        },
+    )
+
+    result = _ask(fake_client, "Which government scheme applies to my farm?")
+
+    assert result["answer"]                          # not empty
+    assert "ingestion" not in result["answer"].lower()
+    assert "knowledge base" not in result["answer"].lower()
+
+
+def test_retrieval_outage_makes_the_answer_fall_back_not_pretend(fake_client, monkeypatch):
+    """When retrieval errors out, the reply is a real fallback, not a fake success."""
+    _seed(fake_client)
+    monkeypatch.setattr(
+        agent_service, "plan_tools", lambda *_, **__: _plan("unknown", ())
+    )
+
+    def _boom(*_, **__):
+        raise RuntimeError("vector store down")
+
+    monkeypatch.setattr("app.rag_service.answer_question", _boom)
+
+    result = _ask(fake_client, "Tell me about crop rotation.")
+
+    assert result["llm_used"] is False
+    assert result["fallback"] is True
+    assert result["answer"]

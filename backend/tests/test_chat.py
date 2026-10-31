@@ -55,6 +55,14 @@ class _FakeLLM:
     is_configured = True
 
 
+class _FakeSettings:
+    """Mirror of the RAG project's settings block (read by the LLM client)."""
+
+    llm_temperature = 0.2
+    llm_max_tokens = 800
+    llm_provider = "fake"
+
+
 class _FakeRetriever:
     def __init__(self, count: int):
         self.vector_store = _FakeVectorStore(count)
@@ -66,6 +74,7 @@ class _FakePipeline:
         self._result = result
         self.retriever = _FakeRetriever(count)
         self.llm_client = _FakeLLM()
+        self.settings = _FakeSettings()
         self.calls: list[dict] = []
 
     def answer(self, question, ml_results=None, *, top_k=None,
