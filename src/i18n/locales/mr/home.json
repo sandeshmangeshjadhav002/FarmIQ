@@ -1,0 +1,79 @@
+{
+  "home": {
+    "headline": "आज तुमचे लक्ष कशाकडे लागेल?",
+    "askFarmIQ": "FarmIQ ला विचारा",
+    "yourFarmToday": "आज तुमचे शेत",
+    "stats": {
+      "farms": "शेती",
+      "sensorsOnline": "ऑनलाइन सेन्सर",
+      "predictions": "अंदाज"
+    },
+    "unreadAlerts_one": "{{count}} न वाचलेली सूचना",
+    "unreadAlerts_other": "{{count}} न वाचलेल्या सूचना",
+    "alertsFallback": "हवामान, सेन्सर आणि बाजार अपडेट",
+    "aiShortcuts": "AI सल्लागार शॉर्टकट",
+    "recentPredictions": "अलीकडील अंदाज",
+    "prediction": {
+      "crop": "शिफारस केलेले पीक: {{value}}",
+      "fertilizer": "खत: {{value}}",
+      "irrigationNow": "सिंचन: आता पाणी द्या",
+      "irrigationNone": "सिंचन: गरज नाही",
+      "yield": "उत्पादन अंदाज: {{value}} t/ha",
+      "generic": "अंदाज"
+    },
+    "setup": {
+      "title": "तुमचे शेत सेट करा",
+      "body": "सल्ला देण्यापूर्वी FarmIQ ला शेताची माहिती हवी. यास एक मिनिट लागेल.",
+      "step1": "तुमचे शेत जोडा",
+      "step2": "सेन्सर जोडा किंवा माती मोजमाप नोंदवा",
+      "step3": "तुमची पहिली AI शिफारस मिळवा",
+      "addFirstFarm": "तुमचे पहिले शेत जोडा"
+    }
+  },
+  "actionPlan": {
+    "priority": {
+      "critical": "अत्यावश्यक",
+      "high": "उच्च",
+      "moderate": "मध्यम",
+      "low": "कमी"
+    },
+    "category": {
+      "irrigation": "सिंचन",
+      "soil": "माती",
+      "fertilizer": "खत",
+      "weather": "हवामान",
+      "data_quality": "डेटा गुणवत्ता"
+    },
+    "todayPlan": "आजची कृती योजना",
+    "criticalCount": "{{count}} अत्यावश्यक",
+    "hideEvidence": "पुरावा लपवा ▲",
+    "showEvidence": "हे का? पुरावा दाखवा ▼",
+    "openTool": "{{name}} उघडा",
+    "missing": {
+      "title": "ही योजना कशाचे मूल्यांकन करू शकली नाही",
+      "noSensor": "सेन्सर मोजमाप नाहीत — सिंचन सल्ला केवळ हवामान आणि पिकाच्या अवस्थेवर आधारित आहे.",
+      "noWeather": "हवामान डेटा नाही — उष्णता, दंव आणि जोरदार पावसाच्या धोक्यांचे मूल्यांकन झाले नाही.",
+      "noCrop": "सध्याचे पीक निश्चित नाही — पिकासंबंधी पायऱ्या मर्यादित आहेत.",
+      "noLocation": "शेताचे स्थान निश्चित नाही — स्थानिक हवामान उपलब्ध नसू शकते."
+    },
+    "conditions": {
+      "temperature": "तापमान",
+      "humidity": "आर्द्रता",
+      "rain7d": "7-दिवसांचा पाऊस अंदाज",
+      "soilMoisture": "माती ओलावा",
+      "soilTemp": "माती तापमान",
+      "current": "सध्याचे",
+      "notConfirmed": "पुष्टी झालेली नाही",
+      "sensor": "सेन्सर",
+      "demoSimulated": "डेमो / कृत्रिम"
+    },
+    "couldNotLoad": "कृती योजना लोड करता आली नाही.",
+    "retry": "पुन्हा प्रयत्न करा",
+    "noRecommendations": "अद्याप शिफारसी नाहीत",
+    "noRecommendationsBody": "स्थानासह शेत जोडा, नंतर सेन्सर जोडा किंवा अंदाज चालवा आणि वैयक्तिक सल्ला मिळवा.",
+    "addFarm": "शेत जोडा",
+    "showMore_one": "आणखी {{count}} कृती दाखवा ↓",
+    "showMore_other": "आणखी {{count}} कृत्या दाखवा ↓",
+    "planGenerated": "योजना तयार: {{time}}"
+  }
+}

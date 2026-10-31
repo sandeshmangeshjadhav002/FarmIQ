@@ -24,6 +24,8 @@ vi.mock("@/lib/geolocation", () => ({
   getCurrentPosition: getPositionMock,
 }));
 
+import { LocationProvider } from "@/lib/locationStore";
+
 import FarmManager from "./FarmManager";
 
 const LABEL = "Gangapur, Nashik, Maharashtra, India";
@@ -44,7 +46,11 @@ function primeApi({ farms = [], reverse = { label: LABEL } } = {}) {
 }
 
 async function openForm(user) {
-  render(<FarmManager />);
+  render(
+    <LocationProvider>
+      <FarmManager />
+    </LocationProvider>,
+  );
   await user.click(await screen.findByRole("button", { name: /Add Farm/ }));
 }
 
@@ -240,7 +246,11 @@ describe("FarmManager location capture", () => {
       ],
     });
 
-    render(<FarmManager />);
+    render(
+      <LocationProvider>
+        <FarmManager />
+      </LocationProvider>,
+    );
 
     expect(await screen.findByText("Sunrise Farm")).toBeInTheDocument();
     expect(

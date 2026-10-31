@@ -1,4 +1,6 @@
 import { Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
+
 import {
   moduleCatalog,
   sectionByKey,
@@ -46,6 +48,7 @@ export default function ModuleScreen({
   onLanguage,
   user,
 }) {
+  const { t } = useTranslation();
   const info = moduleCatalog.find((item) => item.key === moduleKey);
   const section = sectionByKey(info?.section);
 
@@ -64,20 +67,19 @@ export default function ModuleScreen({
           </button>
           <div className="min-w-0">
             <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#6D8377]">
-              Restricted
+              {t("moduleScreen.restricted")}
             </p>
             <h1 className="text-[20px] font-extrabold leading-tight tracking-[-.03em] text-[#17392A]">
-              {info?.title ?? "Administrative tool"}
+              {t(`modules.${moduleKey}.title`, t("moduleScreen.adminTool"))}
             </h1>
           </div>
         </header>
         <div className="rounded-[20px] border border-dashed border-[#B0C9B8] p-6 text-center">
           <p className="text-[12px] font-bold text-[#3C5C49]">
-            This tool is for administrators and agricultural experts.
+            {t("moduleScreen.adminOnly")}
           </p>
           <p className="mt-1.5 text-[10px] leading-5 text-[#7B8C82]">
-            Ask an agricultural expert to sign in, or contact support if you
-            believe you should have access.
+            {t("moduleScreen.adminOnlyBody")}
           </p>
         </div>
       </div>
@@ -143,17 +145,19 @@ export default function ModuleScreen({
         </span>
         <div className="min-w-0">
           <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#6D8377]">
-            {section?.label ?? "FarmIQ tool"}
+            {section
+              ? t(`sections.${section.key}.label`)
+              : t("moduleScreen.fallbackSection")}
           </p>
           <h1 className="text-[20px] font-extrabold leading-tight tracking-[-.03em] text-[#17392A]">
-            {info?.title}
+            {t(`modules.${moduleKey}.title`)}
           </h1>
         </div>
       </header>
 
       {/* The header above paints immediately; only the panel itself waits for
           its chunk. */}
-      <Suspense fallback={<ScreenLoader label="Loading module…" />}>
+      <Suspense fallback={<ScreenLoader label={t("common.loadingModule")} />}>
         {renderContent()}
       </Suspense>
     </div>

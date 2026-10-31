@@ -1,33 +1,56 @@
 /**
  * ChatScreen — FarmIQ Multilingual Voice + Text Assistant.
  *
- * Supports Marathi (primary) and English.
+ * Supports Marathi (मराठी) and English. The active language follows the app
+ * language (see src/i18n) and can also be switched from the header.
  * STT: Web Speech API (SpeechRecognition); if it is unavailable or fails with
  *      Chrome's "network" error, audio is recorded and transcribed server-side
  *      via POST /api/voice/transcribe (Groq Whisper).
  * TTS: Web Speech API (speechSynthesis) — real, not a demo.
- * Backend: POST /api/voice/chat (deterministic intent routing + ML models).
+ * Backend: POST /api/agent/chat (LLM tool planner + ML models).
  *
  * The voice flow:
  *  1. User taps mic → startListening() → interim transcript shown live.
  *  2. User taps mic again (or speech ends) → stopListening().
  *  3. Transcript shown in editable input; user may correct it.
- *  4. sendMessage() → POST /api/voice/chat.
- *  5. Response text rendered; speak() called if response.speak === true.
- *  6. TTS controls: stop / repeat.
+ *  4. sendMessage() → POST /api/agent/chat with the active language.
+ *  5. Response text rendered; speak() called for the answer.
+ *  6. TTS controls: stop / listen.
  */
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import Icon from "@/components/common/Icon";
 import TextInput from "@/components/common/TextInput";
 import ScreenShell from "@/components/layout/ScreenShell";
-import { apiPost, apiPostChat } from "@/lib/apiClient";
-import {
-  VOICE_LANGUAGES,
-  DEFAULT_VOICE_LANG,
-  toLangCode,
-} from "@/lib/languageUtils";
+import { apiPostChat } from "@/lib/apiClient";
+import { DEFAULT_LANGUAGE, normalizeLanguage } from "@/i18n/language";
+import useLanguage from "@/i18n/useLanguage";
 import useSpeech from "@/hooks/useSpeech";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Backend intent → translation key (see chat.intent.* in the locale files).
+// "unknown" has no label of its own.
+// ─────────────────────────────────────────────────────────────────────────────
+const INTENT_TO_KEY = {
+  crop_recommendation: "crop",
+  crop_selection: "crop",
+  fertilizer_recommendation: "fertilizer",
+  fertilizer: "fertilizer",
+  irrigation: "irrigation",
+  yield_prediction: "yield",
+  yield: "yield",
+  sensor_query: "sensor",
+  sensors: "sensor",
+  organic_farming: "organic",
+  drought_management: "drought",
+  weather: "weather",
+  profile: "farm",
+  farm_status: "farmPlan",
+  navigation_help: "help",
+  knowledge: "assistant",
+  unknown: null,
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-components
@@ -58,10 +81,11 @@ function ChatBubble({ children, sender, isError }) {
 }
 
 function TypingDots() {
+  const { t } = useTranslation();
   return (
     <span
       className="flex items-center gap-1 py-0.5"
-      aria-label="Assistant is typing"
+      aria-label={t("chat.typing")}
     >
       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#9CB3A4] [animation-delay:-0.3s]" />
       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#9CB3A4] [animation-delay:-0.15s]" />
@@ -71,54 +95,36 @@ function TypingDots() {
 }
 
 function IntentBadge({ intent }) {
-  const INTENT_LABELS = {
-    crop_recommendation: "Crop",
-    crop_selection: "Crop",
-    fertilizer_recommendation: "Fertilizer",
-    fertilizer: "Fertilizer",
-    irrigation: "Irrigation",
-    yield_prediction: "Yield",
-    yield: "Yield",
-    sensor_query: "Sensor",
-    sensors: "Sensor",
-    organic_farming: "Organic",
-    drought_management: "Drought",
-    weather: "Weather",
-    profile: "Farm",
-    farm_status: "Farm Plan",
-    navigation_help: "Help",
-    knowledge: "Assistant",
-    unknown: null,
-  };
-  const label = INTENT_LABELS[intent];
-  if (!label) return null;
+  const { t } = useTranslation();
+  const key = INTENT_TO_KEY[intent];
+  if (!key) return null;
   return (
     <span className="mb-1 inline-block rounded-full bg-[#EAF4EC] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-[#216B45]">
-      {label}
+      {t(`chat.intent.${key}`)}
     </span>
   );
 }
 
-function TTSControls({ speaking, onSpeak, onStop, label }) {
+function TTSControls({ speaking, onSpeak, onStop, listenLabel, stopLabel }) {
   return (
     <div className="ml-[42px] mt-1 flex items-center gap-2">
       {speaking ? (
         <button
           onClick={onStop}
-          aria-label="Stop speaking"
+          aria-label={stopLabel}
           className="flex items-center gap-1.5 rounded-full border border-[#C8DDD0] bg-white px-3 py-1.5 text-[10px] font-bold text-[#216B45]"
         >
           <span className="h-2 w-2 rounded-sm bg-[#216B45]" />
-          {label.stop}
+          {stopLabel}
         </button>
       ) : (
         <button
           onClick={onSpeak}
-          aria-label="Listen to answer"
+          aria-label={listenLabel}
           className="flex items-center gap-1.5 rounded-full border border-[#C8DDD0] bg-white px-3 py-1.5 text-[10px] font-bold text-[#216B45]"
         >
           <Icon name="bot" size={13} />
-          {label.listen}
+          {listenLabel}
         </button>
       )}
     </div>
@@ -130,6 +136,7 @@ function TTSControls({ speaking, onSpeak, onStop, label }) {
  * Renders only when the agent response includes context (sensors, weather, etc.).
  */
 function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   if (!context) return null;
 
@@ -154,7 +161,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
       <span className="text-[10px] font-semibold text-[#52675B] flex-1">{label}</span>
       <span className={`text-[10px] font-bold text-right ${warn ? "text-[#9A5E1A]" : "text-[#1D3A2A]"}`}>
         {value ?? "—"}
-        {demo && <span className="ml-1 text-[8px] font-extrabold text-[#D99A2B]">DEMO</span>}
+        {demo && <span className="ml-1 text-[8px] font-extrabold text-[#D99A2B]">{t("chat.farmData.demo")}</span>}
       </span>
       {timestamp && (
         <span className="text-[9px] text-[#9AA79F] whitespace-nowrap">{fmt(timestamp)}</span>
@@ -169,7 +176,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
         className="flex items-center gap-1.5 text-[9px] font-bold text-[#52675B] hover:text-[#216B45]"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-[#9CB3A4]" />
-        {lang === "mr" ? (open ? "शेत डेटा लपवा ▲" : "शेत डेटा वापरला ▼") : (open ? "Hide farm data ▲" : "Farm data used ▼")}
+        {open ? t("chat.farmData.hide") : t("chat.farmData.show")}
       </button>
 
       {open && (
@@ -178,8 +185,8 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
           {/* Farm profile */}
           {context.farm && (
             <SourceRow
-              label={lang === "mr" ? "शेत" : "Farm"}
-              value={[context.farm.current_crop, context.farm.location].filter(Boolean).join(" · ") || "On file"}
+              label={t("chat.farmData.farm")}
+              value={[context.farm.current_crop, context.farm.location].filter(Boolean).join(" · ") || t("chat.farmData.onFile")}
               timestamp={freshness?.get_farm_profile}
             />
           )}
@@ -189,7 +196,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
             <>
               {context.sensors.soil_moisture != null && (
                 <SourceRow
-                  label={lang === "mr" ? "माती ओलावा" : "Soil moisture"}
+                  label={t("chat.farmData.soilMoisture")}
                   value={`${context.sensors.soil_moisture}%`}
                   timestamp={context.sensors.observed_at}
                   warn={context.sensors.freshness === "stale" || context.sensors.freshness === "offline"}
@@ -198,7 +205,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
               )}
               {context.sensors.temperature != null && (
                 <SourceRow
-                  label={lang === "mr" ? "तापमान" : "Temperature"}
+                  label={t("chat.farmData.temperature")}
                   value={`${context.sensors.temperature}°C`}
                   timestamp={context.sensors.observed_at}
                   demo={context.sensors.is_demo}
@@ -206,7 +213,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
               )}
               {context.sensors.humidity != null && (
                 <SourceRow
-                  label={lang === "mr" ? "आर्द्रता" : "Humidity"}
+                  label={t("chat.farmData.humidity")}
                   value={`${context.sensors.humidity}%`}
                   timestamp={context.sensors.observed_at}
                   demo={context.sensors.is_demo}
@@ -220,14 +227,14 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
             <>
               {context.weather.temperature_c != null && (
                 <SourceRow
-                  label={lang === "mr" ? "हवामान तापमान" : "Weather temp"}
+                  label={t("chat.farmData.weatherTemp")}
                   value={`${context.weather.temperature_c}°C`}
                   timestamp={context.weather.observed_at}
                 />
               )}
               {context.weather.forecast_rain_7d_mm != null && (
                 <SourceRow
-                  label={lang === "mr" ? "७ दिवस पावसाचा अंदाज" : "7-day rain forecast"}
+                  label={t("chat.farmData.rain7d")}
                   value={`${context.weather.forecast_rain_7d_mm} mm`}
                   timestamp={context.weather.observed_at}
                   warn
@@ -240,7 +247,7 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
           {Object.entries(context.predictions || {}).map(([domain, pred]) => (
             <SourceRow
               key={domain}
-              label={lang === "mr" ? `${domain} मॉडेल` : `${domain} model`}
+              label={t("chat.farmData.model", { domain })}
               value={pred.label ?? pred.prediction ?? "—"}
               timestamp={pred.as_of}
             />
@@ -249,8 +256,8 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
           {/* Drought assessment */}
           {context.drought && (
             <SourceRow
-              label={lang === "mr" ? "दुष्काळ मूल्यांकन" : "Drought assessment"}
-              value={context.drought.drought_severity ?? "on file"}
+              label={t("chat.farmData.drought")}
+              value={context.drought.drought_severity ?? t("chat.farmData.onFile")}
               timestamp={freshness?.get_drought_context}
             />
           )}
@@ -258,8 +265,8 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
           {/* Organic guidance */}
           {context.organic && (
             <SourceRow
-              label={lang === "mr" ? "सेंद्रिय मार्गदर्शन" : "Organic guidance"}
-              value={context.organic.crop ?? "on file"}
+              label={t("chat.farmData.organic")}
+              value={context.organic.crop ?? t("chat.farmData.onFile")}
               timestamp={freshness?.get_organic_guidance}
             />
           )}
@@ -267,13 +274,13 @@ function FarmDataPanel({ context, freshness, conflicts, missing, lang }) {
           {/* Missing / conflicts */}
           {missing?.length > 0 && (
             <p className="pt-1 text-[9px] text-[#9A5E1A]">
-              {lang === "mr" ? "उपलब्ध नाही: " : "Not available: "}
+              {t("chat.farmData.notAvailable")}
               {missing.join(", ")}
             </p>
           )}
           {conflicts?.length > 0 && (
             <p className="pt-1 text-[9px] text-[#9A5E1A]">
-              {lang === "mr" ? "⚠ डेटा संघर्ष आढळला" : "⚠ Data conflict detected"}
+              {t("chat.farmData.conflict")}
             </p>
           )}
         </div>
@@ -304,27 +311,18 @@ function ErrorBanner({ message, onDismiss }) {
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GREETINGS = {
-  mr: "नमस्कार! मी FarmIQ सहाय्यक आहे. पीक शिफारस, खत, सिंचन, उत्पादन अंदाज किंवा सेन्सर माहितीबद्दल विचारा.",
-  en: "Hello! I am your FarmIQ assistant. Ask me about crop recommendation, fertilizer, irrigation, yield prediction, or sensor data.",
-};
-
 export default function ChatScreen({
   navigate,
   openModule,
   language,
   openLanguages,
 }) {
-  // Voice language — default Marathi; sync with app's display language
-  const [voiceLang, setVoiceLang] = useState(
-    () => toLangCode(language) || DEFAULT_VOICE_LANG,
-  );
+  const { t } = useTranslation();
+  const { languages, changeLanguage } = useLanguage();
 
-  // Keep voiceLang in sync when the app-level language changes
-  useEffect(() => {
-    const code = toLangCode(language);
-    if (code) setVoiceLang(code);
-  }, [language]);
+  // The assistant follows the app language. ``voiceLang`` is the normalised
+  // "en" | "mr" code sent to the backend and to the speech engine.
+  const voiceLang = normalizeLanguage(language) ?? DEFAULT_LANGUAGE;
 
   const {
     transcript,
@@ -350,9 +348,8 @@ export default function ChatScreen({
 
   // Seed greeting on mount / language change
   useEffect(() => {
-    setMessages([
-      { id: "greet", sender: "ai", text: GREETINGS[voiceLang] || GREETINGS.en },
-    ]);
+    setMessages([{ id: "greet", sender: "ai", text: t("chat.greeting") }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceLang]);
 
   // Auto-scroll to bottom
@@ -416,7 +413,6 @@ export default function ChatScreen({
                 ...m,
                 pending: false,
                 // Agent endpoint returns { answer, sections, intent, ... }
-                // Voice endpoint returned { response_text, intent, ... }
                 text: res.answer || res.response_text || "",
                 intent: res.intent,
                 language: res.language || voiceLang,
@@ -438,10 +434,10 @@ export default function ChatScreen({
     } catch (err) {
       const friendly =
         err?.status === 401
-          ? "Your session expired. Please sign in again."
+          ? t("chat.errors.sessionExpired")
           : err?.status === 503
-          ? "Assistant is not available right now. Please try again."
-          : err?.message || "Something went wrong. Please try again.";
+          ? t("chat.errors.unavailable")
+          : err?.message || t("chat.errors.generic");
       setMessages((prev) =>
         prev.map((m) =>
           m.id === pendingId
@@ -470,16 +466,10 @@ export default function ChatScreen({
 
   // ── header status ────────────────────────────────────────────────────────
   const statusLabel = listening
-    ? voiceLang === "mr"
-      ? "ऐकत आहे…"
-      : "Listening…"
+    ? t("chat.status.listening")
     : sending
-    ? voiceLang === "mr"
-      ? "प्रक्रिया करत आहे…"
-      : "Processing…"
-    : voiceLang === "mr"
-    ? "ऑनलाइन आणि तयार"
-    : "Online and ready";
+    ? t("chat.status.processing")
+    : t("chat.status.online");
   const statusColor = listening ? "#F5A623" : sending ? "#B0BEB5" : "#4BAA6E";
 
   return (
@@ -492,7 +482,7 @@ export default function ChatScreen({
           </span>
           <div>
             <h1 className="text-[16px] font-extrabold text-[#193A2A]">
-              FarmIQ Assistant
+              {t("chat.title")}
             </h1>
             <p className="flex items-center gap-1.5 text-[10px] font-semibold text-[#678073]">
               <span
@@ -506,11 +496,11 @@ export default function ChatScreen({
 
         {/* Language selector — Marathi / English only */}
         <div className="flex items-center gap-1 rounded-full border border-white/30 bg-white/40 p-1 backdrop-blur-md">
-          {VOICE_LANGUAGES.map((l) => (
+          {languages.map((l) => (
             <button
               key={l.code}
-              onClick={() => setVoiceLang(l.code)}
-              aria-label={`Switch to ${l.label}`}
+              onClick={() => changeLanguage(l.code)}
+              aria-label={t("chat.switchTo", { label: l.nativeLabel })}
               className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold transition ${
                 voiceLang === l.code
                   ? "bg-[#216B45] text-white shadow-sm"
@@ -555,11 +545,8 @@ export default function ChatScreen({
                 msg.id !== "greet" && (
                   <TTSControls
                     speaking={speaking}
-                    label={
-                      voiceLang === "mr"
-                        ? { listen: "ऐका", stop: "थांबा" }
-                        : { listen: "Listen", stop: "Stop" }
-                    }
+                    listenLabel={t("chat.listen")}
+                    stopLabel={t("chat.stop")}
                     onSpeak={() => speak(msg.text, msg.language || voiceLang)}
                     onStop={stopSpeaking}
                   />
@@ -567,9 +554,7 @@ export default function ChatScreen({
               {/* Follow-up hint */}
               {msg.follow_up && !msg.pending && (
                 <p className="ml-[42px] mt-1 text-[10px] font-semibold text-[#7A8B82]">
-                  {voiceLang === "mr"
-                    ? "अधिक माहिती द्या…"
-                    : "Please provide the missing information…"}
+                  {t("chat.followUp")}
                 </p>
               )}
               {/* Farm data used — collapsible context panel */}
@@ -613,12 +598,10 @@ export default function ChatScreen({
           <button
             onClick={handleMicClick}
             disabled={!sttSupported}
-            title={
-              sttSupported
-                ? undefined
-                : "Speech recognition is not supported in this browser"
+            title={sttSupported ? undefined : t("chat.micUnsupported")}
+            aria-label={
+              listening ? t("chat.stopRecording") : t("chat.startVoice")
             }
-            aria-label={listening ? "Stop recording" : "Start voice input"}
             aria-pressed={listening}
             className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
               listening
@@ -638,11 +621,7 @@ export default function ChatScreen({
                 setTranscript(v);
               }}
               onKeyDown={handleKeyDown}
-              placeholder={
-                voiceLang === "mr"
-                  ? "FarmIQ ला विचारा किंवा माइक दाबा…"
-                  : "Ask FarmIQ or tap the mic…"
-              }
+              placeholder={t("chat.inputPlaceholder")}
               value={message}
             />
           </div>
@@ -655,7 +634,7 @@ export default function ChatScreen({
                 setTranscript("");
                 stopListening();
               }}
-              aria-label="Clear input"
+              aria-label={t("chat.clearInput")}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#F3F3F3] text-[#7A8B82]"
             >
               <Icon name="close" size={17} />
@@ -664,7 +643,7 @@ export default function ChatScreen({
 
           {/* Send */}
           <button
-            aria-label="Send"
+            aria-label={t("chat.send")}
             disabled={!canSend}
             onClick={sendMessage}
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#216B45] text-white shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
@@ -679,16 +658,12 @@ export default function ChatScreen({
             className="mt-2 text-center text-[10px] font-bold text-[#C0392B]"
             role="status"
           >
-            {voiceLang === "mr"
-              ? "🎙 ऐकत आहे… थांबण्यासाठी माइक दाबा"
-              : "🎙 Listening… tap the microphone to stop"}
+            {t("chat.listeningHint")}
           </p>
         )}
 
         <p className="mt-2 text-center text-[9px] text-[#98A59E]">
-          {voiceLang === "mr"
-            ? "FarmIQ चुका करू शकतो. महत्त्वाचे निर्णय तज्ञांशी तपासा."
-            : "FarmIQ can make mistakes. Verify important farming decisions with an expert."}
+          {t("chat.disclaimer")}
         </p>
       </div>
     </ScreenShell>

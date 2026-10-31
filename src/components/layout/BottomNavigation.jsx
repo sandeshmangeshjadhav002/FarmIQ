@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import Icon from "@/components/common/Icon";
 import { navItems } from "@/data/modules";
 
@@ -14,6 +16,7 @@ import { navItems } from "@/data/modules";
  * @param {Function} props.navigate  - Called with the new screen key.
  */
 export default function BottomNavigation({ active, navigate }) {
+  const { t } = useTranslation();
   return (
     <nav
       className="sticky bottom-0 z-20 mt-auto grid grid-cols-5 border-t border-white/20 bg-white/40 px-2 pt-1 backdrop-blur-xl"
@@ -21,10 +24,11 @@ export default function BottomNavigation({ active, navigate }) {
     >
       {navItems.map((item) => {
         const selected = active === item.key;
+        const label = t(`nav.${item.key}`);
         return (
           <button
             key={item.key}
-            aria-label={item.label}
+            aria-label={label}
             aria-current={selected ? "page" : undefined}
             className={`flex flex-col items-center justify-center gap-1 py-1 text-[10px] font-semibold transition active:scale-95 ${
               selected ? "text-[#216B45]" : "text-[#85948C]"
@@ -38,7 +42,7 @@ export default function BottomNavigation({ active, navigate }) {
             >
               <Icon name={item.icon} size={20} />
             </span>
-            {item.label}
+            {label}
           </button>
         );
       })}

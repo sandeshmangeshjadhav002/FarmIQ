@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { moduleConfigs } from "@/data/modules";
+import { useTranslation } from "react-i18next";
+
 import { DemoBadge, ModuleButton, SelectField, Metric } from "./ModuleShared";
 import ModuleIcon from "./ModuleIcon";
 import useApi from "@/hooks/useApi";
@@ -11,13 +12,19 @@ import useApi from "@/hooks/useApi";
  * All other modules continue to show their static demo content.
  */
 export default function GenericModule({ moduleKey, onAsk }) {
-  const config = moduleConfigs[moduleKey] ?? moduleConfigs.reports;
+  const { t } = useTranslation();
+  const rawConfig = t(`moduleConfigs.${moduleKey}`, { returnObjects: true });
+  const config =
+    rawConfig && typeof rawConfig === "object"
+      ? rawConfig
+      : t("moduleConfigs.reports", { returnObjects: true });
   const [saved, setSaved] = useState(false);
 
   // Real farms for the farm selector.
   const { data: farmsData } = useApi("/api/farms");
   const farmNames = (farmsData?.items ?? []).map((f) => f.name);
-  const farmOptions = farmNames.length > 0 ? farmNames : ["No farms yet"];
+  const farmOptions =
+    farmNames.length > 0 ? farmNames : [t("genericModule.noFarms")];
 
   // For sensors module: real latest readings.
   const { data: sensorsData } = useApi(
@@ -53,7 +60,7 @@ export default function GenericModule({ moduleKey, onAsk }) {
     const rows = readings
       .slice(0, 4)
       .map((r) => [
-        r.device_id ?? "Sensor",
+        r.device_id ?? t("genericModule.sensorFallback"),
         r.soil_moisture != null
           ? `${r.soil_moisture.toFixed(0)}%`
           : r.temperature != null
@@ -67,13 +74,27 @@ export default function GenericModule({ moduleKey, onAsk }) {
     displayConfig = {
       ...config,
       metrics: [
-        ["Online", String(online), "Devices connected"],
-        ["Offline", String(offline), "Need attention"],
-        ["Data points", String(readings.length), "Recent readings"],
+        [
+          t("genericModule.sensorMetrics.online"),
+          String(online),
+          t("genericModule.sensorMetrics.devicesConnected"),
+        ],
+        [
+          t("genericModule.sensorMetrics.offline"),
+          String(offline),
+          t("genericModule.sensorMetrics.needAttention"),
+        ],
+        [
+          t("genericModule.sensorMetrics.dataPoints"),
+          String(readings.length),
+          t("genericModule.sensorMetrics.recentReadings"),
+        ],
       ],
-      title: "Sensor readings",
+      title: t("modules.sensors.title"),
       detail: latest
-        ? `Last reading: ${new Date(latest.created_at).toLocaleTimeString()}`
+        ? t("genericModule.sensorDetail", {
+            time: new Date(latest.created_at).toLocaleTimeString(),
+          })
         : config.detail,
       rows: rows.length > 0 ? rows : config.rows,
     };
@@ -83,19 +104,31 @@ export default function GenericModule({ moduleKey, onAsk }) {
     const models = mlData.models ?? {};
     const modelRows = Object.entries(models).map(([domain, info]) => [
       domain,
-      info.model ? "Model loaded" : "No model",
-      info.preprocessing ? "Preprocessing ✓" : "Missing artefacts",
+      info.model
+        ? t("genericModule.modelStatus.loaded")
+        : t("genericModule.modelStatus.none"),
+      info.preprocessing
+        ? t("genericModule.modelStatus.preprocessing")
+        : t("genericModule.modelStatus.missing"),
     ]);
     displayConfig = {
       ...config,
       metrics: [
-        ["Models", String(Object.keys(models).length), "Registered"],
         [
-          "Loaded",
-          String(Object.values(models).filter((m) => m.model).length),
-          "With trained model",
+          t("genericModule.mlopsMetrics.models"),
+          String(Object.keys(models).length),
+          t("genericModule.mlopsMetrics.registered"),
         ],
-        ["Baseline", "Irrigation", "Rule-based fallback"],
+        [
+          t("genericModule.mlopsMetrics.loaded"),
+          String(Object.values(models).filter((m) => m.model).length),
+          t("genericModule.mlopsMetrics.withModel"),
+        ],
+        [
+          t("genericModule.mlopsMetrics.baseline"),
+          "Irrigation",
+          t("genericModule.mlopsMetrics.ruleFallback"),
+        ],
       ],
       rows: modelRows.length > 0 ? modelRows : config.rows,
     };
@@ -105,13 +138,13 @@ export default function GenericModule({ moduleKey, onAsk }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <SelectField
-          label="Farm"
+          label={t("genericModule.farm")}
           value={farm}
           onChange={setFarm}
           options={farmOptions}
         />
         <SelectField
-          label="Crop"
+          label={t("genericModule.crop")}
           value={crop}
           onChange={setCrop}
           options={["Tomato", "Onion", "Wheat", "Chickpea", "Rice", "Cotton"]}
@@ -121,16 +154,18 @@ export default function GenericModule({ moduleKey, onAsk }) {
       <div className="flex items-center justify-between">
         {moduleKey === "sensors" && readings.length > 0 ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F3F7] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#287A8E]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#287A8E]" /> Live data
+            <span className="h-1.5 w-1.5 rounded-full bg-[#287A8E]" />{" "}
+            {t("genericModule.liveData")}
           </span>
         ) : (
           <DemoBadge />
         )}
         <span className="text-[9px] font-semibold text-[#829188]">
-          Updated{" "}
-          {new Date().toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
+          {t("genericModule.updated", {
+            time: new Date().toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           })}
         </span>
       </div>
@@ -174,9 +209,9 @@ export default function GenericModule({ moduleKey, onAsk }) {
       <div className="grid grid-cols-2 gap-3">
         <ModuleButton secondary onClick={() => setSaved(!saved)}>
           <ModuleIcon name={saved ? "check" : "plus"} size={16} />
-          {saved ? "Saved" : "Save"}
+          {saved ? t("common.saved") : t("common.save")}
         </ModuleButton>
-        <ModuleButton onClick={onAsk}>Ask FarmIQ</ModuleButton>
+        <ModuleButton onClick={onAsk}>{t("common.askFarmIQ")}</ModuleButton>
       </div>
     </div>
   );

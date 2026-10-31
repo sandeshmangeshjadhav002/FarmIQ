@@ -1,0 +1,139 @@
+{
+  "moduleShared": {
+    "demoBadge": "Demonstration data"
+  },
+  "moduleHub": {
+    "title": "All tools",
+    "backToHome": "Back to home",
+    "searchPlaceholder": "Search FarmIQ tools...",
+    "searchAria": "Search FarmIQ tools",
+    "noMatch": "No tools match \"{{query}}\"",
+    "noMatchBody": "Try a different word, or clear the search to see everything."
+  },
+  "moduleScreen": {
+    "restricted": "Restricted",
+    "adminTool": "Administrative tool",
+    "adminOnly": "This tool is for administrators and agricultural experts.",
+    "adminOnlyBody": "Ask an agricultural expert to sign in, or contact support if you believe you should have access.",
+    "fallbackSection": "FarmIQ tool"
+  },
+  "genericModule": {
+    "farm": "Farm",
+    "crop": "Crop",
+    "noFarms": "No farms yet",
+    "updated": "Updated {{time}}",
+    "liveData": "Live data",
+    "sensorMetrics": {
+      "online": "Online",
+      "offline": "Offline",
+      "dataPoints": "Data points",
+      "devicesConnected": "Devices connected",
+      "needAttention": "Need attention",
+      "recentReadings": "Recent readings"
+    },
+    "sensorFallback": "Sensor",
+    "sensorDetail": "Last reading: {{time}}",
+    "mlopsMetrics": {
+      "models": "Models",
+      "loaded": "Loaded",
+      "baseline": "Baseline",
+      "registered": "Registered",
+      "withModel": "With trained model",
+      "ruleFallback": "Rule-based fallback"
+    },
+    "modelStatus": {
+      "loaded": "Model loaded",
+      "none": "No model",
+      "preprocessing": "Preprocessing ✓",
+      "missing": "Missing artefacts"
+    }
+  },
+  "mlModule": {
+    "livePrediction": "Live prediction",
+    "inputsTitle": "{{label}} prediction inputs",
+    "predicting": "Predicting…",
+    "getPrediction": "Get prediction",
+    "fixFields": "Fix the highlighted fields before running the prediction.",
+    "validationFailed": "Some inputs failed validation.",
+    "errors": {
+      "unavailable": "This prediction isn't available yet. Please try again later.",
+      "sessionExpired": "Your session expired. Please sign in again.",
+      "failed": "Prediction failed. Please try again."
+    },
+    "invalid_one": "{{count}} field needs attention before a prediction can run. Values are never changed for you.",
+    "invalid_other": "{{count}} fields need attention before a prediction can run. Values are never changed for you.",
+    "unusual_one": "{{count}} value is outside the normal range for this crop. The prediction will still run.",
+    "unusual_other": "{{count}} values are outside the normal range for this crop. The prediction will still run.",
+    "pleaseFix": "Please fix these",
+    "prediction": "Prediction",
+    "generalEstimate": "General estimate",
+    "modelEstimate": "Model estimate",
+    "topCrops_one": "Top {{count}} crop recommendation",
+    "topCrops_other": "Top {{count}} crop recommendations",
+    "bestMatch": "best match",
+    "onlyAvailable_one": "Only {{count}} recommendation available.",
+    "onlyAvailable_other": "Only {{count}} recommendations available.",
+    "scoresNote": "Scores rank the options — they are not a guarantee of success in your field.",
+    "validation": {
+      "required": "{{label}} is required.",
+      "number": "{{label}} must be a number.",
+      "min": "{{label}} must be at least {{min}} {{unit}}.",
+      "max": "{{label}} must be at most {{max}} {{unit}}.",
+      "unknownCategory": "\"{{value}}\" does not appear in the training data for {{label}}; the model will treat it as an unknown category.",
+      "outsideTraining": "{{label}} = {{value}} {{unit}} is valid but outside the training range ({{min}}–{{max}} {{unit}})."
+    },
+    "domains": {
+      "crop": "Crop",
+      "fertilizer": "Fertilizer",
+      "irrigation": "Irrigation",
+      "yield": "Yield"
+    },
+    "fields": {
+      "N": "Nitrogen (N) kg/ha",
+      "P": "Phosphorus (P) kg/ha",
+      "K": "Potassium (K) kg/ha",
+      "temperature": "Temperature °C",
+      "airTemperature": "Air temperature °C",
+      "humidity": "Humidity %",
+      "ph": "Soil pH",
+      "rainfall": "Rainfall mm",
+      "temparature": "Temperature °C",
+      "moisture": "Soil moisture %",
+      "nitrogen": "Nitrogen kg/ha",
+      "potassium": "Potassium kg/ha",
+      "phosphorous": "Phosphorous kg/ha",
+      "soil_type": "Soil type",
+      "crop_type": "Crop type",
+      "soil_moisture": "Soil moisture (raw 0–2000)",
+      "soil_temperature": "Soil temperature °C",
+      "crop_days": "Days since planting",
+      "state_name": "State",
+      "season": "Season",
+      "crop": "Crop",
+      "crop_year": "Crop year",
+      "area": "Area (hectares)",
+      "annual_rainfall": "Annual rainfall mm",
+      "fertilizer": "Fertilizer kg",
+      "pesticide": "Pesticide kg"
+    }
+  },
+  "predictionExplanation": {
+    "title": "What this means",
+    "badge": "AI explanation",
+    "errors": {
+      "unavailable": "The AI assistant is not available right now, so this prediction has no explanation yet.",
+      "sessionExpired": "Sign in again to see the explanation for this prediction.",
+      "unreachable": "Could not reach the AI assistant for an explanation."
+    },
+    "unchanged": "The prediction above is unchanged — it comes from the model, not from the assistant.",
+    "tryAgain": "Try the explanation again",
+    "footerNote": "Explanation only — the prediction is the model's own output.",
+    "askMore": "Ask more →",
+    "labels": {
+      "explanation": "Explanation",
+      "keyFactors": "Key factors",
+      "nextStep": "Next step",
+      "limitations": "Limitations"
+    }
+  }
+}

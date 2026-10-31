@@ -1,0 +1,7 @@
+{
+  "errors": {
+    "timeout": "The server did not respond within {{seconds}}s. Please check your connection and try again.",
+    "network": "Cannot reach the FarmIQ server. Check your internet connection and try again.",
+    "requestFailed": "Request failed ({{status}})"
+  }
+}

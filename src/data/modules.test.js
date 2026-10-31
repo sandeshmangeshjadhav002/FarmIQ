@@ -104,7 +104,7 @@ describe("browsableModules", () => {
 
 describe("moduleByKey", () => {
   it("resolves a key and returns undefined for an unknown one", () => {
-    expect(moduleByKey("irrigation")?.title).toBe("Smart Irrigation");
+    expect(moduleByKey("irrigation")?.section).toBe("advisor");
     expect(moduleByKey("does-not-exist")).toBeUndefined();
   });
 });

@@ -14,6 +14,8 @@ vi.mock("@/lib/apiClient", () => ({
   apiPost: apiPostMock,
 }));
 
+import { LocationProvider } from "@/lib/locationStore";
+
 import OrganicFarmingAdvisor, { mapServerErrors } from "./OrganicFarmingAdvisor";
 
 const OPTIONS = {
@@ -67,7 +69,11 @@ const COMPARISON = {
 
 async function renderAdvisor() {
   apiGetMock.mockResolvedValue(OPTIONS);
-  render(<OrganicFarmingAdvisor />);
+  render(
+    <LocationProvider>
+      <OrganicFarmingAdvisor />
+    </LocationProvider>,
+  );
   await screen.findByText("Tell us about your farm");
 }
 
@@ -109,7 +115,11 @@ describe("OrganicFarmingAdvisor", () => {
 
   it("shows a loading skeleton before the reference content arrives", () => {
     apiGetMock.mockReturnValue(new Promise(() => {}));
-    const { container } = render(<OrganicFarmingAdvisor />);
+    const { container } = render(
+      <LocationProvider>
+        <OrganicFarmingAdvisor />
+      </LocationProvider>,
+    );
     expect(container.querySelectorAll(".animate-pulse").length).toBe(3);
   });
 
@@ -122,14 +132,22 @@ describe("OrganicFarmingAdvisor", () => {
 
   it("renders an error state with retry when the options fail to load", async () => {
     apiGetMock.mockRejectedValue(Object.assign(new Error("boom"), { status: 500 }));
-    render(<OrganicFarmingAdvisor />);
+    render(
+      <LocationProvider>
+        <OrganicFarmingAdvisor />
+      </LocationProvider>,
+    );
     expect(await screen.findByText(/Could not load the farming methods \(500\)/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
 
   it("renders an empty state when the reference catalogue is empty", async () => {
     apiGetMock.mockResolvedValue({ ...OPTIONS, crops: [], soil_types: [] });
-    render(<OrganicFarmingAdvisor />);
+    render(
+      <LocationProvider>
+        <OrganicFarmingAdvisor />
+      </LocationProvider>,
+    );
     expect(await screen.findByText(/No farming-method reference data is available/)).toBeInTheDocument();
   });
 

@@ -4,6 +4,7 @@ import ModuleIcon from "./ModuleIcon";
 import { farmChecklist } from "@/data/modules";
 import { apiPost, apiDelete, apiGet } from "@/lib/apiClient";
 import { getCurrentPosition } from "@/lib/geolocation";
+import { useLocation } from "@/lib/locationStore";
 import useApi from "@/hooks/useApi";
 
 /**
@@ -18,6 +19,7 @@ import useApi from "@/hooks/useApi";
  * always works.
  */
 export default function FarmManager() {
+  const { setLocation: setSharedLocation } = useLocation();
   const { data, loading, error, refetch } = useApi("/api/farms");
   const farms = data?.items ?? [];
 
@@ -111,6 +113,18 @@ export default function FarmManager() {
           ? { latitude: coords.latitude, longitude: coords.longitude }
           : {}),
       });
+
+      // Sync the shared location store with the farm's coordinates
+      // so other features (weather, drought, organic farming) can reuse it.
+      if (coords) {
+        setSharedLocation({
+          label: location.trim(),
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          source: "farm",
+        });
+      }
+
       resetForm();
       setAdding(false);
       refetch();

@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { browsableModules, sections } from "@/data/modules";
 import ModuleIcon from "./ModuleIcon";
 
@@ -16,6 +18,7 @@ import ModuleIcon from "./ModuleIcon";
  * @param {object}   [props.user] - Signed-in user, used for the admin gate.
  */
 export default function ModuleHub({ onBack, onOpen, user }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [activeSection, setActiveSection] = useState("all");
 
@@ -30,13 +33,15 @@ export default function ModuleHub({ onBack, onOpen, user }) {
 
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return modules.filter(
-      (item) =>
+    return modules.filter((item) => {
+      const title = t(`modules.${item.key}.title`);
+      const short = t(`modules.${item.key}.short`);
+      return (
         (activeSection === "all" || item.section === activeSection) &&
-        (!needle ||
-          `${item.title} ${item.short}`.toLowerCase().includes(needle)),
-    );
-  }, [modules, activeSection, query]);
+        (!needle || `${title} ${short}`.toLowerCase().includes(needle))
+      );
+    });
+  }, [modules, activeSection, query, t]);
 
   const groups = useMemo(
     () =>
@@ -54,37 +59,37 @@ export default function ModuleHub({ onBack, onOpen, user }) {
       <header className="flex items-center gap-3">
         <button
           onClick={onBack}
-          aria-label="Back to home"
+          aria-label={t("moduleHub.backToHome")}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/30 bg-white/40 text-[#3F5A4B] backdrop-blur-md shadow-sm"
         >
           <ModuleIcon name="back" size={19} />
         </button>
         <h1 className="text-[25px] font-extrabold tracking-[-.04em] text-[#17392A]">
-          All tools
+          {t("moduleHub.title")}
         </h1>
       </header>
 
       <label className="mt-5 flex h-12 items-center gap-3 rounded-2xl border border-white/30 bg-white/40 px-4 backdrop-blur-md shadow-sm">
         <ModuleIcon name="search" size={18} />
         <input
-          aria-label="Search FarmIQ tools"
+          aria-label={t("moduleHub.searchAria")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="min-w-0 flex-1 bg-transparent text-[12px] outline-none"
-          placeholder="Search FarmIQ tools..."
+          placeholder={t("moduleHub.searchPlaceholder")}
         />
       </label>
 
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
         <SectionChip
-          label="All"
+          label={t("common.all")}
           selected={activeSection === "all"}
           onClick={() => setActiveSection("all")}
         />
         {availableSections.map((section) => (
           <SectionChip
             key={section.key}
-            label={section.label}
+            label={t(`sections.${section.key}.label`)}
             selected={activeSection === section.key}
             onClick={() => setActiveSection(section.key)}
           />
@@ -94,10 +99,10 @@ export default function ModuleHub({ onBack, onOpen, user }) {
       {groups.length === 0 && (
         <div className="mt-8 rounded-[20px] border border-dashed border-[#B0C9B8] p-8 text-center">
           <p className="text-[12px] font-bold text-[#3C5C49]">
-            No tools match "{query}"
+            {t("moduleHub.noMatch", { query })}
           </p>
           <p className="mt-1.5 text-[10px] text-[#7B8C82]">
-            Try a different word, or clear the search to see everything.
+            {t("moduleHub.noMatchBody")}
           </p>
         </div>
       )}
@@ -110,10 +115,10 @@ export default function ModuleHub({ onBack, onOpen, user }) {
             </span>
             <div className="min-w-0">
               <h2 className="text-[15px] font-extrabold leading-tight tracking-[-.02em] text-[#1B3A2B]">
-                {section.label}
+                {t(`sections.${section.key}.label`)}
               </h2>
               <p className="mt-0.5 text-[10px] text-[#7B8C82]">
-                {section.short}
+                {t(`sections.${section.key}.short`)}
               </p>
             </div>
           </div>
@@ -132,10 +137,10 @@ export default function ModuleHub({ onBack, onOpen, user }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[13px] font-extrabold text-[#233F31]">
-                    {item.title}
+                    {t(`modules.${item.key}.title`)}
                   </span>
                   <span className="mt-1 block text-[10px] leading-4 text-[#75877D]">
-                    {item.short}
+                    {t(`modules.${item.key}.short`)}
                   </span>
                 </span>
                 <ModuleIcon name="arrow" size={16} />

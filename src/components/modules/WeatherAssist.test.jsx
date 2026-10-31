@@ -10,7 +10,17 @@ const { apiGetMock, getPositionMock } = vi.hoisted(() => ({
 vi.mock("@/lib/apiClient", () => ({ apiGet: apiGetMock }));
 vi.mock("@/lib/geolocation", () => ({ getCurrentPosition: getPositionMock }));
 
+import { LocationProvider } from "@/lib/locationStore";
+
 import WeatherAssist from "./WeatherAssist";
+
+/** WeatherAssist reads the shared location context, so every render needs it. */
+const renderWeather = (props = {}) =>
+  render(
+    <LocationProvider>
+      <WeatherAssist {...props} />
+    </LocationProvider>,
+  );
 
 const FARM = { id: "f1", name: "Sunrise Farm", latitude: 19.9975, longitude: 73.7898 };
 
@@ -72,13 +82,11 @@ describe("WeatherAssist coordinate sources", () => {
     apiGetMock.mockResolvedValue(REPORT);
     const onAutofill = vi.fn();
 
-    render(
-      <WeatherAssist
-        fieldMap={{ temperature: "temperature", rainfall: "rainfall" }}
-        onAutofill={onAutofill}
-        farm={FARM}
-      />,
-    );
+    renderWeather({
+      fieldMap: { temperature: "temperature", rainfall: "rainfall" },
+      onAutofill,
+      farm: FARM,
+    });
 
     await user.click(
       screen.getByRole("button", { name: /Use Sunrise Farm's saved location/ }),
@@ -104,7 +112,7 @@ describe("WeatherAssist coordinate sources", () => {
     apiGetMock.mockResolvedValue(REPORT);
     getPositionMock.mockResolvedValue({ latitude: 18.5204, longitude: 73.8567 });
 
-    render(<WeatherAssist fieldMap={{ temperature: "temperature" }} farm={FARM} />);
+    renderWeather({ fieldMap: { temperature: "temperature" }, farm: FARM });
 
     await user.click(screen.getByRole("button", { name: /Use this phone's location/ }));
 
@@ -117,7 +125,7 @@ describe("WeatherAssist coordinate sources", () => {
   it("hides the farm shortcut when the farm has no stored coordinates", () => {
     apiGetMock.mockResolvedValue(REPORT);
 
-    render(<WeatherAssist farm={{ id: "f1", name: "Sunrise Farm" }} />);
+    renderWeather({ farm: { id: "f1", name: "Sunrise Farm" } });
 
     expect(
       screen.queryByRole("button", { name: /saved location/i }),
@@ -131,7 +139,7 @@ describe("WeatherAssist coordinate sources", () => {
     const user = userEvent.setup();
     apiGetMock.mockResolvedValue(REPORT);
 
-    render(<WeatherAssist />);
+    renderWeather();
 
     await user.type(screen.getByLabelText("Location"), "Nashik");
     await user.click(screen.getByRole("button", { name: /Look up/ }));
@@ -144,7 +152,7 @@ describe("WeatherAssist coordinate sources", () => {
     const user = userEvent.setup();
     apiGetMock.mockRejectedValue(Object.assign(new Error("Service Unavailable"), { status: 503 }));
 
-    render(<WeatherAssist farm={FARM} />);
+    renderWeather({ farm: FARM });
 
     await user.click(
       screen.getByRole("button", { name: /Use Sunrise Farm's saved location/ }),

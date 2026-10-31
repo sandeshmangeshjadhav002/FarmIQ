@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { moduleCatalog } from "@/data/modules";
 import { apiPost } from "@/lib/apiClient";
@@ -26,6 +27,7 @@ import { DemoBadge, Field, ModuleButton, SelectField } from "./ModuleShared";
  * @param {Function} props.onAsk     - Navigate to the chat/assistant screen.
  */
 export default function MlModule({ moduleKey, onAsk }) {
+  const { t } = useTranslation();
   const config = DOMAIN_CONFIG[moduleKey];
   const info = moduleCatalog.find((item) => item.key === moduleKey);
 
@@ -54,8 +56,8 @@ export default function MlModule({ moduleKey, onAsk }) {
   const farm = farmsData?.items?.[0] ?? null;
 
   const liveIssues = useMemo(
-    () => evaluateLocally(config, schema, values),
-    [config, schema, values],
+    () => evaluateLocally(config, schema, values, t),
+    [config, schema, values, t],
   );
 
   if (!config) return null;
@@ -71,7 +73,7 @@ export default function MlModule({ moduleKey, onAsk }) {
   const handlePredict = async () => {
     if (liveIssues.invalid.length > 0) {
       setServerIssues(null);
-      setError("Fix the highlighted fields before running the prediction.");
+      setError(t("mlModule.fixFields"));
       return;
     }
     setLoading(true);
@@ -94,15 +96,13 @@ export default function MlModule({ moduleKey, onAsk }) {
           warnings: err.data.warnings ?? [],
           advisory: err.data.advisory ?? [],
         });
-        setError(err.message || "Some inputs failed validation.");
+        setError(err.message || t("mlModule.validationFailed"));
       } else if (err.status === 501) {
-        setError(
-          "This prediction isn't available yet. Please try again later.",
-        );
+        setError(t("mlModule.errors.unavailable"));
       } else if (err.status === 401) {
-        setError("Your session expired. Please sign in again.");
+        setError(t("mlModule.errors.sessionExpired"));
       } else {
-        setError(err.message || "Prediction failed. Please try again.");
+        setError(err.message || t("mlModule.errors.failed"));
       }
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export default function MlModule({ moduleKey, onAsk }) {
 
   return (
     <div className="space-y-4">
-      <DemoBadge status="Live prediction" />
+      <DemoBadge status={t("mlModule.livePrediction")} />
 
       {/* ── Weather auto-fill (optional) ───────────────────────────── */}
       {Object.keys(weatherMap).length > 0 && (
@@ -139,7 +139,9 @@ export default function MlModule({ moduleKey, onAsk }) {
             <ModuleIcon name={info?.icon} size={16} />
           </span>
           <h2 className="text-[14px] font-extrabold text-[#213D2F]">
-            {config.label} prediction inputs
+            {t("mlModule.inputsTitle", {
+              label: t(`mlModule.domains.${config.domain}`),
+            })}
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -147,14 +149,14 @@ export default function MlModule({ moduleKey, onAsk }) {
             <div key={f.key} className="space-y-1">
               {f.type === "select" ? (
                 <SelectField
-                  label={f.label}
+                  label={t(`mlModule.fields.${f.labelKey ?? f.key}`)}
                   value={values[f.key]}
                   onChange={(v) => setField(f.key, v)}
                   options={f.options}
                 />
               ) : (
                 <Field
-                  label={f.label}
+                  label={t(`mlModule.fields.${f.labelKey ?? f.key}`)}
                   type={f.type}
                   value={values[f.key]}
                   onChange={(v) => setField(f.key, v)}
@@ -176,25 +178,21 @@ export default function MlModule({ moduleKey, onAsk }) {
             disabled={loading || liveIssues.invalid.length > 0}
           >
             <ModuleIcon name={loading ? "sparkles" : "check"} size={16} />
-            {loading ? "Predicting…" : "Get prediction"}
+            {loading ? t("mlModule.predicting") : t("mlModule.getPrediction")}
           </ModuleButton>
           <ModuleButton secondary onClick={() => onAsk?.()}>
-            Ask FarmIQ
+            {t("common.askFarmIQ")}
           </ModuleButton>
         </div>
 
         {liveIssues.invalid.length > 0 && (
           <p className="rounded-xl bg-[#FCE9E5] p-3 text-[10px] font-semibold leading-5 text-[#9D4C3E]">
-            {liveIssues.invalid.length} field
-            {liveIssues.invalid.length > 1 ? "s need" : " needs"} attention
-            before a prediction can run. Values are never changed for you.
+            {t("mlModule.invalid", { count: liveIssues.invalid.length })}
           </p>
         )}
         {liveIssues.invalid.length === 0 && liveIssues.unusual.length > 0 && (
           <p className="rounded-xl bg-[#FFF5DE] p-3 text-[10px] font-semibold leading-5 text-[#8A6D2B]">
-            {liveIssues.unusual.length} value
-            {liveIssues.unusual.length > 1 ? "s are" : " is"} outside the normal
-            range for this crop. The prediction will still run.
+            {t("mlModule.unusual", { count: liveIssues.unusual.length })}
           </p>
         )}
       </section>
@@ -208,7 +206,7 @@ export default function MlModule({ moduleKey, onAsk }) {
       {serverIssues?.errors?.length > 0 && (
         <section className="space-y-1 rounded-2xl bg-[#FCE9E5] p-4">
           <p className="text-[10px] font-extrabold uppercase tracking-[.06em] text-[#9D4C3E]">
-            Please fix these
+            {t("mlModule.pleaseFix")}
           </p>
           {serverIssues.errors.map((e, i) => (
             <p
@@ -226,12 +224,12 @@ export default function MlModule({ moduleKey, onAsk }) {
         <section className="space-y-3 rounded-[22px] border border-[#CDEBDA] bg-[#EAF6EF] p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-[14px] font-extrabold text-[#1D4A33]">
-              Prediction
+              {t("mlModule.prediction")}
             </h3>
             <span className="rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#216B45]">
               {result.source === "baseline"
-                ? "General estimate"
-                : "Model estimate"}
+                ? t("mlModule.generalEstimate")
+                : t("mlModule.modelEstimate")}
             </span>
           </div>
           <p className="text-[26px] font-extrabold tracking-[-.03em] text-[#17392A]">
@@ -301,6 +299,7 @@ function FieldHint({ invalid, unusual, spec }) {
 
 /** Top-3 recommendation cards from the backend's real model output. */
 function Recommendations({ result }) {
+  const { t } = useTranslation();
   const recs = result.recommendations ?? [];
   if (recs.length === 0 && !result.details?.top) return null;
 
@@ -318,7 +317,7 @@ function Recommendations({ result }) {
   return (
     <div className="space-y-2">
       <h4 className="text-[11px] font-extrabold text-[#1D4A33]">
-        Top {items.length} crop recommendation{items.length > 1 ? "s" : ""}
+        {t("mlModule.topCrops", { count: items.length })}
       </h4>
       <div className="grid grid-cols-3 gap-2">
         {items.map((r) => (
@@ -331,7 +330,7 @@ function Recommendations({ result }) {
                 {r.rank}
               </span>
               <span className="text-[8px] font-bold uppercase tracking-[.06em] text-[#8A998F]">
-                {r.crop === items[0].crop ? "best match" : ""}
+                {r.crop === items[0].crop ? t("mlModule.bestMatch") : ""}
               </span>
             </div>
             <p className="mt-2 text-[13px] font-extrabold capitalize leading-tight text-[#17392A]">
@@ -345,13 +344,11 @@ function Recommendations({ result }) {
       </div>
       {items.length < 3 && (
         <p className="text-[9px] leading-4 text-[#8A6D2B]">
-          Only {items.length} recommendation{items.length > 1 ? "s" : ""}{" "}
-          available.
+          {t("mlModule.onlyAvailable", { count: items.length })}
         </p>
       )}
       <p className="text-[9px] leading-4 text-[#5C7A67]">
-        Scores rank the options — they are not a guarantee of success in your
-        field.
+        {t("mlModule.scoresNote")}
       </p>
     </div>
   );
@@ -374,7 +371,7 @@ function fmtNum(value) {
  * the request is sent. Uses the real supported + training ranges from
  * GET /api/predictions/schema/<domain>; never modifies the user's values.
  */
-function evaluateLocally(config, schema, values) {
+function evaluateLocally(config, schema, values, t) {
   const invalid = [];
   const unusual = [];
   if (!config || !schema?.fields) return { invalid, unusual };
@@ -386,14 +383,15 @@ function evaluateLocally(config, schema, values) {
   for (const f of config.fields) {
     const spec = specByField[f.key];
     const raw = values[f.key];
+    const label = t(`mlModule.fields.${f.labelKey ?? f.key}`);
 
     if (spec?.type === "category") {
       const options = spec.options ?? [];
       if (raw == null || String(raw).trim() === "") {
         invalid.push({
           field: f.key,
-          label: f.label,
-          message: `${f.label} is required.`,
+          label,
+          message: t("mlModule.validation.required", { label }),
         });
       } else if (
         options.length > 0 &&
@@ -403,10 +401,11 @@ function evaluateLocally(config, schema, values) {
       ) {
         unusual.push({
           field: f.key,
-          label: f.label,
-          message:
-            `"${raw}" does not appear in the training data for ${f.label}; the model will treat ` +
-            "it as an unknown category.",
+          label,
+          message: t("mlModule.validation.unknownCategory", {
+            value: raw,
+            label,
+          }),
         });
       }
       continue;
@@ -418,28 +417,32 @@ function evaluateLocally(config, schema, values) {
     if (raw === "" || raw == null || Number.isNaN(num)) {
       invalid.push({
         field: f.key,
-        label: f.label,
-        message: `${f.label} must be a number.`,
+        label,
+        message: t("mlModule.validation.number", { label }),
       });
       continue;
     }
     if (spec.supported_min != null && num < spec.supported_min) {
       invalid.push({
         field: f.key,
-        label: f.label,
-        message: `${f.label} must be at least ${fmtNum(spec.supported_min)} ${
-          spec.unit
-        }.`,
+        label,
+        message: t("mlModule.validation.min", {
+          label,
+          min: fmtNum(spec.supported_min),
+          unit: spec.unit,
+        }),
       });
       continue;
     }
     if (spec.supported_max != null && num > spec.supported_max) {
       invalid.push({
         field: f.key,
-        label: f.label,
-        message: `${f.label} must be at most ${fmtNum(spec.supported_max)} ${
-          spec.unit
-        }.`,
+        label,
+        message: t("mlModule.validation.max", {
+          label,
+          max: fmtNum(spec.supported_max),
+          unit: spec.unit,
+        }),
       });
       continue;
     }
@@ -448,14 +451,14 @@ function evaluateLocally(config, schema, values) {
     if (below || above) {
       unusual.push({
         field: f.key,
-        label: f.label,
-        message:
-          `${f.label} = ${fmtNum(num)} ${
-            spec.unit
-          } is valid but outside the training range ` +
-          `(${fmtNum(spec.training_min)}–${fmtNum(spec.training_max)} ${
-            spec.unit
-          }).`,
+        label,
+        message: t("mlModule.validation.outsideTraining", {
+          label,
+          value: fmtNum(num),
+          unit: spec.unit,
+          min: fmtNum(spec.training_min),
+          max: fmtNum(spec.training_max),
+        }),
       });
     }
   }
@@ -562,6 +565,7 @@ const DOMAIN_CONFIG = {
       },
       {
         key: "temperature",
+        labelKey: "airTemperature",
         label: "Air temperature °C",
         type: "number",
         default: 28,

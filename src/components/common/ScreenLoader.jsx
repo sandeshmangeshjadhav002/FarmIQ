@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 /**
  * Suspense fallback for lazily-loaded screens.
  *
@@ -9,7 +11,8 @@
  * @param {object} props
  * @param {string} [props.label] - Message shown next to the spinner.
  */
-export default function ScreenLoader({ label = "Loading…" }) {
+export default function ScreenLoader({ label }) {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-[40vh] items-center justify-center px-6 py-10">
       <div className="flex items-center gap-3 rounded-2xl border border-white/40 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-md">
@@ -18,7 +21,7 @@ export default function ScreenLoader({ label = "Loading…" }) {
           className="h-4 w-4 animate-spin rounded-full border-2 border-[#216B45] border-t-transparent"
         />
         <span role="status" className="text-[12px] font-bold text-[#3F5A4B]">
-          {label}
+          {label ?? t("common.loading")}
         </span>
       </div>
     </div>

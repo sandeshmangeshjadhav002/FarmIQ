@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import { SecondaryButton } from "@/components/common/Button";
 import ScreenShell from "@/components/layout/ScreenShell";
@@ -15,6 +16,7 @@ const FARM_TOOLS = ["soil", "sensors", "sensor-simulator", "calendar"];
 
 /** Single IoT sensor card. */
 function SensorCard({ icon, label, value, detail, tone }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-[20px] border border-[#E3E9E4] bg-white p-4 shadow-[0_4px_16px_rgba(31,57,44,.04)]">
       <div className="mb-4 flex items-start justify-between">
@@ -23,7 +25,7 @@ function SensorCard({ icon, label, value, detail, tone }) {
         </span>
         <span className="flex items-center gap-1 text-[9px] font-bold text-[#4A9365]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#52AB71]" />
-          LIVE
+          {t("farm.live")}
         </span>
       </div>
       <p className="text-[11px] font-semibold text-[#75877D]">{label}</p>
@@ -47,6 +49,7 @@ function SkeletonCard() {
  * @param {Function} [props.openModule] - Open a module by key (contextual tools).
  */
 export default function FarmScreen({ navigate, openModule }) {
+  const { t } = useTranslation();
   const { data: farmsData, loading: farmsLoading } =
     useApi("/api/farms?limit=1");
   const { data: dashData, loading: dashLoading } = useApi(
@@ -65,16 +68,20 @@ export default function FarmScreen({ navigate, openModule }) {
       : "—";
   const temperature =
     reading?.temperature != null ? `${reading.temperature.toFixed(1)}°C` : "—";
-  const moistureDetail = reading ? "Live sensor reading" : "No sensor data";
-  const temperatureDetail = reading ? "Live sensor reading" : "No sensor data";
+  const moistureDetail = reading
+    ? t("farm.liveReadings")
+    : t("farm.noSensorData");
+  const temperatureDetail = reading
+    ? t("farm.liveReadings")
+    : t("farm.noSensorData");
 
-  const farmName = farm?.name ?? "My Farm";
+  const farmName = farm?.name ?? t("farm.defaultName");
   const farmLoc = farm?.location ?? "—";
   const farmArea = farm?.area_value
     ? `${farm.area_value} ${farm.area_unit} • ${
-        farm.soil_type ?? "Soil type not set"
+        farm.soil_type ?? t("farm.soilTypeNotSet")
       }`
-    : "Area not set";
+    : t("farm.areaNotSet");
 
   return (
     <ScreenShell active="farm" navigate={navigate}>
@@ -83,17 +90,17 @@ export default function FarmScreen({ navigate, openModule }) {
         <header className="mb-6 flex items-center gap-3">
           <button
             onClick={() => navigate("home")}
-            aria-label="Back"
+            aria-label={t("common.back")}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DFE7E1] bg-white text-[#3F5A4B] active:scale-95"
           >
             <Icon name="arrow" size={18} className="rotate-180" />
           </button>
           <div className="flex-1">
             <p className="text-[11px] font-bold uppercase tracking-[.12em] text-[#668173]">
-              My farm
+              {t("farm.kicker")}
             </p>
             <h1 className="mt-0.5 text-[22px] font-extrabold tracking-[-0.04em] text-[#17392A]">
-              {farmsLoading ? "Loading…" : farmName}
+              {farmsLoading ? t("farm.loading") : farmName}
             </h1>
           </div>
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#E5F1E8] text-[#216B45]">
@@ -110,45 +117,53 @@ export default function FarmScreen({ navigate, openModule }) {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/65">
-                    Farm details
+                    {t("farm.farmDetails")}
                   </p>
                   <p className="mt-2 text-[18px] font-bold">{farmLoc}</p>
                   <p className="mt-1 text-[12px] text-white/70">{farmArea}</p>
                 </div>
                 <span className="rounded-full bg-white/15 px-3 py-1.5 text-[10px] font-bold">
-                  ACTIVE
+                  {t("farm.active")}
                 </span>
               </div>
               <div className="mt-5 grid grid-cols-3 border-t border-white/15 pt-4 text-center">
                 <div>
                   <b className="block text-[17px]">{dash.farms ?? "—"}</b>
-                  <span className="text-[9px] text-white/65">Farms</span>
+                  <span className="text-[9px] text-white/65">
+                    {t("farm.stats.farms")}
+                  </span>
                 </div>
                 <div className="border-x border-white/15">
                   <b className="block text-[17px]">{dash.devices ?? "—"}</b>
-                  <span className="text-[9px] text-white/65">Sensors</span>
+                  <span className="text-[9px] text-white/65">
+                    {t("farm.stats.sensors")}
+                  </span>
                 </div>
                 <div>
                   <b className="block text-[17px]">
-                    {farm.current_crop ? "Active" : "Good"}
+                    {farm.current_crop
+                      ? t("farm.activeLabel")
+                      : t("farm.goodLabel")}
                   </b>
-                  <span className="text-[9px] text-white/65">Farm health</span>
+                  <span className="text-[9px] text-white/65">
+                    {t("farm.stats.health")}
+                  </span>
                 </div>
               </div>
             </>
           ) : (
             <div className="text-center">
               <p className="text-[13px] font-bold text-white/80">
-                No farm added yet.
+                {t("farm.noFarm")}
               </p>
               <p className="mt-1 text-[11px] text-white/60">
-                Add your first farm to get live readings and a daily plan.
+                {t("farm.noFarmBody")}
               </p>
               <button
                 onClick={() => openModule?.("farm-management")}
                 className="mt-4 h-10 rounded-xl bg-white px-4 text-[12px] font-bold text-[#216B45] active:scale-95"
               >
-                Add your first farm
+                {t("farm.addFirstFarm")}
               </button>
             </div>
           )}
@@ -159,7 +174,7 @@ export default function FarmScreen({ navigate, openModule }) {
           <>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[17px] font-extrabold text-[#1D382A]">
-                Current crop
+                {t("farm.currentCrop")}
               </h2>
             </div>
             <div className="mb-7 flex gap-3 overflow-x-auto pb-1">
@@ -170,23 +185,25 @@ export default function FarmScreen({ navigate, openModule }) {
                 <p className="text-[13px] font-bold text-[#243F31]">
                   {farm.current_crop}
                 </p>
-                <p className="mt-1 text-[10px] text-[#7D8D84]">Active</p>
+                <p className="mt-1 text-[10px] text-[#7D8D84]">
+                  {t("farm.activeLabel")}
+                </p>
               </div>
             </div>
           </>
         )}
 
         <SecondaryButton onClick={() => openModule?.("farm-management")}>
-          <Icon name="plus" size={17} /> Manage farms
+          <Icon name="plus" size={17} /> {t("farm.manageFarms")}
         </SecondaryButton>
 
         {/* Sensors */}
         <div className="mt-7 mb-3 flex items-center justify-between">
           <h2 className="text-[17px] font-extrabold text-[#1D382A]">
-            Connected sensors
+            {t("farm.connectedSensors")}
           </h2>
           <button className="text-[11px] font-bold text-[#216B45]">
-            {dash.devices_online ?? 0} online
+            {t("farm.onlineCount", { count: dash.devices_online ?? 0 })}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -195,21 +212,21 @@ export default function FarmScreen({ navigate, openModule }) {
               <SensorCard
                 detail={moistureDetail}
                 icon="droplet"
-                label="Soil Moisture"
+                label={t("farm.soilMoisture")}
                 tone="bg-[#E7F4F7] text-[#287A8E]"
                 value={moisture}
               />
               <SensorCard
                 detail={temperatureDetail}
                 icon="temperature"
-                label="Temperature"
+                label={t("farm.temperature")}
                 tone="bg-[#FFF0E1] text-[#B06E2B]"
                 value={temperature}
               />
             </>
           ) : (
             <div className="col-span-2 rounded-[20px] border border-dashed border-[#AFC4B5] p-6 text-center text-[12px] text-[#7B8C82]">
-              No sensor data yet. Pair a device to see live readings.
+              {t("farm.noSensorYet")}
             </div>
           )}
         </div>
@@ -217,14 +234,14 @@ export default function FarmScreen({ navigate, openModule }) {
           onClick={() => openModule?.("devices")}
           className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-[#AFC4B5] text-[12px] font-bold text-[#216B45]"
         >
-          <Icon name="sensor" size={18} /> Connect Sensor
+          <Icon name="sensor" size={18} /> {t("farm.connectSensor")}
         </button>
 
         {/* Contextual tools — soil, monitoring, simulation and calendar live
             with the farm they belong to rather than in the main menu. */}
         <div className="mt-7 mb-3">
           <h2 className="text-[17px] font-extrabold text-[#1D382A]">
-            Farm tools
+            {t("farm.farmTools")}
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -244,10 +261,10 @@ export default function FarmScreen({ navigate, openModule }) {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[12px] font-bold text-[#243F31]">
-                    {tool.title}
+                    {t(`modules.${key}.title`)}
                   </span>
                   <span className="mt-0.5 block text-[10px] leading-snug text-[#7D8D84]">
-                    {tool.short}
+                    {t(`modules.${key}.short`)}
                   </span>
                 </span>
               </button>

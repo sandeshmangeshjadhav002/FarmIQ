@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import Logo from "@/components/common/Logo";
+import LocationSelector from "@/components/common/LocationSelector";
 import { PrimaryButton } from "@/components/common/Button";
 import ScreenShell from "@/components/layout/ScreenShell";
 import { quickActions } from "@/data/modules";
@@ -39,6 +41,8 @@ export default function HomeScreen({
   user,
   onOpenProfile,
 }) {
+  const { t } = useTranslation();
+
   /** Generate up-to-2-char initials from a full name string. */
   const initials = (name = "?") =>
     name
@@ -58,11 +62,12 @@ export default function HomeScreen({
 
   // Only include statistics that are backed by real records.
   const stats = [];
-  if ((dash?.farms ?? 0) > 0) stats.push(["Farms", dash.farms]);
+  if ((dash?.farms ?? 0) > 0)
+    stats.push([t("home.stats.farms"), dash.farms]);
   if ((dash?.devices_online ?? 0) > 0)
-    stats.push(["Sensors online", dash.devices_online]);
+    stats.push([t("home.stats.sensorsOnline"), dash.devices_online]);
   if ((dash?.predictions ?? 0) > 0)
-    stats.push(["Predictions", dash.predictions]);
+    stats.push([t("home.stats.predictions"), dash.predictions]);
 
   return (
     <ScreenShell active="home" navigate={navigate}>
@@ -78,7 +83,7 @@ export default function HomeScreen({
               {language}
             </button>
             <button
-              aria-label="Open profile"
+              aria-label={t("common.openProfile")}
               onClick={onOpenProfile}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#216B45] text-[13px] font-extrabold text-white shadow-[0_2px_8px_rgba(33,107,69,.3)] transition hover:bg-[#1a5738] active:scale-95 select-none"
             >
@@ -91,15 +96,20 @@ export default function HomeScreen({
           </div>
         </header>
 
-        <section className="pb-4 pt-7">
+        {/* ── Shared location selector ─────────────────────────────────── */}
+        <div className="pt-3">
+          <LocationSelector />
+        </div>
+
+        <section className="pb-4 pt-5">
           <h1 className="max-w-[320px] text-[26px] font-extrabold leading-[1.14] tracking-[-0.04em] text-[#17392A]">
-            What needs your attention today?
+            {t("home.headline")}
           </h1>
         </section>
 
         <PrimaryButton onClick={() => navigate("chat")}>
           <Icon name="mic" size={21} />
-          Ask FarmIQ
+          {t("home.askFarmIQ")}
         </PrimaryButton>
 
         {/* ── 1. Today's plan, or the setup workflow for a new account ── */}
@@ -138,7 +148,7 @@ export default function HomeScreen({
         {hasFarm && stats.length > 0 && (
           <>
             <h2 className="mb-3 mt-7 text-[15px] font-extrabold text-[#1D382A]">
-              Your farm today
+              {t("home.yourFarmToday")}
             </h2>
             <div className="flex rounded-[20px] border border-white/40 bg-white/50 p-4 backdrop-blur-md shadow-sm">
               {stats.map(([label, value], i) => (
@@ -169,11 +179,10 @@ export default function HomeScreen({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13px] font-extrabold text-[#8E4536]">
-                {unread} unread alert{unread > 1 ? "s" : ""}
+                {t("home.unreadAlerts", { count: unread })}
               </span>
               <span className="mt-1 block truncate text-[10px] text-[#A5746A]">
-                {alerts?.items?.[0]?.title ??
-                  "Weather, sensor and market updates"}
+                {alerts?.items?.[0]?.title ?? t("home.alertsFallback")}
               </span>
             </span>
             <Icon name="chevron" size={16} className="text-[#A55243]" />
@@ -183,20 +192,20 @@ export default function HomeScreen({
         {/* ── 4. AI Advisor shortcuts ── */}
         <div className="mb-3 mt-7 flex items-center justify-between">
           <h2 className="text-[15px] font-extrabold text-[#1D382A]">
-            AI Advisor shortcuts
+            {t("home.aiShortcuts")}
           </h2>
           <button
             onClick={() => navigate("advisor")}
             className="text-[11px] font-bold text-[#216B45]"
           >
-            See all
+            {t("common.seeAll")}
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((action) => (
             <button
-              key={action.title}
+              key={action.target}
               className="group min-h-[120px] rounded-[20px] border border-white/30 bg-white/40 p-4 text-left shadow-[0_5px_18px_rgba(31,57,44,.05)] backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-md active:scale-[.98]"
               onClick={() => openModule(action.target)}
             >
@@ -206,10 +215,10 @@ export default function HomeScreen({
                 <Icon name={action.icon} size={20} />
               </span>
               <span className="block text-[14px] font-bold text-[#1D382A]">
-                {action.title}
+                {t(`quickActions.${action.target}.title`)}
               </span>
               <span className="mt-1 block text-[11px] leading-4 text-[#7C8E84]">
-                {action.subtitle}
+                {t(`quickActions.${action.target}.subtitle`)}
               </span>
             </button>
           ))}
@@ -220,13 +229,13 @@ export default function HomeScreen({
           <>
             <div className="mb-3 mt-7 flex items-center justify-between">
               <h2 className="text-[15px] font-extrabold text-[#1D382A]">
-                Recent predictions
+                {t("home.recentPredictions")}
               </h2>
               <button
                 onClick={() => navigate("history")}
                 className="text-[11px] font-bold text-[#216B45]"
               >
-                View all
+                {t("common.viewAll")}
               </button>
             </div>
             <div className="overflow-hidden rounded-[20px] border border-[#E2E9E4] bg-white">
@@ -243,7 +252,7 @@ export default function HomeScreen({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-bold text-[#263F32]">
-                      {predictionSummary(item)}
+                      {predictionSummary(item, t)}
                     </span>
                   </span>
                   <Icon name="chevron" size={15} className="text-[#9CA8A0]" />
@@ -258,17 +267,21 @@ export default function HomeScreen({
 }
 
 /** Human-readable one-liner for a stored prediction. */
-function predictionSummary(item) {
+function predictionSummary(item, t) {
   const pred = item.output?.prediction;
-  if (item.domain === "crop") return `Recommended crop: ${pred ?? "—"}`;
-  if (item.domain === "fertilizer") return `Fertilizer: ${pred ?? "—"}`;
+  if (item.domain === "crop")
+    return t("home.prediction.crop", { value: pred ?? "—" });
+  if (item.domain === "fertilizer")
+    return t("home.prediction.fertilizer", { value: pred ?? "—" });
   if (item.domain === "irrigation")
-    return pred === 1 ? "Irrigation: water now" : "Irrigation: not needed";
+    return pred === 1
+      ? t("home.prediction.irrigationNow")
+      : t("home.prediction.irrigationNone");
   if (item.domain === "yield")
-    return `Yield estimate: ${
-      pred != null ? Number(pred).toFixed(2) : "—"
-    } t/ha`;
-  return String(pred ?? item.domain ?? "Prediction");
+    return t("home.prediction.yield", {
+      value: pred != null ? Number(pred).toFixed(2) : "—",
+    });
+  return String(pred ?? item.domain ?? t("home.prediction.generic"));
 }
 
 /**
@@ -279,10 +292,11 @@ function predictionSummary(item) {
  * the others live inside those screens.
  */
 function SetupWorkflow({ openModule }) {
+  const { t } = useTranslation();
   const steps = [
-    { label: "Add your farm", done: false },
-    { label: "Connect a sensor or add soil readings", done: false },
-    { label: "Get your first AI recommendation", done: false },
+    { label: t("home.setup.step1"), done: false },
+    { label: t("home.setup.step2"), done: false },
+    { label: t("home.setup.step3"), done: false },
   ];
 
   return (
@@ -291,10 +305,10 @@ function SetupWorkflow({ openModule }) {
         <Icon name="farm" size={21} />
       </span>
       <h2 className="mt-3 text-[16px] font-extrabold text-[#1D382A]">
-        Set up your farm
+        {t("home.setup.title")}
       </h2>
       <p className="mt-1.5 text-[11px] leading-5 text-[#6F8378]">
-        FarmIQ needs a farm before it can give advice. This takes a minute.
+        {t("home.setup.body")}
       </p>
       <ol className="mt-4 space-y-2.5">
         {steps.map((step, i) => (
@@ -313,7 +327,7 @@ function SetupWorkflow({ openModule }) {
         className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#216B45] text-[12px] font-extrabold text-white shadow-[0_6px_16px_rgba(33,107,69,.18)]"
       >
         <Icon name="plus" size={17} />
-        Add your first farm
+        {t("home.setup.addFirstFarm")}
       </button>
     </div>
   );

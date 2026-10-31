@@ -1,0 +1,60 @@
+{
+  "chat": {
+    "title": "FarmIQ Assistant",
+    "greeting": "Hello! I am your FarmIQ assistant. Ask me about crop recommendation, fertilizer, irrigation, yield prediction, or sensor data.",
+    "status": {
+      "listening": "Listening…",
+      "processing": "Processing…",
+      "online": "Online and ready"
+    },
+    "typing": "Assistant is typing",
+    "listen": "Listen",
+    "stop": "Stop",
+    "followUp": "Please provide the missing information…",
+    "errors": {
+      "sessionExpired": "Your session expired. Please sign in again.",
+      "unavailable": "Assistant is not available right now. Please try again.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "inputPlaceholder": "Ask FarmIQ or tap the mic…",
+    "listeningHint": "🎙 Listening… tap the microphone to stop",
+    "disclaimer": "FarmIQ can make mistakes. Verify important farming decisions with an expert.",
+    "micUnsupported": "Speech recognition is not supported in this browser",
+    "stopRecording": "Stop recording",
+    "startVoice": "Start voice input",
+    "clearInput": "Clear input",
+    "send": "Send",
+    "switchTo": "Switch to {{label}}",
+    "intent": {
+      "crop": "Crop",
+      "fertilizer": "Fertilizer",
+      "irrigation": "Irrigation",
+      "yield": "Yield",
+      "sensor": "Sensor",
+      "organic": "Organic",
+      "drought": "Drought",
+      "weather": "Weather",
+      "farm": "Farm",
+      "farmPlan": "Farm Plan",
+      "help": "Help",
+      "assistant": "Assistant"
+    },
+    "farmData": {
+      "show": "Farm data used ▼",
+      "hide": "Hide farm data ▲",
+      "farm": "Farm",
+      "soilMoisture": "Soil moisture",
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "weatherTemp": "Weather temp",
+      "rain7d": "7-day rain forecast",
+      "model": "{{domain}} model",
+      "drought": "Drought assessment",
+      "organic": "Organic guidance",
+      "onFile": "On file",
+      "demo": "DEMO",
+      "notAvailable": "Not available: ",
+      "conflict": "⚠ Data conflict detected"
+    }
+  }
+}

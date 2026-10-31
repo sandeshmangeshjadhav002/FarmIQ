@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import TextInput from "@/components/common/TextInput";
 import ScreenShell from "@/components/layout/ScreenShell";
@@ -27,41 +28,60 @@ const DOMAIN_STYLE = {
   },
 };
 
-function formatDate(iso) {
+function formatDate(iso, t) {
   if (!iso) return "";
   const d = new Date(iso);
   const now = new Date();
   const diff = (now - d) / 1000;
-  if (diff < 60) return "Just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return "Today";
-  if (diff < 172800) return "Yesterday";
+  if (diff < 60) return t("history.date.justNow");
+  if (diff < 3600)
+    return t("history.date.minutesAgo", { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t("history.date.today");
+  if (diff < 172800) return t("history.date.yesterday");
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function predictionSummary(item) {
+function predictionSummary(item, t) {
   const pred = item.output?.prediction;
-  if (item.domain === "crop") return `Recommended: ${pred ?? "—"}`;
-  if (item.domain === "fertilizer") return `Use: ${pred ?? "—"}`;
+  if (item.domain === "crop")
+    return t("history.summary.crop", { value: pred ?? "—" });
+  if (item.domain === "fertilizer")
+    return t("history.summary.fertilizer", { value: pred ?? "—" });
   if (item.domain === "irrigation")
-    return pred === 1 ? "Irrigate now" : "No irrigation needed";
+    return pred === 1
+      ? t("history.summary.irrigationNow")
+      : t("history.summary.irrigationNone");
   if (item.domain === "yield")
-    return `Yield: ${pred != null ? Number(pred).toFixed(2) : "—"} t/ha`;
+    return t("history.summary.yield", {
+      value: pred != null ? Number(pred).toFixed(2) : "—",
+    });
   return String(pred ?? "—");
 }
 
-function previewText(item) {
+function previewText(item, t) {
   const inp = item.input ?? {};
   if (item.domain === "crop")
-    return `N=${inp.N ?? "—"} P=${inp.P ?? "—"} K=${inp.K ?? "—"} · pH ${
-      inp.ph ?? "—"
-    }`;
+    return t("history.preview.nutrients", {
+      n: inp.N ?? "—",
+      p: inp.P ?? "—",
+      k: inp.K ?? "—",
+      ph: inp.ph ?? "—",
+    });
   if (item.domain === "fertilizer")
-    return `${inp.crop_type ?? "—"} on ${inp.soil_type ?? "—"} soil`;
+    return t("history.preview.onSoil", {
+      crop: inp.crop_type ?? "—",
+      soil: inp.soil_type ?? "—",
+    });
   if (item.domain === "irrigation")
-    return `Moisture ${inp.soil_moisture ?? "—"} · ${inp.crop_type ?? "Paddy"}`;
+    return t("history.preview.moisture", {
+      value: inp.soil_moisture ?? "—",
+      crop: inp.crop_type ?? t("history.preview.paddy"),
+    });
   if (item.domain === "yield")
-    return `${inp.crop ?? "—"} · ${inp.state_name ?? "—"}`;
+    return t("history.preview.cropState", {
+      crop: inp.crop ?? "—",
+      state: inp.state_name ?? "—",
+    });
   return "";
 }
 
@@ -76,6 +96,7 @@ function previewText(item) {
  * @param {Function} [props.openModule] - Open the tool behind a prediction.
  */
 export default function HistoryScreen({ navigate, openModule }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const { data, loading, error, refetch } = useApi("/api/predictions?limit=50");
   const all = data?.items ?? [];
@@ -84,8 +105,8 @@ export default function HistoryScreen({ navigate, openModule }) {
     const q = query.toLowerCase();
     return (
       item.domain.includes(q) ||
-      predictionSummary(item).toLowerCase().includes(q) ||
-      previewText(item).toLowerCase().includes(q)
+      predictionSummary(item, t).toLowerCase().includes(q) ||
+      previewText(item, t).toLowerCase().includes(q)
     );
   });
 
@@ -95,26 +116,24 @@ export default function HistoryScreen({ navigate, openModule }) {
         <header className="mb-5 flex items-center gap-3">
           <button
             onClick={() => navigate("home")}
-            aria-label="Back"
+            aria-label={t("common.back")}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DFE7E1] bg-white text-[#3F5A4B] active:scale-95"
           >
             <Icon name="arrow" size={18} className="rotate-180" />
           </button>
           <h1 className="text-[22px] font-extrabold tracking-[-0.04em] text-[#17392A]">
-            Prediction History
+            {t("history.title")}
           </h1>
         </header>
 
         <TextInput
           onChange={setQuery}
-          placeholder="Search predictions..."
+          placeholder={t("history.searchPlaceholder")}
           value={query}
         />
 
         <p className="mb-2 mt-4 text-right text-[10px] font-semibold text-[#819087]">
-          {loading
-            ? "…"
-            : `${filtered.length} result${filtered.length === 1 ? "" : "s"}`}
+          {loading ? "…" : t("history.results", { count: filtered.length })}
         </p>
 
         {loading && (
@@ -131,13 +150,13 @@ export default function HistoryScreen({ navigate, openModule }) {
         {error && !loading && (
           <div className="rounded-[22px] bg-[#FCE9E5] p-4 text-center">
             <p className="text-[12px] font-bold text-[#9D4C3E]">
-              {error.message || "Could not load history."}
+              {error.message || t("history.loadError")}
             </p>
             <button
               onClick={refetch}
               className="mt-3 text-[11px] font-bold text-[#216B45] underline"
             >
-              Try again
+              {t("history.tryAgain")}
             </button>
           </div>
         )}
@@ -147,8 +166,8 @@ export default function HistoryScreen({ navigate, openModule }) {
             {filtered.length === 0 && (
               <div className="p-8 text-center text-sm text-[#7A8C82]">
                 {all.length === 0
-                  ? "No predictions yet. Try the Crop or Irrigation module."
-                  : "No results found."}
+                  ? t("history.empty")
+                  : t("history.noResults")}
               </div>
             )}
             {filtered.map((item, index) => {
@@ -168,14 +187,14 @@ export default function HistoryScreen({ navigate, openModule }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-bold text-[#263F32]">
-                      {predictionSummary(item)}
+                      {predictionSummary(item, t)}
                     </span>
                     <span className="mt-1 block truncate text-[10px] text-[#819087]">
-                      {previewText(item)}
+                      {previewText(item, t)}
                     </span>
                   </span>
                   <span className="self-start whitespace-nowrap text-[9px] font-semibold text-[#95A198]">
-                    {formatDate(item.created_at)}
+                    {formatDate(item.created_at, t)}
                   </span>
                   <Icon name="chevron" size={15} className="text-[#9CA8A0]" />
                 </button>
@@ -188,7 +207,7 @@ export default function HistoryScreen({ navigate, openModule }) {
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#216B45] text-[12px] font-bold text-white shadow-md"
           onClick={() => navigate("advisor")}
         >
-          <Icon name="sparkles" size={16} /> Get new prediction
+          <Icon name="sparkles" size={16} /> {t("history.newPrediction")}
         </button>
       </div>
     </ScreenShell>

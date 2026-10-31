@@ -1,0 +1,146 @@
+{
+  "common": {
+    "save": "Save",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "search": "Search",
+    "seeAll": "See all",
+    "viewAll": "View all",
+    "change": "Change",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "askFarmIQ": "Ask FarmIQ",
+    "openProfile": "Open profile",
+    "selectLanguage": "Select language",
+    "notSet": "—",
+    "loadingModule": "Loading module…",
+    "loadingSignIn": "Loading sign-in…",
+    "loadingSignUp": "Loading sign-up…",
+    "startupError": "FarmIQ crashed on startup"
+  },
+  "nav": {
+    "home": "Home",
+    "farm": "My Farm",
+    "advisor": "Advisor",
+    "insights": "Insights",
+    "more": "More",
+    "askFarmIQ": "Ask FarmIQ",
+    "appTagline": "Intelligent Farm Management"
+  },
+  "sections": {
+    "home": {
+      "label": "Home",
+      "short": "Overview, today's plan and alerts"
+    },
+    "farm": {
+      "label": "My Farm",
+      "short": "Farms, crops, soil, sensors and devices"
+    },
+    "advisor": {
+      "label": "AI Farm Advisor",
+      "short": "Guidance from the ML models and knowledge base"
+    },
+    "insights": {
+      "label": "Insights & Analytics",
+      "short": "Yield, market, reports and prediction history"
+    },
+    "knowledge": {
+      "label": "Knowledge Centre",
+      "short": "Trusted guides and government schemes"
+    },
+    "admin": {
+      "label": "Settings & Administration",
+      "short": "Profile, devices, roles and model health"
+    }
+  },
+  "quickActions": {
+    "crop-recommendation": {
+      "title": "Crop Advice",
+      "subtitle": "Best crops for your field"
+    },
+    "irrigation": {
+      "title": "Watering Advice",
+      "subtitle": "Smart irrigation guidance"
+    },
+    "fertilizer": {
+      "title": "Fertilizer Advice",
+      "subtitle": "Feed crops at the right time"
+    },
+    "market": {
+      "title": "Market Prices",
+      "subtitle": "Check nearby crop prices"
+    }
+  },
+  "roles": {
+    "farmer": "Farmer",
+    "farm_manager": "Farm Manager",
+    "agricultural_expert": "Agricultural Expert"
+  },
+  "units": {
+    "Acres": "Acres",
+    "Hectares": "Hectares",
+    "Guntha": "Guntha"
+  },
+  "data": {
+    "farmChecklist": [
+      "Crop management",
+      "Growth stage",
+      "Soil information",
+      "Irrigation method",
+      "Farm area & units",
+      "GPS location"
+    ],
+    "defaultReminders": [
+      { "title": "Irrigate tomato field", "date": "Tomorrow • 6:30 AM" },
+      { "title": "Apply second nitrogen dose", "date": "24 October" },
+      { "title": "Inspect onion for thrips", "date": "Completed today" }
+    ],
+    "knowledgeArticles": [
+      ["Managing tomato leaf curl", "Pests and diseases", "ICAR Extension Guide • 12 Sep 2025"],
+      ["Understanding soil pH", "Soil health", "Maharashtra Agriculture Dept • 2 Aug 2025"],
+      ["Efficient drip irrigation", "Irrigation", "Krishi Vigyan Kendra • 18 Jul 2025"],
+      ["PM-KISAN eligibility guide", "Agricultural schemes", "Government of India • 1 Oct 2025"],
+      ["Rabi season crop planning", "Seasonal farming guides", "ICAR • 28 Sep 2025"]
+    ],
+    "knowledgeTopicTags": [
+      "Crop management",
+      "Soil health",
+      "Fertilizers",
+      "Irrigation",
+      "Pests",
+      "Weather"
+    ]
+  },
+  "voice": {
+    "speakPrompt": "Speak now…",
+    "errors": {
+      "audioPlayback": "The browser could not play the audio.",
+      "serverNoAudio": "The server returned no audio.",
+      "speakFailed": "Could not play the spoken answer. Please try again.",
+      "noSpeech": "No speech detected. Please try again.",
+      "transcribeUnconfigured": "Voice transcription is not configured on the server. Please type your message.",
+      "transcribeFailed": "Could not transcribe your speech. Please try again or type your message.",
+      "sttUnavailable": "Speech recognition is not available in this browser. Use Chrome or Edge, or type your message.",
+      "noAudioCaptured": "No audio captured. Please try again.",
+      "micDenied": "Microphone access denied. Allow microphone permission in your browser.",
+      "noMic": "No microphone found on this device.",
+      "micAccess": "Could not access the microphone: {{detail}}",
+      "micPermissionDenied": "Microphone permission denied. Please allow it in Settings → Apps → FarmIQ → Permissions.",
+      "micPermissionRequired": "Microphone permission required for voice input.",
+      "marathiPackMissing": "Marathi (mr-IN) speech recognition not available on this device. Install a Marathi language pack in Android Settings → General Management → Language.",
+      "recognitionFailed": "Speech recognition failed: {{detail}}",
+      "languageUnsupported": "Language {{lang}} is not supported by this browser.",
+      "recognitionError": "Recognition error: {{code}}",
+      "micStartFailed": "Could not start microphone: {{detail}}",
+      "ttsUnavailable": "Text-to-speech is not available on this device.",
+      "noVoiceForLanguage": "No voice installed for this language. Android Settings → General Management → Text-to-speech → Install voice data.",
+      "playbackFailed": "Speech playback failed: {{detail}}",
+      "noVoicesInstalled": "No text-to-speech voices are installed on this system."
+    }
+  }
+}

@@ -11,8 +11,9 @@
  * - Data gaps are displayed when inputs were missing.
  * - RAG context (if available) is shown as advisory text, clearly labelled.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiPost } from "@/lib/apiClient";
+import { useLocation } from "@/lib/locationStore";
 import ModuleIcon from "./ModuleIcon";
 import { Field, ModuleButton } from "./ModuleShared";
 
@@ -192,6 +193,7 @@ const DROUGHT_TABS = [
 ];
 
 export default function DroughtAdvisor() {
+  const { location: sharedLocation } = useLocation();
   const [activeTab, setActiveTab] = useState("advice");
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -199,6 +201,14 @@ export default function DroughtAdvisor() {
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [savedId, setSavedId] = useState(null);
+
+  // Pre-fill location from the shared location store when available.
+  // Only fills once — the farmer can still edit the field afterwards.
+  useEffect(() => {
+    if (sharedLocation?.label && !form.location) {
+      setForm((prev) => ({ ...prev, location: sharedLocation.label }));
+    }
+  }, [sharedLocation]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
 

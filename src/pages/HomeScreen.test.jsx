@@ -8,6 +8,8 @@ vi.mock("@/lib/apiClient", () => ({
   apiGet: apiGetMock,
 }));
 
+import { LocationProvider } from "@/lib/locationStore";
+
 import HomeScreen from "./HomeScreen";
 
 const EMPTY_SUMMARY = {
@@ -61,14 +63,16 @@ function mockApi({ summary = EMPTY_SUMMARY, alerts = { total: 0, unread: 0, item
 
 const setup = (props = {}) =>
   render(
-    <HomeScreen
-      language="English"
-      navigate={vi.fn()}
-      onOpenProfile={vi.fn()}
-      openLanguages={vi.fn()}
-      openModule={props.openModule ?? vi.fn()}
-      user={{ full_name: "Anita Patil", role: "farmer" }}
-    />,
+    <LocationProvider>
+      <HomeScreen
+        language="en"
+        navigate={vi.fn()}
+        onOpenProfile={vi.fn()}
+        openLanguages={vi.fn()}
+        openModule={props.openModule ?? vi.fn()}
+        user={{ full_name: "Anita Patil", role: "farmer" }}
+      />
+    </LocationProvider>,
   );
 
 describe("HomeScreen prioritisation", () => {

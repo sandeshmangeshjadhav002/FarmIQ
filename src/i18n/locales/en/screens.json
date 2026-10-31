@@ -1,0 +1,180 @@
+{
+  "languageSheet": {
+    "title": "Choose your language",
+    "subtitle": "You can change this anytime",
+    "aria": "Select language"
+  },
+  "settings": {
+    "language": "Language",
+    "farmAreaUnits": "Farm area units",
+    "readAloud": "Read AI answers aloud",
+    "placeholder": "…"
+  },
+  "profile": {
+    "title": "My Profile",
+    "aria": "Profile",
+    "editName": "Edit name",
+    "fullNameAria": "Full name",
+    "email": "Email",
+    "mobile": "Mobile",
+    "role": "Role",
+    "memberSince": "Member since",
+    "roleHint": "Everyone starts as Farmer. Change this if you manage farms or advise farmers.",
+    "logOut": "Log Out",
+    "nameTooShort": "Name must be at least 2 characters.",
+    "updated": "Profile updated.",
+    "updateFailed": "Could not update profile. Reverting."
+  },
+  "farm": {
+    "kicker": "My farm",
+    "loading": "Loading…",
+    "farmDetails": "Farm details",
+    "active": "ACTIVE",
+    "activeLabel": "Active",
+    "goodLabel": "Good",
+    "stats": {
+      "farms": "Farms",
+      "sensors": "Sensors",
+      "health": "Farm health"
+    },
+    "noFarm": "No farm added yet.",
+    "noFarmBody": "Add your first farm to get live readings and a daily plan.",
+    "addFirstFarm": "Add your first farm",
+    "currentCrop": "Current crop",
+    "manageFarms": "Manage farms",
+    "connectedSensors": "Connected sensors",
+    "onlineCount": "{{count}} online",
+    "soilMoisture": "Soil Moisture",
+    "temperature": "Temperature",
+    "liveReadings": "Live sensor reading",
+    "noSensorData": "No sensor data",
+    "noSensorYet": "No sensor data yet. Pair a device to see live readings.",
+    "connectSensor": "Connect Sensor",
+    "farmTools": "Farm tools",
+    "live": "LIVE",
+    "soilTypeNotSet": "Soil type not set",
+    "areaNotSet": "Area not set",
+    "defaultName": "My Farm"
+  },
+  "advisor": {
+    "kicker": "AI Farm Advisor",
+    "headline": "What do you need help with?",
+    "advisingOn": "Advising on",
+    "noFarm": "No farm added yet",
+    "noFarmBody": "Add a farm so guidance can use your soil, crop and location.",
+    "addFarm": "Add a farm",
+    "chooseTask": "Choose a task",
+    "how": {
+      "ml": "Model estimate",
+      "guide": "Guided readings",
+      "compare": "Guided comparison",
+      "image": "Image upload"
+    },
+    "tasks": {
+      "crop": {
+        "title": "Choose a suitable crop",
+        "body": "Match a crop to your soil nutrients and local climate."
+      },
+      "soil": {
+        "title": "Understand soil conditions",
+        "body": "Read pH, EC, moisture and nutrient levels together."
+      },
+      "fertilizer": {
+        "title": "Get fertilizer guidance",
+        "body": "Get a nutrient recommendation for your crop and soil."
+      },
+      "irrigation": {
+        "title": "Assess irrigation needs",
+        "body": "Decide whether to water now, and by how much."
+      },
+      "drought": {
+        "title": "Manage drought risks",
+        "body": "Water-saving steps and dry-spell contingency guidance."
+      },
+      "organic": {
+        "title": "Compare farming methods",
+        "body": "Weigh organic, integrated and conventional approaches."
+      },
+      "image": {
+        "title": "Analyse a crop image",
+        "body": "Photograph a plant to check for visible problems."
+      }
+    },
+    "freeformTitle": "Ask FarmIQ in your own words",
+    "freeformBody": "Answers grounded in trusted agricultural sources",
+    "browseKnowledge": "Browse the Knowledge Centre",
+    "locationCropNotSet": "Location and crop not set"
+  },
+  "insights": {
+    "headline": "Measure your farm",
+    "predictionSaved_one": "prediction saved on your account",
+    "predictionSaved_other": "predictions saved on your account",
+    "analysisTools": "Analysis tools",
+    "predictionHistory": "Prediction history",
+    "predictionHistoryBody": "Every past prediction, searchable",
+    "noPredictions": "No predictions yet",
+    "noPredictionsBody": "Run a crop, fertilizer, irrigation or yield prediction to start building your farm's history.",
+    "openAdvisor": "Open AI Farm Advisor",
+    "modelEvaluation": "Model evaluation",
+    "fullReport": "Full report",
+    "metricsPrefix": "Real held-out metrics from ",
+    "evaluatedOn": " · evaluated {{date}}",
+    "notAvailable": "Not available",
+    "accuracy": "accuracy {{value}}%",
+    "r2log": "R² (log) {{value}}",
+    "loadingMetrics": "Loading stored metrics…",
+    "domain": {
+      "crop": "Crop",
+      "fertilizer": "Fertilizer",
+      "irrigation": "Irrigation",
+      "yield": "Yield"
+    }
+  },
+  "history": {
+    "title": "Prediction History",
+    "searchPlaceholder": "Search predictions...",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results",
+    "loadError": "Could not load history.",
+    "tryAgain": "Try again",
+    "empty": "No predictions yet. Try the Crop or Irrigation module.",
+    "noResults": "No results found.",
+    "newPrediction": "Get new prediction",
+    "summary": {
+      "crop": "Recommended: {{value}}",
+      "fertilizer": "Use: {{value}}",
+      "irrigationNow": "Irrigate now",
+      "irrigationNone": "No irrigation needed",
+      "yield": "Yield: {{value}} t/ha"
+    },
+    "preview": {
+      "nutrients": "N={{n}} P={{p}} K={{k}} · pH {{ph}}",
+      "onSoil": "{{crop}} on {{soil}} soil",
+      "moisture": "Moisture {{value}} · {{crop}}",
+      "cropState": "{{crop}} · {{state}}",
+      "paddy": "Paddy"
+    },
+    "date": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    }
+  },
+  "locationSelector": {
+    "noCoordinates": "No coordinates — type a place name to add them",
+    "setLocation": "Set location",
+    "noLocationSet": "No location set — weather and recommendations need it",
+    "change": "Change",
+    "set": "Set",
+    "gps": "GPS",
+    "savedFarm": "Saved farm",
+    "manual": "Manual",
+    "detecting": "Detecting…",
+    "useGps": "Use GPS",
+    "placeholder": "e.g. Nashik, Maharashtra",
+    "search": "Search",
+    "hint": "GPS detects this phone's position. If you're not at the farm, type the farm's location instead.",
+    "typeAtLeast": "Type at least 2 characters."
+  }
+}

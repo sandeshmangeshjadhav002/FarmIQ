@@ -14,6 +14,7 @@
  * ML model.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import useApi from "@/hooks/useApi";
 import { moduleByKey } from "@/data/modules";
 import ModuleIcon from "./ModuleIcon";
@@ -81,8 +82,17 @@ function fmt(val, unit = "") {
 
 // ── Action Card ───────────────────────────────────────────────────────────────
 function ActionCard({ action, onOpen }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const cfg = PRIORITY_CONFIG[action.priority] ?? PRIORITY_CONFIG.low;
+  const priorityLabel = t(`actionPlan.priority.${action.priority}`, {
+    defaultValue: cfg.label,
+  });
+  const categoryLabel = action.category
+    ? t(`actionPlan.category.${action.category}`, {
+        defaultValue: action.category.replace("_", " "),
+      })
+    : "";
   const icon = CATEGORY_ICON[action.category] ?? "check";
   const moduleKey = CATEGORY_MODULE[action.category];
   const target = moduleKey ? moduleByKey(moduleKey) : null;
@@ -104,10 +114,10 @@ function ActionCard({ action, onOpen }) {
             <span
               className={`rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.06em] ${cfg.badge}`}
             >
-              {cfg.label}
+              {priorityLabel}
             </span>
             <span className="text-[9px] font-semibold uppercase tracking-[.08em] text-[#7A8C82]">
-              {action.category?.replace("_", " ")}
+              {categoryLabel}
             </span>
           </div>
           <p className={`text-[12px] font-extrabold leading-5 ${cfg.text}`}>
@@ -125,7 +135,7 @@ function ActionCard({ action, onOpen }) {
           onClick={() => setOpen(!open)}
           className={`mt-2 text-[9px] font-bold ${cfg.text} hover:underline`}
         >
-          {open ? "Hide evidence ▲" : "Why this? Show evidence ▼"}
+          {open ? t("actionPlan.hideEvidence") : t("actionPlan.showEvidence")}
         </button>
       )}
 
@@ -157,7 +167,7 @@ function ActionCard({ action, onOpen }) {
           className={`mt-2.5 inline-flex items-center gap-1.5 rounded-xl bg-white/70 px-3 py-2 text-[10px] font-bold ${cfg.text}`}
         >
           <ModuleIcon name={target.icon} size={13} />
-          Open {target.title}
+          {t("actionPlan.openTool", { name: t(`modules.${moduleKey}.title`) })}
           <ModuleIcon name="arrow" size={13} />
         </button>
       )}
@@ -173,27 +183,22 @@ function ActionCard({ action, onOpen }) {
  * stops an incomplete plan from reading like a complete one.
  */
 function MissingInformation({ inputs }) {
+  const { t } = useTranslation();
   if (!inputs) return null;
   const gaps = [];
   if (inputs.sensor_available === false)
-    gaps.push(
-      "No sensor readings — irrigation advice uses weather and crop stage only.",
-    );
+    gaps.push(t("actionPlan.missing.noSensor"));
   if (inputs.weather_available === false)
-    gaps.push(
-      "No weather data — heat, frost and heavy-rain risks were not assessed.",
-    );
-  if (!inputs.crop)
-    gaps.push("No current crop set — crop-specific steps are limited.");
-  if (!inputs.location)
-    gaps.push("Farm location not set — local weather may be unavailable.");
+    gaps.push(t("actionPlan.missing.noWeather"));
+  if (!inputs.crop) gaps.push(t("actionPlan.missing.noCrop"));
+  if (!inputs.location) gaps.push(t("actionPlan.missing.noLocation"));
 
   if (gaps.length === 0) return null;
 
   return (
     <div className="rounded-[18px] border border-[#E8DFC6] bg-[#FFFBF0] p-3.5">
       <p className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#8A6D2B]">
-        What this plan could not assess
+        {t("actionPlan.missing.title")}
       </p>
       <ul className="mt-1.5 space-y-1">
         {gaps.map((gap) => (
@@ -208,6 +213,7 @@ function MissingInformation({ inputs }) {
 
 // ── Conditions strip ──────────────────────────────────────────────────────────
 function ConditionsStrip({ weather, sensor }) {
+  const { t } = useTranslation();
   if (!weather && !sensor) return null;
 
   return (
@@ -215,43 +221,51 @@ function ConditionsStrip({ weather, sensor }) {
       {weather?.temperature_c != null && (
         <CondTile
           icon="sun"
-          label="Temperature"
+          label={t("actionPlan.conditions.temperature")}
           value={fmt(weather.temperature_c, "°C")}
-          note="Current"
+          note={t("actionPlan.conditions.current")}
         />
       )}
       {weather?.humidity_pct != null && (
         <CondTile
           icon="drop"
-          label="Humidity"
+          label={t("actionPlan.conditions.humidity")}
           value={fmt(weather.humidity_pct, "%")}
-          note="Current"
+          note={t("actionPlan.conditions.current")}
         />
       )}
       {weather?.forecast_rain_7d_mm != null && (
         <CondTile
           icon="drop"
-          label="7-day forecast rain"
+          label={t("actionPlan.conditions.rain7d")}
           value={fmt(weather.forecast_rain_7d_mm, " mm")}
-          note="Not confirmed"
+          note={t("actionPlan.conditions.notConfirmed")}
           warn
         />
       )}
       {sensor?.soil_moisture != null && (
         <CondTile
           icon="soil"
-          label="Soil moisture"
+          label={t("actionPlan.conditions.soilMoisture")}
           value={fmt(sensor.soil_moisture, "%")}
-          note={sensor.is_demo ? "Simulated" : "Sensor"}
+          note={
+            sensor.is_demo
+              ? t("actionPlan.conditions.demoSimulated")
+              : t("actionPlan.conditions.sensor")
+          }
           demo={sensor.is_demo}
         />
       )}
       {sensor?.soil_temperature != null && (
         <CondTile
           icon="soil"
-          label="Soil temp"
+          label={t("actionPlan.conditions.soilTemp")}
           value={fmt(sensor.soil_temperature, "°C")}
-          note={sensor.is_demo ? "Simulated" : "Sensor"}
+          note={
+            sensor.is_demo
+              ? t("actionPlan.conditions.demoSimulated")
+              : t("actionPlan.conditions.sensor")
+          }
           demo={sensor.is_demo}
         />
       )}
@@ -260,6 +274,7 @@ function ConditionsStrip({ weather, sensor }) {
 }
 
 function CondTile({ icon, label, value, note, warn = false, demo = false }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl border border-[#E0E8E2] bg-white p-3">
       <div className="flex items-center gap-1.5 mb-1">
@@ -282,7 +297,7 @@ function CondTile({ icon, label, value, note, warn = false, demo = false }) {
           demo ? "text-[#D99A2B]" : "text-[#9AA79F]"
         }`}
       >
-        {demo ? "Demo / simulated" : note}
+        {demo ? t("actionPlan.conditions.demoSimulated") : note}
       </p>
     </div>
   );
@@ -290,6 +305,7 @@ function CondTile({ icon, label, value, note, warn = false, demo = false }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function FarmActionPlan({ openModule }) {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useApi("/api/dashboard/plan");
   const [expanded, setExpanded] = useState(false);
 
@@ -311,9 +327,9 @@ export default function FarmActionPlan({ openModule }) {
     return (
       <div className="rounded-[20px] bg-[#FCE9E5] p-4">
         <p className="text-[11px] font-bold text-[#9D4C3E]">
-          Could not load action plan.{" "}
+          {t("actionPlan.couldNotLoad")}{" "}
           <button onClick={refetch} className="underline">
-            Retry
+            {t("actionPlan.retry")}
           </button>
         </p>
       </div>
@@ -332,7 +348,7 @@ export default function FarmActionPlan({ openModule }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-bold text-[#5D7B6B] uppercase tracking-[.08em]">
-            Today's action plan
+            {t("actionPlan.todayPlan")}
           </p>
           <p className="text-[12px] font-semibold text-[#3A5A4A] mt-0.5">
             {data.summary}
@@ -340,7 +356,7 @@ export default function FarmActionPlan({ openModule }) {
         </div>
         {data.critical_count > 0 && (
           <span className="rounded-full bg-[#E8493B] px-3 py-1 text-[10px] font-extrabold text-white">
-            {data.critical_count} critical
+            {t("actionPlan.criticalCount", { count: data.critical_count })}
           </span>
         )}
       </div>
@@ -355,18 +371,17 @@ export default function FarmActionPlan({ openModule }) {
       {actions.length === 0 && (
         <div className="rounded-[20px] border border-dashed border-[#B0C9B8] p-6 text-center">
           <p className="text-[12px] font-bold text-[#3C5C49]">
-            No recommendations yet
+            {t("actionPlan.noRecommendations")}
           </p>
           <p className="mt-1.5 text-[10px] text-[#7B8C82]">
-            Add a farm with a location, then connect a sensor or run a
-            prediction to get personalised advice.
+            {t("actionPlan.noRecommendationsBody")}
           </p>
           <button
             onClick={() => openModule?.("farm-management")}
             className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#216B45] px-4 py-2 text-[11px] font-bold text-white"
           >
             <ModuleIcon name="farm" size={14} />
-            Add a farm
+            {t("actionPlan.addFarm")}
           </button>
         </div>
       )}
@@ -385,7 +400,7 @@ export default function FarmActionPlan({ openModule }) {
           onClick={() => setExpanded(true)}
           className="w-full rounded-[20px] border border-[#DDE6DF] bg-white/60 py-3 text-[11px] font-bold text-[#216B45] hover:bg-white transition"
         >
-          Show {hiddenCount} more action{hiddenCount > 1 ? "s" : ""} ↓
+          {t("actionPlan.showMore", { count: hiddenCount })}
         </button>
       )}
 
@@ -394,10 +409,11 @@ export default function FarmActionPlan({ openModule }) {
 
       {data.generated_at && (
         <p className="text-[9px] text-[#9AA79F] text-right">
-          Plan generated:{" "}
-          {new Date(data.generated_at).toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
+          {t("actionPlan.planGenerated", {
+            time: new Date(data.generated_at).toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           })}
         </p>
       )}

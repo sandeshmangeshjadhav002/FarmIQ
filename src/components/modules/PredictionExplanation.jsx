@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiPost } from "@/lib/apiClient";
 import ModuleIcon from "./ModuleIcon";
 
@@ -27,6 +28,7 @@ export default function PredictionExplanation({
   farmName,
   onAsk,
 }) {
+  const { t } = useTranslation();
   const [state, setState] = useState("idle"); // idle | loading | done | error
   const [answer, setAnswer] = useState("");
   const [errorNote, setErrorNote] = useState("");
@@ -79,10 +81,10 @@ export default function PredictionExplanation({
         setState("error");
         setErrorNote(
           err?.status === 503
-            ? "The AI assistant is not available right now, so this prediction has no explanation yet."
+            ? t("predictionExplanation.errors.unavailable")
             : err?.status === 401
-            ? "Sign in again to see the explanation for this prediction."
-            : "Could not reach the AI assistant for an explanation.",
+            ? t("predictionExplanation.errors.sessionExpired")
+            : t("predictionExplanation.errors.unreachable"),
         );
       });
 
@@ -103,10 +105,10 @@ export default function PredictionExplanation({
           <ModuleIcon name="sparkles" size={15} />
         </span>
         <h3 className="flex-1 text-[12px] font-extrabold text-[#213D2F]">
-          What this means
+          {t("predictionExplanation.title")}
         </h3>
         <span className="rounded-full bg-[#F0F5F1] px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.06em] text-[#5C7A67]">
-          AI explanation
+          {t("predictionExplanation.badge")}
         </span>
       </div>
 
@@ -126,14 +128,13 @@ export default function PredictionExplanation({
         <div className="mt-3">
           <p className="text-[10px] leading-5 text-[#8A6D2B]">{errorNote}</p>
           <p className="mt-1 text-[9px] text-[#9AA79F]">
-            The prediction above is unchanged — it comes from the model, not
-            from the assistant.
+            {t("predictionExplanation.unchanged")}
           </p>
           <button
             onClick={() => setAttempt((n) => n + 1)}
             className="mt-2 text-[10px] font-bold text-[#216B45] underline"
           >
-            Try the explanation again
+            {t("predictionExplanation.tryAgain")}
           </button>
         </div>
       )}
@@ -147,7 +148,9 @@ export default function PredictionExplanation({
           {sections.map((s, i) => (
             <div key={`${s.label}-${i}`}>
               <dt className="text-[9px] font-extrabold uppercase tracking-[.08em] text-[#7A8C82]">
-                {s.label}
+                {titleCase(
+                  t(`predictionExplanation.labels.${labelKeyFor(s.label)}`),
+                )}
               </dt>
               <dd className="mt-0.5 text-[11px] leading-5 text-[#42594C]">
                 {s.text}
@@ -160,14 +163,14 @@ export default function PredictionExplanation({
       {state === "done" && (
         <div className="mt-3 flex items-center justify-between border-t border-[#EDF1EE] pt-2.5">
           <p className="text-[9px] text-[#9AA79F]">
-            Explanation only — the prediction is the model's own output.
+            {t("predictionExplanation.footerNote")}
           </p>
           {onAsk && (
             <button
               onClick={onAsk}
               className="text-[10px] font-bold text-[#216B45]"
             >
-              Ask more →
+              {t("predictionExplanation.askMore")}
             </button>
           )}
         </div>
@@ -178,6 +181,17 @@ export default function PredictionExplanation({
 
 // The labels we ask the assistant to use, in the order they should be shown.
 const CANONICAL = ["Explanation", "Key factors", "Next step", "Limitations"];
+
+// Translation key suffix for each canonical label, in the same order.
+const LABEL_KEYS = ["explanation", "keyFactors", "nextStep", "limitations"];
+
+/** Map a parsed section label to its translation key suffix. */
+function labelKeyFor(label) {
+  const i = CANONICAL.findIndex(
+    (c) => c.toLowerCase() === String(label).toLowerCase(),
+  );
+  return LABEL_KEYS[i] ?? "explanation";
+}
 
 /**
  * Split the assistant's reply into labelled sections.

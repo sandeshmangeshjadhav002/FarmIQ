@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { API_BASE_URL } from "@/config/api";
 import Icon from "@/components/common/Icon";
@@ -15,6 +16,7 @@ import { PrimaryButton, SecondaryButton } from "@/components/common/Button";
  * @param {Function} props.onLogin   - Called with user data on successful login.
  */
 export default function LoginScreen({ navigate, onLogin }) {
+  const { t } = useTranslation();
   const [countryCode, setCountryCode] = useState("+91");
   const [mobile,      setMobile]      = useState("");
   const [password,    setPassword]    = useState("");
@@ -31,11 +33,11 @@ export default function LoginScreen({ navigate, onLogin }) {
   const validate = () => {
     const errs = {};
     if (!mobile.trim())
-      errs.mobile = "Mobile number is required.";
+      errs.mobile = t("auth.login.errors.mobileRequired");
     else if (!/^\d{7,15}$/.test(mobile.trim()))
-      errs.mobile = "Enter a valid mobile number (7–15 digits).";
+      errs.mobile = t("auth.login.errors.mobileInvalid");
     if (!password)
-      errs.password = "Password is required.";
+      errs.password = t("auth.login.errors.passwordRequired");
     return errs;
   };
 
@@ -63,16 +65,19 @@ export default function LoginScreen({ navigate, onLogin }) {
       const data = await res.json();
 
       if (res.ok) {
-        showToast("success", `Welcome back, ${data.full_name}!`);
+        showToast("success", t("auth.login.toast.welcome", { name: data.full_name }));
         setTimeout(() => onLogin(data), 1500);
         return; // keep the button disabled until the redirect happens
       } else if (res.status === 401) {
-        setErrors({ password: "Incorrect mobile number or password." });
+        setErrors({ password: t("auth.login.errors.invalidCredentials") });
       } else {
-        showToast("error", data.detail ?? "Login failed. Please try again.");
+        showToast(
+          "error",
+          data.detail ?? t("auth.login.toast.failed"),
+        );
       }
     } catch {
-      showToast("error", "Unable to connect to the server. Check your connection.");
+      showToast("error", t("auth.login.toast.connect"));
     }
     setLoading(false);
   };
@@ -120,12 +125,14 @@ export default function LoginScreen({ navigate, onLogin }) {
 
         {/* hero */}
         <div className="mb-7">
-          <p className="mb-1 text-[13px] font-bold text-[#4D7A61]">Welcome back</p>
+          <p className="mb-1 text-[13px] font-bold text-[#4D7A61]">
+            {t("auth.login.welcomeBack")}
+          </p>
           <h1 className="text-[28px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#17392A]">
-            Sign in to FarmIQ
+            {t("auth.login.title")}
           </h1>
           <p className="mt-2 text-[13px] leading-5 text-[#718279]">
-            Access your farm dashboard and AI-powered insights.
+            {t("auth.login.subtitle")}
           </p>
         </div>
 
@@ -135,13 +142,13 @@ export default function LoginScreen({ navigate, onLogin }) {
           {/* mobile number */}
           <div className="mb-4">
             <label className="mb-1.5 block text-[12px] font-bold uppercase tracking-[.08em] text-[#5A7266]">
-              Mobile Number
+              {t("auth.login.mobileLabel")}
             </label>
             <div className="flex gap-2">
               {/* country code selector */}
               <div className="relative flex-shrink-0">
                 <select
-                  aria-label="Country code"
+                  aria-label={t("auth.login.countryCodeAria")}
                   className="h-13 appearance-none rounded-2xl border border-[#DFE7E1] bg-white pl-3 pr-8 text-[13px] font-semibold text-[#1E382B] shadow-[0_3px_12px_rgba(31,57,44,.04)] outline-none focus:border-[#216B45]"
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
@@ -160,12 +167,12 @@ export default function LoginScreen({ navigate, onLogin }) {
               <label className="flex flex-1 h-13 items-center gap-3 rounded-2xl border border-[#DFE7E1] bg-white px-4 shadow-[0_3px_12px_rgba(31,57,44,.04)]">
                 <Icon name="phone" size={19} className="shrink-0 text-[#7A8E82]" />
                 <input
-                  aria-label="Mobile number"
+                  aria-label={t("auth.login.mobileAria")}
                   className="min-w-0 flex-1 bg-transparent text-[14px] text-[#1E382B] outline-none placeholder:text-[#8A9A91]"
                   inputMode="numeric"
                   maxLength={10}
                   size={10}
-                  placeholder="9876543210"
+                  placeholder={t("auth.login.mobilePlaceholder")}
                   type="tel"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -183,19 +190,19 @@ export default function LoginScreen({ navigate, onLogin }) {
           {/* password */}
           <div className="mb-2">
             <label className="mb-1.5 block text-[12px] font-bold uppercase tracking-[.08em] text-[#5A7266]">
-              Password
+              {t("auth.login.passwordLabel")}
             </label>
             <div className="relative">
               <TextInput
                 icon="lock"
                 type={showPass ? "text" : "password"}
-                placeholder="Your password"
+                placeholder={t("auth.login.passwordPlaceholder")}
                 value={password}
                 onChange={setPassword}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
               <button
-                aria-label={showPass ? "Hide password" : "Show password"}
+                aria-label={showPass ? t("auth.login.hidePassword") : t("auth.login.showPassword")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A9A91]"
                 onClick={() => setShowPass((p) => !p)}
                 type="button"
@@ -220,12 +227,12 @@ export default function LoginScreen({ navigate, onLogin }) {
             {loading ? (
               <span className="flex items-center gap-2">
                 <Spinner />
-                Signing in…
+                {t("auth.login.signingIn")}
               </span>
             ) : (
               <>
                 <Icon name="leaf" size={18} />
-                Sign In
+                {t("auth.login.signIn")}
               </>
             )}
           </PrimaryButton>
@@ -234,24 +241,26 @@ export default function LoginScreen({ navigate, onLogin }) {
         {/* divider */}
         <div className="my-5 flex items-center gap-3">
           <div className="h-px flex-1 bg-[#E6EBE7]" />
-          <span className="text-[11px] font-semibold text-[#9EAD9D]">or</span>
+          <span className="text-[11px] font-semibold text-[#9EAD9D]">
+            {t("auth.login.divider")}
+          </span>
           <div className="h-px flex-1 bg-[#E6EBE7]" />
         </div>
 
         {/* continue without account */}
-        <SecondaryButton onClick={() => onLogin({ full_name: "Guest", email: "—", mobile: "—", role: "farmer", created_at: null })}>
+        <SecondaryButton onClick={() => onLogin({ full_name: t("auth.login.guestName"), email: "—", mobile: "—", role: "farmer", created_at: null })}>
           <Icon name="sparkles" size={16} />
-          Continue without account
+          {t("auth.login.continueAsGuest")}
         </SecondaryButton>
 
         {/* register link */}
         <p className="mt-6 text-center text-[13px] text-[#718279]">
-          Don&apos;t have an account?{" "}
+          {t("auth.login.noAccount")}{" "}
           <button
             className="font-bold text-[#216B45] underline-offset-2 hover:underline"
             onClick={() => navigate("register")}
           >
-            Create Account
+            {t("auth.login.createAccount")}
           </button>
         </p>
       </div>

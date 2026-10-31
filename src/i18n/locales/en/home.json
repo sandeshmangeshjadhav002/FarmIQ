@@ -1,0 +1,79 @@
+{
+  "home": {
+    "headline": "What needs your attention today?",
+    "askFarmIQ": "Ask FarmIQ",
+    "yourFarmToday": "Your farm today",
+    "stats": {
+      "farms": "Farms",
+      "sensorsOnline": "Sensors online",
+      "predictions": "Predictions"
+    },
+    "unreadAlerts_one": "{{count}} unread alert",
+    "unreadAlerts_other": "{{count}} unread alerts",
+    "alertsFallback": "Weather, sensor and market updates",
+    "aiShortcuts": "AI Advisor shortcuts",
+    "recentPredictions": "Recent predictions",
+    "prediction": {
+      "crop": "Recommended crop: {{value}}",
+      "fertilizer": "Fertilizer: {{value}}",
+      "irrigationNow": "Irrigation: water now",
+      "irrigationNone": "Irrigation: not needed",
+      "yield": "Yield estimate: {{value}} t/ha",
+      "generic": "Prediction"
+    },
+    "setup": {
+      "title": "Set up your farm",
+      "body": "FarmIQ needs a farm before it can give advice. This takes a minute.",
+      "step1": "Add your farm",
+      "step2": "Connect a sensor or add soil readings",
+      "step3": "Get your first AI recommendation",
+      "addFirstFarm": "Add your first farm"
+    }
+  },
+  "actionPlan": {
+    "priority": {
+      "critical": "Critical",
+      "high": "High",
+      "moderate": "Moderate",
+      "low": "Low"
+    },
+    "category": {
+      "irrigation": "irrigation",
+      "soil": "soil",
+      "fertilizer": "fertilizer",
+      "weather": "weather",
+      "data_quality": "data quality"
+    },
+    "todayPlan": "Today's action plan",
+    "criticalCount": "{{count}} critical",
+    "hideEvidence": "Hide evidence ▲",
+    "showEvidence": "Why this? Show evidence ▼",
+    "openTool": "Open {{name}}",
+    "missing": {
+      "title": "What this plan could not assess",
+      "noSensor": "No sensor readings — irrigation advice uses weather and crop stage only.",
+      "noWeather": "No weather data — heat, frost and heavy-rain risks were not assessed.",
+      "noCrop": "No current crop set — crop-specific steps are limited.",
+      "noLocation": "Farm location not set — local weather may be unavailable."
+    },
+    "conditions": {
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "rain7d": "7-day forecast rain",
+      "soilMoisture": "Soil moisture",
+      "soilTemp": "Soil temp",
+      "current": "Current",
+      "notConfirmed": "Not confirmed",
+      "sensor": "Sensor",
+      "demoSimulated": "Demo / simulated"
+    },
+    "couldNotLoad": "Could not load action plan.",
+    "retry": "Retry",
+    "noRecommendations": "No recommendations yet",
+    "noRecommendationsBody": "Add a farm with a location, then connect a sensor or run a prediction to get personalised advice.",
+    "addFarm": "Add a farm",
+    "showMore_one": "Show {{count}} more action ↓",
+    "showMore_other": "Show {{count}} more actions ↓",
+    "planGenerated": "Plan generated: {{time}}"
+  }
+}

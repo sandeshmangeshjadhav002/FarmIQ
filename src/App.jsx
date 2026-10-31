@@ -1,4 +1,5 @@
 import { Suspense, useState, useCallback, useEffect, lazy } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   setAuthToken,
@@ -7,6 +8,9 @@ import {
   loadUser,
   getAuthToken,
 } from "@/lib/apiClient";
+import { LocationProvider } from "@/lib/locationStore";
+import { normalizeLanguage } from "@/i18n/language";
+import useLanguage from "@/i18n/useLanguage";
 
 import DesktopNavigation from "@/components/layout/DesktopNavigation";
 import LanguageSheet from "@/components/layout/LanguageSheet";
@@ -58,13 +62,17 @@ const RegisterScreen = lazy(() => import("@/pages/RegisterScreen"));
  * re-renders in child components that receive them as props.
  */
 export default function App() {
+  const { t } = useTranslation();
   // Restore session from localStorage on app start (survives Android restart)
   const [user, setUser] = useState(() => loadUser());
   const [screen, setScreen] = useState(() => {
     const saved = loadUser();
     return saved && getAuthToken() ? "home" : "login";
   });
-  const [language, setLanguage] = useState("English");
+  // The selected language is held by i18next (see src/i18n). ``language`` is the
+  // "en" | "mr" code; ``changeLanguage`` persists it for guests (localStorage)
+  // and mirrors it into the signed-in user's Supabase profile.
+  const { language, changeLanguage } = useLanguage();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState("crop-recommendation");
   // Where the hardware/UI back button returns to from an open module. Modules
@@ -89,10 +97,13 @@ export default function App() {
 
   const openLanguages = useCallback(() => setLanguageOpen(true), []);
 
-  const handleLanguageSelect = useCallback((next) => {
-    setLanguage(next);
-    setLanguageOpen(false);
-  }, []);
+  const handleLanguageSelect = useCallback(
+    (next) => {
+      changeLanguage(next);
+      setLanguageOpen(false);
+    },
+    [changeLanguage],
+  );
 
   /** Called by LoginScreen / RegisterScreen once auth succeeds. */
   const handleLogin = useCallback(
@@ -101,9 +112,15 @@ export default function App() {
       setAuthToken(userData?.access_token);
       saveUser(userData);
       setUser(userData);
+      // A signed-in user's saved account preference wins over the device
+      // default (but only if it is one of the two supported languages).
+      const accountLanguage = normalizeLanguage(userData?.language);
+      if (accountLanguage && accountLanguage !== language) {
+        changeLanguage(accountLanguage);
+      }
       navigate("home");
     },
-    [navigate],
+    [navigate, language, changeLanguage],
   );
 
   /** Log out — clear user data and return to login. */
@@ -176,14 +193,14 @@ export default function App() {
   // ── Auth screens (no desktop nav / bottom nav) ────────────────────────────
   if (screen === "login") {
     return (
-      <Suspense fallback={<ScreenLoader label="Loading sign-in…" />}>
+      <Suspense fallback={<ScreenLoader label={t("common.loadingSignIn")} />}>
         <LoginScreen navigate={navigate} onLogin={handleLogin} />
       </Suspense>
     );
   }
   if (screen === "register") {
     return (
-      <Suspense fallback={<ScreenLoader label="Loading sign-up…" />}>
+      <Suspense fallback={<ScreenLoader label={t("common.loadingSignUp")} />}>
         <RegisterScreen navigate={navigate} onLogin={handleLogin} />
       </Suspense>
     );
@@ -198,6 +215,7 @@ export default function App() {
       : screen;
 
   return (
+    <LocationProvider>
     <div
       className={`relative min-h-dvh bg-[#E9EFEA] bg-[url('/app-bg.jpg')] bg-cover bg-center bg-fixed ${
         IS_NATIVE
@@ -282,7 +300,7 @@ export default function App() {
                 moduleKey={selectedModule}
                 onAsk={() => navigate("chat")}
                 onBack={() => navigate(moduleBack)}
-                onLanguage={setLanguage}
+                onLanguage={changeLanguage}
                 user={user}
               />
             </ScreenShell>
@@ -311,5 +329,6 @@ export default function App() {
         )}
       </div>
     </div>
+    </LocationProvider>
   );
 }

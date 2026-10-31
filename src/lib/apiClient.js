@@ -8,6 +8,7 @@
 // Capacitor app restarts. Sensitive note: the service-role key is never
 // stored here — this only stores the Supabase user access_token.
 import { API_BASE_URL } from "@/config/api";
+import i18n from "@/i18n";
 
 const TOKEN_KEY = "farmiq_access_token";
 const USER_KEY = "farmiq_user";
@@ -72,16 +73,13 @@ async function fetchWithTimeout(url, init, timeoutMs) {
   } catch (err) {
     if (err.name === "AbortError") {
       const timeout = new Error(
-        `The server did not respond within ${Math.round(timeoutMs / 1000)}s. ` +
-          "Please check your connection and try again.",
+        i18n.t("errors.timeout", { seconds: Math.round(timeoutMs / 1000) }),
       );
       timeout.status = 0;
       timeout.isTimeout = true;
       throw timeout;
     }
-    const offline = new Error(
-      "Cannot reach the FarmIQ server. Check your internet connection and try again.",
-    );
+    const offline = new Error(i18n.t("errors.network"));
     offline.status = 0;
     offline.isNetworkError = true;
     throw offline;
@@ -124,7 +122,9 @@ export async function apiRequest(
   }
 
   if (!res.ok) {
-    const err = new Error(data?.detail ?? `Request failed (${res.status})`);
+    const err = new Error(
+      data?.detail ?? i18n.t("errors.requestFailed", { status: res.status }),
+    );
     err.status = res.status;
     err.data = data;
     throw err;
@@ -209,7 +209,9 @@ export async function apiPostBlob(path, body) {
     } catch {
       // Non-JSON error body (e.g. a proxy error page).
     }
-    const err = new Error(detail ?? `Request failed (${res.status})`);
+    const err = new Error(
+      detail ?? i18n.t("errors.requestFailed", { status: res.status }),
+    );
     err.status = res.status;
     throw err;
   }

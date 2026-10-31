@@ -1,7 +1,8 @@
+import { useTranslation } from "react-i18next";
+
 import {
   browsableModules,
   canAccessAdminTools,
-  sectionByKey,
   sections,
 } from "@/data/modules";
 import ModuleIcon from "@/components/modules/ModuleIcon";
@@ -30,12 +31,13 @@ export default function DesktopNavigation({
   onAssistant,
   onOpen,
 }) {
+  const { t } = useTranslation();
   const visible = browsableModules(user);
   const topLevel = [
-    { key: "home", label: "Home", icon: "home" },
-    { key: "farm", label: "My Farm", icon: "farm" },
-    { key: "advisor", label: "AI Farm Advisor", icon: "sparkles" },
-    { key: "insights", label: "Insights & Analytics", icon: "chart" },
+    { key: "home", icon: "home" },
+    { key: "farm", icon: "farm" },
+    { key: "advisor", icon: "sparkles" },
+    { key: "insights", icon: "chart" },
   ];
 
   // Every section except "admin" (rendered separately, gated) that still has a
@@ -56,7 +58,7 @@ export default function DesktopNavigation({
       <div className="border-b border-white/10 p-5">
         <div className="text-[20px] font-extrabold">FarmIQ</div>
         <div className="text-[9px] uppercase tracking-[.14em] text-white/50">
-          Intelligent Farm Management
+          {t("nav.appTagline")}
         </div>
       </div>
 
@@ -73,7 +75,7 @@ export default function DesktopNavigation({
             }`}
           >
             <ModuleIcon name={item.icon} size={16} />
-            {item.label}
+            {t(`sections.${item.key}.label`)}
           </button>
         ))}
 
@@ -82,13 +84,13 @@ export default function DesktopNavigation({
           className="mb-3 mt-1 flex w-full items-center gap-3 rounded-xl bg-[#2C7B54] px-3 py-2.5 text-left text-[11px] font-bold"
         >
           <ModuleIcon name="bot" size={16} />
-          Ask FarmIQ
+          {t("nav.askFarmIQ")}
         </button>
 
         {groups.map(({ section, items }) => (
           <div key={section.key} className="mb-3">
             <p className="px-3 pb-1 pt-2 text-[8px] font-extrabold uppercase tracking-[.14em] text-white/40">
-              {section.label}
+              {t(`sections.${section.key}.label`)}
             </p>
             {items.map((item) => (
               <button
@@ -101,7 +103,7 @@ export default function DesktopNavigation({
                 }`}
               >
                 <ModuleIcon name={item.icon} size={15} />
-                {item.title}
+                {t(`modules.${item.key}.title`)}
               </button>
             ))}
           </div>
@@ -111,7 +113,7 @@ export default function DesktopNavigation({
       {showAdmin && (
         <div className="border-t border-white/10 p-3">
           <p className="px-1 pb-1 text-[8px] font-extrabold uppercase tracking-[.14em] text-white/40">
-            {sectionByKey("admin")?.label ?? "Administration"}
+            {t("sections.admin.label")}
           </p>
           {adminTools.map((item) => (
             <button
@@ -124,7 +126,7 @@ export default function DesktopNavigation({
               }`}
             >
               <ModuleIcon name={item.icon} size={15} />
-              {item.title}
+              {t(`modules.${item.key}.title`)}
             </button>
           ))}
         </div>

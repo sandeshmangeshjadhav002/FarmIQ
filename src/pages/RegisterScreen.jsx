@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { API_BASE_URL } from "@/config/api";
 import Icon from "@/components/common/Icon";
@@ -20,6 +21,8 @@ import { PrimaryButton } from "@/components/common/Button";
  * @param {Function} props.onLogin   - Called with user data on successful registration.
  */
 export default function RegisterScreen({ navigate, onLogin }) {
+  const { t } = useTranslation();
+
   // ── form fields ──────────────────────────────────────────────────────────
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -43,29 +46,29 @@ export default function RegisterScreen({ navigate, onLogin }) {
   const validate = () => {
     const errs = {};
 
-    if (!fullName.trim()) errs.fullName = "Full name is required.";
+    if (!fullName.trim()) errs.fullName = t("auth.register.errors.fullNameRequired");
     else if (fullName.trim().length < 2)
-      errs.fullName = "Name must be at least 2 characters.";
+      errs.fullName = t("auth.register.errors.fullNameShort");
 
-    if (!email.trim()) errs.email = "Email address is required.";
+    if (!email.trim()) errs.email = t("auth.register.errors.emailRequired");
     else if (
       !/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim())
     )
-      errs.email = "Please enter a valid email address (e.g. you@example.com)";
+      errs.email = t("auth.register.errors.emailInvalid");
 
-    if (!mobile.trim()) errs.mobile = "Mobile number is required.";
+    if (!mobile.trim()) errs.mobile = t("auth.register.errors.mobileRequired");
     else if (!/^\d{10}$/.test(mobile.trim()))
-      errs.mobile = "Mobile number must be exactly 10 digits.";
+      errs.mobile = t("auth.register.errors.mobileInvalid");
 
-    if (!password) errs.password = "Password is required.";
+    if (!password) errs.password = t("auth.register.errors.passwordRequired");
     else if (password.length < 8)
-      errs.password = "Password must be at least 8 characters.";
+      errs.password = t("auth.register.errors.passwordShort");
     else if (!/(?=.*[A-Z])/.test(password))
-      errs.password = "Password must contain at least one uppercase letter.";
+      errs.password = t("auth.register.errors.passwordUpper");
     else if (!/(?=.*\d)/.test(password))
-      errs.password = "Password must contain at least one number.";
+      errs.password = t("auth.register.errors.passwordNumber");
 
-    if (!agreed) errs.agreed = "You must accept the Terms and Conditions.";
+    if (!agreed) errs.agreed = t("auth.register.errors.termsRequired");
 
     return errs;
   };
@@ -97,22 +100,21 @@ export default function RegisterScreen({ navigate, onLogin }) {
       const data = await res.json();
 
       if (res.ok) {
-        showToast("success", "Account created! Taking you to your dashboard…");
+        showToast("success", t("auth.register.toast.created"));
         setTimeout(() => onLogin(data), 2000);
         return; // keep the button disabled until the redirect happens
       } else if (res.status === 409) {
-        setErrors({ email: data.detail ?? "Email is already registered." });
+        setErrors({
+          email: data.detail ?? t("auth.register.errors.emailTaken"),
+        });
       } else {
         showToast(
           "error",
-          data.detail ?? "Registration failed. Please try again.",
+          data.detail ?? t("auth.register.toast.failed"),
         );
       }
     } catch {
-      showToast(
-        "error",
-        "Unable to connect to the server. Check your connection.",
-      );
+      showToast("error", t("auth.register.toast.connect"));
     }
     setLoading(false);
   };
@@ -143,7 +145,13 @@ export default function RegisterScreen({ navigate, onLogin }) {
     return s;
   };
   const strength = getStrength();
-  const strengthLabels = ["", "Weak", "Fair", "Good", "Strong"];
+  const strengthLabels = [
+    "",
+    t("auth.register.strength.weak"),
+    t("auth.register.strength.fair"),
+    t("auth.register.strength.good"),
+    t("auth.register.strength.strong"),
+  ];
   const strengthColors = ["", "#E74C3C", "#E67E22", "#F1C40F", "#216B45"];
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -177,7 +185,7 @@ export default function RegisterScreen({ navigate, onLogin }) {
         <div className="mb-6 flex items-center justify-between">
           <Logo />
           <button
-            aria-label="Go back"
+            aria-label={t("auth.register.goBack")}
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DFE7E1] bg-white text-[#216B45] shadow-sm"
             onClick={() => navigate("login")}
           >
@@ -188,46 +196,46 @@ export default function RegisterScreen({ navigate, onLogin }) {
         {/* hero text */}
         <div className="mb-6">
           <p className="mb-1 text-[13px] font-bold text-[#4D7A61]">
-            Get started
+            {t("auth.register.getStarted")}
           </p>
           <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#17392A]">
-            Create Your FarmIQ Account
+            {t("auth.register.title")}
           </h1>
           <p className="mt-2 text-[13px] leading-5 text-[#718279]">
-            Join thousands of farmers using AI-powered insights.
+            {t("auth.register.subtitle")}
           </p>
         </div>
 
         {/* ── form card ── */}
         <div className="rounded-[24px] border border-[#E6EBE7] bg-white p-5 shadow-[0_5px_24px_rgba(31,57,44,.07)]">
           {/* full name */}
-          <Field label="Full Name" error={errors.fullName}>
+          <Field label={t("auth.register.fullName")} error={errors.fullName}>
             <TextInput
               icon="person"
-              placeholder="e.g. Ravi Kumar"
+              placeholder={t("auth.register.fullNamePlaceholder")}
               value={fullName}
               onChange={setFullName}
             />
           </Field>
 
           {/* email */}
-          <Field label="Email Address" error={errors.email}>
+          <Field label={t("auth.register.email")} error={errors.email}>
             <TextInput
               icon="mail"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t("auth.register.emailPlaceholder")}
               value={email}
               onChange={setEmail}
             />
           </Field>
 
           {/* mobile number */}
-          <Field label="Mobile Number" error={errors.mobile}>
+          <Field label={t("auth.register.mobileLabel")} error={errors.mobile}>
             <div className="flex gap-2">
               {/* country code selector */}
               <div className="relative flex-shrink-0">
                 <select
-                  aria-label="Country code"
+                  aria-label={t("auth.register.countryCodeAria")}
                   className="h-13 appearance-none rounded-2xl border border-[#DFE7E1] bg-white pl-3 pr-8 text-[13px] font-semibold text-[#1E382B] shadow-[0_3px_12px_rgba(31,57,44,.04)] outline-none focus:border-[#216B45]"
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
@@ -252,13 +260,13 @@ export default function RegisterScreen({ navigate, onLogin }) {
                   className="shrink-0 text-[#7A8E82]"
                 />
                 <input
-                  aria-label="Mobile number"
+                  aria-label={t("auth.register.mobileAria")}
                   className="min-w-0 flex-1 bg-transparent text-[14px] text-[#1E382B] outline-none placeholder:text-[#8A9A91]"
                   inputMode="numeric"
                   maxLength={10}
                   size={10}
                   pattern="\d{10}"
-                  placeholder="9876543210"
+                  placeholder={t("auth.register.mobilePlaceholder")}
                   type="tel"
                   value={mobile}
                   onChange={(e) =>
@@ -270,17 +278,17 @@ export default function RegisterScreen({ navigate, onLogin }) {
           </Field>
 
           {/* password */}
-          <Field label="Password" error={errors.password}>
+          <Field label={t("auth.register.passwordLabel")} error={errors.password}>
             <div className="relative">
               <TextInput
                 icon="lock"
                 type={showPassword ? "text" : "password"}
-                placeholder="Min. 8 chars, uppercase & number"
+                placeholder={t("auth.register.passwordPlaceholder")}
                 value={password}
                 onChange={setPassword}
               />
               <button
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? t("auth.register.hidePassword") : t("auth.register.showPassword")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A9A91]"
                 onClick={() => setShowPassword((p) => !p)}
                 type="button"
@@ -335,15 +343,15 @@ export default function RegisterScreen({ navigate, onLogin }) {
                 )}
               </span>
               <span className="text-[12px] leading-5 text-[#718279]">
-                I agree to FarmIQ's{" "}
+                {t("auth.register.termsLead")}
                 <span className="font-semibold text-[#216B45]">
-                  Terms and Conditions
-                </span>{" "}
-                and{" "}
-                <span className="font-semibold text-[#216B45]">
-                  Privacy Policy
+                  {t("auth.register.termsAndConditions")}
                 </span>
-                .
+                {t("auth.register.termsJoin")}
+                <span className="font-semibold text-[#216B45]">
+                  {t("auth.register.privacyPolicy")}
+                </span>
+                {t("auth.register.termsSuffix")}
               </span>
             </label>
             {errors.agreed && (
@@ -363,12 +371,12 @@ export default function RegisterScreen({ navigate, onLogin }) {
             {loading ? (
               <span className="flex items-center gap-2">
                 <Spinner />
-                Creating Account…
+                {t("auth.register.creatingAccount")}
               </span>
             ) : (
               <>
                 <Icon name="sparkles" size={18} />
-                Create Account
+                {t("auth.register.createAccount")}
               </>
             )}
           </PrimaryButton>
@@ -376,12 +384,12 @@ export default function RegisterScreen({ navigate, onLogin }) {
 
         {/* ── sign in link ── */}
         <p className="mt-5 text-center text-[13px] text-[#718279]">
-          Already have an account?{" "}
+          {t("auth.register.haveAccount")}{" "}
           <button
             className="font-bold text-[#216B45] underline-offset-2 hover:underline"
             onClick={() => navigate("login")}
           >
-            Sign In
+            {t("auth.register.signIn")}
           </button>
         </p>
       </div>

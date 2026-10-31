@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { apiGet } from "@/lib/apiClient";
 import { getCurrentPosition } from "@/lib/geolocation";
+import { useLocation } from "@/lib/locationStore";
 import ModuleIcon from "./ModuleIcon";
 import { ModuleButton } from "./ModuleShared";
 
@@ -32,6 +33,7 @@ export default function WeatherAssist({
   onAutofill,
   farm = null,
 }) {
+  const { location: sharedLocation, hasCoordinates: sharedHasCoords } = useLocation();
   const [location, setLocation] = useState("");
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,12 @@ export default function WeatherAssist({
   const farmPoint =
     farm?.latitude != null && farm?.longitude != null
       ? { lat: farm.latitude, lon: farm.longitude }
+      : null;
+
+  // The shared location's coordinates (from the shared location selector).
+  const sharedPoint =
+    sharedHasCoords
+      ? { lat: sharedLocation.latitude, lon: sharedLocation.longitude }
       : null;
 
   const applyAutofill = useCallback(
@@ -157,6 +165,17 @@ export default function WeatherAssist({
 
       {/* One-tap shortcuts. The farm point needs no permission and no lookup. */}
       <div className="flex flex-wrap gap-2">
+        {sharedPoint && (
+          <button
+            type="button"
+            onClick={() => load({ ...sharedPoint, origin: "shared" })}
+            disabled={loading}
+            className="flex items-center gap-1.5 rounded-full border border-[#CDEBDA] bg-[#EAF6EF] px-3 py-1.5 text-[10px] font-extrabold text-[#1D4A33] disabled:opacity-50"
+          >
+            <ModuleIcon name="pin" size={13} />
+            Use {sharedLocation.label?.slice(0, 20) || "my location"}
+          </button>
+        )}
         {farmPoint && (
           <button
             type="button"
@@ -186,6 +205,12 @@ export default function WeatherAssist({
           Using the saved point for {farm?.name ?? "this farm"} — the farm's own
           location, not where this phone is. The farm's weather is what matters
           for the field.
+        </p>
+      )}
+      {usedOrigin === "shared" && (
+        <p className="rounded-xl bg-[#EAF6EF] p-2.5 text-[9px] font-semibold leading-4 text-[#216B45]">
+          Using your shared location ({sharedLocation?.label ?? "selected"}).
+          Change it from the home screen if needed.
         </p>
       )}
       {usedOrigin === "phone" && (

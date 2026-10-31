@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import { apiPatch } from "@/lib/apiClient";
 
 /** Roles the backend accepts (mirrors VALID_ROLES in backend/app/schemas.py). */
 const ROLE_OPTIONS = [
-  { value: "farmer", label: "Farmer" },
-  { value: "farm_manager", label: "Farm Manager" },
-  { value: "agricultural_expert", label: "Agricultural Expert" },
+  { value: "farmer", labelKey: "roles.farmer" },
+  { value: "farm_manager", labelKey: "roles.farm_manager" },
+  { value: "agricultural_expert", labelKey: "roles.agricultural_expert" },
 ];
 
 /**
@@ -26,6 +27,7 @@ const ROLE_OPTIONS = [
  * @param {Function} props.onUpdate   - Called with updated user object after save.
  */
 export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name ?? "");
   const [role, setRole] = useState(user?.role ?? "farmer");
@@ -39,7 +41,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
 
   const handleSave = async () => {
     if (!fullName.trim() || fullName.trim().length < 2) {
-      showToast("error", "Name must be at least 2 characters.");
+      showToast("error", t("profile.nameTooShort"));
       return;
     }
     setSaving(true);
@@ -50,10 +52,10 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
       if (role !== user?.role) payload.role = role;
       const updated = await apiPatch("/api/users/me", payload);
       onUpdate({ ...user, ...updated, full_name: fullName.trim(), role });
-      showToast("success", "Profile updated.");
+      showToast("success", t("profile.updated"));
       setEditing(false);
     } catch (err) {
-      showToast("error", err.message || "Could not update profile. Reverting.");
+      showToast("error", err.message || t("profile.updateFailed"));
       setFullName(user?.full_name ?? "");
       setRole(user?.role ?? "farmer");
     } finally {
@@ -70,6 +72,10 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
   /** Format a role key like "farm_manager" → "Farm Manager" */
   const formatRole = (value = "") =>
     value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  /** Localised role label, falling back to the derived English label. */
+  const roleLabel = (value) =>
+    t(`roles.${value}`, { defaultValue: formatRole(value) });
 
   /** Format ISO date to readable string */
   const formatDate = (iso = "") => {
@@ -106,7 +112,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Profile"
+        aria-label={t("profile.aria")}
         className="absolute bottom-0 left-0 right-0 z-50 rounded-t-[28px] bg-white/70 shadow-[0_-8px_40px_rgba(26,57,40,.18)] backdrop-blur-2xl border-t border-white/30 animate-slide-up"
       >
         {/* drag handle */}
@@ -135,11 +141,11 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
           {/* header row */}
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-[18px] font-extrabold tracking-tight text-[#17392A]">
-              My Profile
+              {t("profile.title")}
             </h2>
             <button
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t("common.close")}
               className="grid h-8 w-8 place-items-center rounded-full bg-[#EBF1EC] text-[#3F5A4B]"
             >
               <Icon name="plus" size={16} className="rotate-45" />
@@ -159,7 +165,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSave()}
-                  aria-label="Full name"
+                  aria-label={t("profile.fullNameAria")}
                 />
               ) : (
                 <p className="truncate text-[16px] font-extrabold text-[#17392A]">
@@ -167,13 +173,13 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                 </p>
               )}
               <p className="mt-0.5 text-[11px] font-semibold text-[#5A7A68]">
-                {formatRole(user?.role)}
+                {roleLabel(user?.role)}
               </p>
             </div>
             {!editing && (
               <button
                 onClick={() => setEditing(true)}
-                aria-label="Edit name"
+                aria-label={t("profile.editName")}
                 className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#EBF4EE] text-[#216B45]"
               >
                 <Icon name="edit" size={16} />
@@ -190,21 +196,25 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                 className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#216B45] py-2.5 text-[13px] font-bold text-white disabled:opacity-60"
               >
                 {saving ? <Spinner /> : <Icon name="check" size={15} />}
-                Save
+                {t("common.save")}
               </button>
               <button
                 onClick={handleCancel}
                 className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#DDE8DF] bg-white py-2.5 text-[13px] font-bold text-[#3F5A4B]"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           )}
 
           {/* info rows */}
           <div className="mb-5 divide-y divide-white/20 rounded-[20px] border border-white/30 bg-white/40 shadow-[0_4px_16px_rgba(31,57,44,.04)] backdrop-blur-md">
-            <InfoRow icon="mail" label="Email" value={user?.email} />
-            <InfoRow icon="phone" label="Mobile" value={user?.mobile} />
+            <InfoRow icon="mail" label={t("profile.email")} value={user?.email} />
+            <InfoRow
+              icon="phone"
+              label={t("profile.mobile")}
+              value={user?.mobile}
+            />
             {editing ? (
               <div className="flex items-center gap-3 px-4 py-3">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EBF4EE] text-[#4D7A61]">
@@ -215,7 +225,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                     htmlFor="profile-role"
                     className="text-[10px] font-bold uppercase tracking-[.08em] text-[#8A9E92]"
                   >
-                    Role
+                    {t("profile.role")}
                   </label>
                   <select
                     id="profile-role"
@@ -225,26 +235,25 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
                   >
                     {ROLE_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.labelKey)}
                       </option>
                     ))}
                   </select>
                   <p className="mt-1 text-[9px] leading-4 text-[#8A9E92]">
-                    Everyone starts as Farmer. Change this if you manage farms
-                    or advise farmers.
+                    {t("profile.roleHint")}
                   </p>
                 </div>
               </div>
             ) : (
               <InfoRow
                 icon="shield"
-                label="Role"
-                value={formatRole(user?.role)}
+                label={t("profile.role")}
+                value={roleLabel(user?.role)}
               />
             )}
             <InfoRow
               icon="clock"
-              label="Member since"
+              label={t("profile.memberSince")}
               value={formatDate(user?.created_at)}
             />
           </div>
@@ -255,7 +264,7 @@ export default function ProfilePanel({ user, onClose, onLogout, onUpdate }) {
             className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-[#F5C6C2] bg-[#FEF3F2] py-3.5 text-[14px] font-bold text-[#C0392B] transition hover:bg-[#fde8e6] active:scale-[.98]"
           >
             <Icon name="logout" size={18} />
-            Log Out
+            {t("profile.logOut")}
           </button>
         </div>
       </div>

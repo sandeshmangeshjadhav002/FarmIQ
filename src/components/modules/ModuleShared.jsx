@@ -1,13 +1,16 @@
+import { useTranslation } from "react-i18next";
+
 import ModuleIcon from "./ModuleIcon";
 
 /**
  * Small amber badge indicating demonstration or unverified data.
  */
-export function DemoBadge({ status = "Demonstration data" }) {
+export function DemoBadge({ status }) {
+  const { t } = useTranslation();
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF5DE] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[#916112]">
       <span className="h-1.5 w-1.5 rounded-full bg-[#D99A2B]" />
-      {status}
+      {status ?? t("moduleShared.demoBadge")}
     </span>
   );
 }
@@ -58,6 +61,11 @@ export function Field({ label, value, onChange, placeholder, type = "text" }) {
 
 /**
  * Labelled select input for module forms.
+ *
+ * ``options`` accepts either plain strings (used for model category values such
+ * as crop/soil types, which must be sent to the API unchanged) or
+ * ``{ value, label }`` objects when the visible label differs from the stored
+ * value — for example the area unit "Acres" shown as "एकर" in Marathi.
  */
 export function SelectField({ label, value, onChange, options }) {
   return (
@@ -70,9 +78,16 @@ export function SelectField({ label, value, onChange, options }) {
         onChange={(e) => onChange(e.target.value)}
         className="h-11 w-full rounded-xl border border-[#DDE6DF] bg-white px-3 text-[12px] font-semibold text-[#203B2D] outline-none"
       >
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
+        {options.map((option) => {
+          const isObject = typeof option === "object" && option !== null;
+          const optionValue = isObject ? option.value : option;
+          const optionLabel = isObject ? option.label : option;
+          return (
+            <option key={optionValue} value={optionValue}>
+              {optionLabel}
+            </option>
+          );
+        })}
       </select>
     </label>
   );

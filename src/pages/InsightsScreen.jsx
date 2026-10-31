@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import ScreenShell from "@/components/layout/ScreenShell";
 import { canAccessAdminTools, moduleByKey } from "@/data/modules";
@@ -15,6 +16,7 @@ const TOOLS = ["yield", "market", "reports"];
  * rendered instead of a zero-valued card.
  */
 export default function InsightsScreen({ navigate, openModule, user }) {
+  const { t } = useTranslation();
   const { data: predictions, loading } = useApi("/api/predictions?limit=3");
   const total = predictions?.total ?? 0;
 
@@ -31,13 +33,13 @@ export default function InsightsScreen({ navigate, openModule, user }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("home")}
-              aria-label="Back"
+              aria-label={t("common.back")}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DFE7E1] bg-white text-[#3F5A4B] active:scale-95"
             >
               <Icon name="arrow" size={18} className="rotate-180" />
             </button>
             <h1 className="flex-1 text-[22px] font-extrabold tracking-[-0.04em] text-[#17392A]">
-              Measure your farm
+              {t("insights.headline")}
             </h1>
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#E5F1E8] text-[#216B45]">
               <Icon name="chart" size={22} />
@@ -56,14 +58,14 @@ export default function InsightsScreen({ navigate, openModule, user }) {
                 {total}
               </b>
               <span className="mt-1 block text-[10px] font-semibold text-[#7B8C82]">
-                prediction{total === 1 ? "" : "s"} saved on your account
+                {t("insights.predictionSaved", { count: total })}
               </span>
             </div>
           </div>
         )}
 
         <h2 className="mb-3 text-[15px] font-extrabold text-[#1D382A]">
-          Analysis tools
+          {t("insights.analysisTools")}
         </h2>
         <div className="grid grid-cols-2 gap-3">
           {TOOLS.map((key) => {
@@ -82,10 +84,10 @@ export default function InsightsScreen({ navigate, openModule, user }) {
                   <Icon name={info?.icon ?? "chart"} size={20} />
                 </span>
                 <span className="block text-[13px] font-bold text-[#1D382A]">
-                  {info?.title ?? key}
+                  {t(`modules.${key}.title`)}
                 </span>
                 <span className="mt-1 block text-[10px] leading-4 text-[#7C8E84]">
-                  {info?.short}
+                  {t(`modules.${key}.short`)}
                 </span>
               </button>
             );
@@ -102,10 +104,10 @@ export default function InsightsScreen({ navigate, openModule, user }) {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[13px] font-extrabold text-[#21412F]">
-              Prediction history
+              {t("insights.predictionHistory")}
             </span>
             <span className="mt-1 block text-[10px] text-[#718279]">
-              Every past prediction, searchable
+              {t("insights.predictionHistoryBody")}
             </span>
           </span>
           <Icon name="chevron" size={16} className="text-[#216B45]" />
@@ -115,18 +117,17 @@ export default function InsightsScreen({ navigate, openModule, user }) {
         {!loading && total === 0 && (
           <div className="mt-7 rounded-[20px] border border-dashed border-[#B0C9B8] p-6 text-center">
             <p className="text-[12px] font-bold text-[#3C5C49]">
-              No predictions yet
+              {t("insights.noPredictions")}
             </p>
             <p className="mt-1.5 text-[10px] leading-5 text-[#7B8C82]">
-              Run a crop, fertilizer, irrigation or yield prediction to start
-              building your farm's history.
+              {t("insights.noPredictionsBody")}
             </p>
             <button
               onClick={() => navigate("advisor")}
               className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#216B45] px-4 py-2 text-[11px] font-bold text-white"
             >
               <Icon name="sparkles" size={14} />
-              Open AI Farm Advisor
+              {t("insights.openAdvisor")}
             </button>
           </div>
         )}
@@ -136,23 +137,25 @@ export default function InsightsScreen({ navigate, openModule, user }) {
           <div className="mt-7">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[15px] font-extrabold text-[#1D382A]">
-                Model evaluation
+                {t("insights.modelEvaluation")}
               </h2>
               <button
                 onClick={() => openModule("mlops")}
                 className="text-[11px] font-bold text-[#216B45]"
               >
-                Full report
+                {t("insights.fullReport")}
               </button>
             </div>
             <div className="rounded-[20px] border border-[#E0E8E2] bg-white p-4">
               <p className="text-[10px] leading-5 text-[#718279]">
-                Real held-out metrics from{" "}
+                {t("insights.metricsPrefix")}
                 <code className="text-[9px]">
                   ml/reports/evaluation_report.json
                 </code>
                 {evaluation?.evaluation_date
-                  ? ` · evaluated ${evaluation.evaluation_date}`
+                  ? t("insights.evaluatedOn", {
+                      date: evaluation.evaluation_date,
+                    })
                   : ""}
               </p>
               <div className="mt-3 space-y-2">
@@ -162,22 +165,28 @@ export default function InsightsScreen({ navigate, openModule, user }) {
                     className="flex items-center justify-between border-t border-[#EDF1EE] pt-2 first:border-0 first:pt-0"
                   >
                     <span className="text-[11px] font-bold capitalize text-[#294234]">
-                      {d.domain}
+                      {t(`insights.domain.${d.domain}`, {
+                        defaultValue: d.domain,
+                      })}
                     </span>
                     <span className="text-right text-[10px] text-[#7B8C82]">
                       {!d.available
-                        ? "Not available"
+                        ? t("insights.notAvailable")
                         : d.accuracy != null
-                        ? `accuracy ${(d.accuracy * 100).toFixed(1)}%`
+                        ? t("insights.accuracy", {
+                            value: (d.accuracy * 100).toFixed(1),
+                          })
                         : d.r2_log != null
-                        ? `R² (log) ${Number(d.r2_log).toFixed(3)}`
+                        ? t("insights.r2log", {
+                            value: Number(d.r2_log).toFixed(3),
+                          })
                         : "—"}
                     </span>
                   </div>
                 ))}
                 {!evaluation && (
                   <p className="text-[10px] text-[#9AA79F]">
-                    Loading stored metrics…
+                    {t("insights.loadingMetrics")}
                   </p>
                 )}
               </div>

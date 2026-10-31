@@ -30,6 +30,7 @@
  *           isNative } = useSpeech(langCode)
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { apiPostBlob, apiUpload } from "@/lib/apiClient";
 
@@ -203,6 +204,7 @@ function voiceCanRead(voice, text) {
 // Hook
 // ─────────────────────────────────────────────────────────────────────────────
 export default function useSpeech(langCode = "mr") {
+  const { t } = useTranslation();
   const bcp47 = LANG_MAP[langCode] || "mr-IN";
 
   const [transcript, setTranscript] = useState("");
@@ -286,7 +288,7 @@ export default function useSpeech(langCode = "mr") {
       };
       audio.onended = () => finish(null);
       audio.onerror = () =>
-        finish(new Error("The browser could not play the audio."));
+        finish(new Error(t("voice.errors.audioPlayback")));
       serverAudioRef.current = { audio, finish };
       audio.play().catch(finish);
     });
@@ -313,7 +315,7 @@ export default function useSpeech(langCode = "mr") {
           text: part,
           language: langKey,
         });
-        if (!blob.size) throw new Error("The server returned no audio.");
+        if (!blob.size) throw new Error(t("voice.errors.serverNoAudio"));
         await _playServerAudio(blob);
       }
     } catch (err) {
@@ -322,15 +324,13 @@ export default function useSpeech(langCode = "mr") {
         serverAbortRef.current = false;
         return true; // the user pressed Stop — not a failure
       }
-      setTtsError(
-        err?.message || "Could not play the spoken answer. Please try again.",
-      );
+      setTtsError(err?.message || t("voice.errors.speakFailed"));
       return false;
     }
     serverAbortRef.current = false;
     setSpeaking(false);
     return true;
-  }, []);
+  }, [t]);
 
   // ── STT: server-side transcription of recorded audio (Groq Whisper) ──────
   const _uploadForTranscription = useCallback(
@@ -349,21 +349,16 @@ export default function useSpeech(langCode = "mr") {
         const data = await apiUpload("/api/voice/transcribe", form);
         const text = (data?.text || "").trim();
         if (text) setTranscript(text);
-        else setSttError("No speech detected. Please try again.");
+        else setSttError(t("voice.errors.noSpeech"));
       } catch (err) {
         if (err?.status === 503) {
-          setSttError(
-            "Voice transcription is not configured on the server. Please type your message.",
-          );
+          setSttError(t("voice.errors.transcribeUnconfigured"));
         } else {
-          setSttError(
-            err?.message ||
-              "Could not transcribe your speech. Please try again or type your message.",
-          );
+          setSttError(err?.message || t("voice.errors.transcribeFailed"));
         }
       }
     },
-    [langCode],
+    [langCode, t],
   );
 
   /**
@@ -373,9 +368,7 @@ export default function useSpeech(langCode = "mr") {
    */
   const _recordAndTranscribe = useCallback(async () => {
     if (!HAS_MEDIA_RECORDER) {
-      setSttError(
-        "Speech recognition is not available in this browser. Use Chrome or Edge, or type your message.",
-      );
+      setSttError(t("voice.errors.sttUnavailable"));
       return;
     }
 
@@ -410,7 +403,7 @@ export default function useSpeech(langCode = "mr") {
           type: chunks[0]?.type || mimeType || "audio/webm",
         });
         if (!blob.size) {
-          setSttError("No audio captured. Please try again.");
+          setSttError(t("voice.errors.noAudioCaptured"));
           return;
         }
         await _uploadForTranscription(blob);
@@ -429,18 +422,18 @@ export default function useSpeech(langCode = "mr") {
     } catch (err) {
       const name = err?.name || "";
       if (name === "NotAllowedError" || name === "SecurityError") {
-        setSttError(
-          "Microphone access denied. Allow microphone permission in your browser.",
-        );
+        setSttError(t("voice.errors.micDenied"));
       } else if (name === "NotFoundError") {
-        setSttError("No microphone found on this device.");
+        setSttError(t("voice.errors.noMic"));
       } else {
-        setSttError(`Could not access the microphone: ${err?.message || err}`);
+        setSttError(
+          t("voice.errors.micAccess", { detail: err?.message || err }),
+        );
       }
       _releaseMedia(true);
       setListening(false);
     }
-  }, [_uploadForTranscription]);
+  }, [_uploadForTranscription, t]);
 
   // ── STT: native listeners (registered once, removed on unmount) ──────────
   useEffect(() => {
@@ -452,8 +445,8 @@ export default function useSpeech(langCode = "mr") {
         const partial = await STT.addListener(
           "partialResults",
           ({ matches }) => {
-            const t = matches?.[0];
-            if (t) setTranscript(t);
+            const heard = matches?.[0];
+            if (heard) setTranscript(heard);
           },
         );
         const state = await STT.addListener("listeningState", ({ status }) => {
@@ -487,9 +480,7 @@ export default function useSpeech(langCode = "mr") {
           perm?.granted === true;
 
         if (!granted) {
-          setSttError(
-            "Microphone permission denied. Please allow it in Settings → Apps → FarmIQ → Permissions.",
-          );
+          setSttError(t("voice.errors.micPermissionDenied"));
           return;
         }
 
@@ -498,7 +489,7 @@ export default function useSpeech(langCode = "mr") {
         const res = await STT.start({
           language: bcp47,
           maxResults: 1,
-          prompt: langCode === "mr" ? "बोला…" : "Speak now…",
+          prompt: t("voice.speakPrompt"),
           partialResults: true,
           popup: false,
         });
@@ -507,14 +498,13 @@ export default function useSpeech(langCode = "mr") {
       } catch (err) {
         const msg = (err?.message || String(err)).toLowerCase();
         if (msg.includes("permission")) {
-          setSttError("Microphone permission required for voice input.");
+          setSttError(t("voice.errors.micPermissionRequired"));
         } else if (msg.includes("language")) {
-          setSttError(
-            `Marathi (mr-IN) speech recognition not available on this device. ` +
-              "Install a Marathi language pack in Android Settings → General Management → Language.",
-          );
+          setSttError(t("voice.errors.marathiPackMissing"));
         } else if (!msg.includes("no match") && !msg.includes("cancel")) {
-          setSttError(`Speech recognition failed: ${err?.message || err}`);
+          setSttError(
+            t("voice.errors.recognitionFailed", { detail: err?.message || err }),
+          );
         }
       } finally {
         setListening(false);
@@ -549,13 +539,11 @@ export default function useSpeech(langCode = "mr") {
       const code = e.error;
       setListening(false);
       if (code === "not-allowed" || code === "service-not-allowed") {
-        setSttError(
-          "Microphone access denied. Allow microphone permission in your browser.",
-        );
+        setSttError(t("voice.errors.micDenied"));
       } else if (code === "language-not-supported") {
-        setSttError(`Language ${bcp47} is not supported by this browser.`);
+        setSttError(t("voice.errors.languageUnsupported", { lang: bcp47 }));
       } else if (code === "no-speech") {
-        setSttError("No speech detected. Please try again.");
+        setSttError(t("voice.errors.noSpeech"));
       } else if (code === "network") {
         // Chrome proxies Web Speech audio to Google; when that endpoint is
         // unreachable it reports "network". Fall back to recording locally and
@@ -564,7 +552,7 @@ export default function useSpeech(langCode = "mr") {
         webRecRef.current = null;
         _recordAndTranscribe();
       } else if (code !== "aborted") {
-        setSttError(`Recognition error: ${code}`);
+        setSttError(t("voice.errors.recognitionError", { code }));
       }
     };
     rec.onend = () => {
@@ -588,9 +576,9 @@ export default function useSpeech(langCode = "mr") {
       }, 20000);
     } catch (err) {
       webRecRef.current = null;
-      setSttError(`Could not start microphone: ${err.message}`);
+      setSttError(t("voice.errors.micStartFailed", { detail: err.message }));
     }
-  }, [bcp47, langCode, _recordAndTranscribe]);
+  }, [bcp47, langCode, _recordAndTranscribe, t]);
 
   // ── STT: stop ─────────────────────────────────────────────────────────────
   const stopListening = useCallback(async () => {
@@ -633,7 +621,7 @@ export default function useSpeech(langCode = "mr") {
       lastRef.current = { text, lang: langKey };
 
       if (!ttsSupported) {
-        setTtsError("Text-to-speech is not available on this device.");
+        setTtsError(t("voice.errors.ttsUnavailable"));
         return;
       }
 
@@ -698,8 +686,10 @@ export default function useSpeech(langCode = "mr") {
               msg.includes("language") ||
                 msg.includes("locale") ||
                 msg.includes("voice")
-                ? "No voice installed for this language. Android Settings → General Management → Text-to-speech → Install voice data."
-                : `Speech playback failed: ${lastError?.message || lastError}`,
+                ? t("voice.errors.noVoiceForLanguage")
+                : t("voice.errors.playbackFailed", {
+                    detail: lastError?.message || lastError,
+                  }),
             );
           }
         }
@@ -723,7 +713,7 @@ export default function useSpeech(langCode = "mr") {
       if (synth.paused) synth.resume();
 
       if (!_voices.length) {
-        setTtsError("No text-to-speech voices are installed on this system.");
+        setTtsError(t("voice.errors.noVoicesInstalled"));
         return;
       }
 
@@ -746,7 +736,7 @@ export default function useSpeech(langCode = "mr") {
           finished += 1;
           const code = e?.error;
           if (code && code !== "interrupted" && code !== "canceled") {
-            setTtsError(`Speech playback failed: ${code}`);
+            setTtsError(t("voice.errors.playbackFailed", { detail: code }));
           }
           if (finished >= chunks.length) setSpeaking(false);
         };
@@ -758,7 +748,7 @@ export default function useSpeech(langCode = "mr") {
         if (!synth.speaking && !synth.pending) setSpeaking(false);
       }, 1500);
     },
-    [langCode, bcp47, ttsSupported, _serverSpeak],
+    [langCode, bcp47, ttsSupported, _serverSpeak, t],
   );
 
   // ── TTS: stop ─────────────────────────────────────────────────────────────

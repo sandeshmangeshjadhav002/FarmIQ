@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import useApi from "@/hooks/useApi";
 import { apiPost } from "@/lib/apiClient";
+import { useLocation } from "@/lib/locationStore";
 import ModuleIcon from "./ModuleIcon";
 import { Field, ModuleButton } from "./ModuleShared";
 
@@ -232,6 +233,7 @@ const TABS = [
 ];
 
 export default function OrganicFarmingAdvisor({ onAsk }) {
+  const { location: sharedLocation } = useLocation();
   const [activeTab, setActiveTab] = useState("learn");
   const { data, loading, error, refetch } = useApi("/api/farming-methods");
 
@@ -242,6 +244,13 @@ export default function OrganicFarmingAdvisor({ onAsk }) {
   const [plan, setPlan] = useState(null);
   const [busy, setBusy] = useState(null);
   const [savedId, setSavedId] = useState(null);
+
+  // Pre-fill location from the shared location store when available.
+  useEffect(() => {
+    if (sharedLocation?.label && !form.location) {
+      setForm((prev) => ({ ...prev, location: sharedLocation.label }));
+    }
+  }, [sharedLocation]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 

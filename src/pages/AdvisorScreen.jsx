@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import Icon from "@/components/common/Icon";
 import ScreenShell from "@/components/layout/ScreenShell";
 import { moduleByKey } from "@/data/modules";
@@ -16,55 +17,13 @@ import useApi from "@/hooks/useApi";
  * a deterministic guide is shown, or an image is uploaded for analysis.
  */
 const TASKS = [
-  {
-    key: "crop-recommendation",
-    title: "Choose a suitable crop",
-    body: "Match a crop to your soil nutrients and local climate.",
-    how: "Model estimate",
-    tone: "ml",
-  },
-  {
-    key: "soil",
-    title: "Understand soil conditions",
-    body: "Read pH, EC, moisture and nutrient levels together.",
-    how: "Guided readings",
-    tone: "guide",
-  },
-  {
-    key: "fertilizer",
-    title: "Get fertilizer guidance",
-    body: "Get a nutrient recommendation for your crop and soil.",
-    how: "Model estimate",
-    tone: "ml",
-  },
-  {
-    key: "irrigation",
-    title: "Assess irrigation needs",
-    body: "Decide whether to water now, and by how much.",
-    how: "Model estimate",
-    tone: "ml",
-  },
-  {
-    key: "drought-management",
-    title: "Manage drought risks",
-    body: "Water-saving steps and dry-spell contingency guidance.",
-    how: "Guided readings",
-    tone: "guide",
-  },
-  {
-    key: "organic-farming",
-    title: "Compare farming methods",
-    body: "Weigh organic, integrated and conventional approaches.",
-    how: "Guided comparison",
-    tone: "guide",
-  },
-  {
-    key: "image-analysis",
-    title: "Analyse a crop image",
-    body: "Photograph a plant to check for visible problems.",
-    how: "Image upload",
-    tone: "image",
-  },
+  { key: "crop-recommendation", task: "crop", how: "ml", tone: "ml" },
+  { key: "soil", task: "soil", how: "guide", tone: "guide" },
+  { key: "fertilizer", task: "fertilizer", how: "ml", tone: "ml" },
+  { key: "irrigation", task: "irrigation", how: "ml", tone: "ml" },
+  { key: "drought-management", task: "drought", how: "guide", tone: "guide" },
+  { key: "organic-farming", task: "organic", how: "compare", tone: "guide" },
+  { key: "image-analysis", task: "image", how: "image", tone: "image" },
 ];
 
 const HOW_BADGE = {
@@ -80,6 +39,7 @@ const HOW_BADGE = {
  * @param {object}   [props.user]    - Signed-in user.
  */
 export default function AdvisorScreen({ navigate, openModule, user }) {
+  const { t } = useTranslation();
   const { data: farms } = useApi("/api/farms?limit=1");
   const farm = farms?.items?.[0] ?? null;
 
@@ -90,17 +50,17 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("home")}
-              aria-label="Back"
+              aria-label={t("common.back")}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#DFE7E1] bg-white text-[#3F5A4B] active:scale-95"
             >
               <Icon name="arrow" size={18} className="rotate-180" />
             </button>
             <div className="flex-1">
               <p className="text-[11px] font-bold uppercase tracking-[.12em] text-[#5D7B6B]">
-                AI Farm Advisor
+                {t("advisor.kicker")}
               </p>
               <h1 className="mt-0.5 text-[22px] font-extrabold tracking-[-0.04em] text-[#17392A]">
-                What do you need help with?
+                {t("advisor.headline")}
               </h1>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#E5F1E8] text-[#216B45]">
@@ -117,7 +77,7 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[9px] font-bold uppercase tracking-[.1em] text-[#7D8E84]">
-                Advising on
+                {t("advisor.advisingOn")}
               </p>
               <p className="truncate text-[13px] font-extrabold text-[#21412F]">
                 {farm.name}
@@ -125,14 +85,14 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
               <p className="truncate text-[10px] text-[#819087]">
                 {[farm.location, farm.current_crop]
                   .filter(Boolean)
-                  .join(" · ") || "Location and crop not set"}
+                  .join(" · ") || t("advisor.locationCropNotSet")}
               </p>
             </div>
             <button
               onClick={() => openModule("farm-management")}
               className="shrink-0 rounded-xl bg-[#F0F6F1] px-3 py-2 text-[10px] font-bold text-[#216B45]"
             >
-              Change
+              {t("common.change")}
             </button>
           </div>
         )}
@@ -140,23 +100,23 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
         {!farm && (
           <div className="mb-5 rounded-[20px] border border-dashed border-[#B0C9B8] p-4">
             <p className="text-[11px] font-bold text-[#3C5C49]">
-              No farm added yet
+              {t("advisor.noFarm")}
             </p>
             <p className="mt-1 text-[10px] leading-5 text-[#7B8C82]">
-              Add a farm so guidance can use your soil, crop and location.
+              {t("advisor.noFarmBody")}
             </p>
             <button
               onClick={() => openModule("farm-management")}
               className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#216B45] px-4 py-2 text-[11px] font-bold text-white"
             >
               <Icon name="plus" size={14} />
-              Add a farm
+              {t("advisor.addFarm")}
             </button>
           </div>
         )}
 
         <h2 className="mb-3 text-[15px] font-extrabold text-[#1D382A]">
-          Choose a task
+          {t("advisor.chooseTask")}
         </h2>
 
         <div className="space-y-3">
@@ -178,18 +138,18 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="text-[13px] font-extrabold text-[#233F31]">
-                      {task.title}
+                      {t(`advisor.tasks.${task.task}.title`)}
                     </span>
                   </span>
                   <span className="mt-1 block text-[10px] leading-4 text-[#75877D]">
-                    {task.body}
+                    {t(`advisor.tasks.${task.task}.body`)}
                   </span>
                   <span
                     className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.06em] ${
                       HOW_BADGE[task.tone]
                     }`}
                   >
-                    {task.how}
+                    {t(`advisor.how.${task.how}`)}
                   </span>
                 </span>
                 <Icon name="chevron" size={16} className="text-[#9CA8A0]" />
@@ -208,10 +168,10 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-extrabold">
-              Ask FarmIQ in your own words
+              {t("advisor.freeformTitle")}
             </span>
             <span className="mt-0.5 block text-[10px] text-white/70">
-              Answers grounded in trusted agricultural sources
+              {t("advisor.freeformBody")}
             </span>
           </span>
           <Icon name="chevron" size={17} />
@@ -222,7 +182,7 @@ export default function AdvisorScreen({ navigate, openModule, user }) {
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#DDE6DF] bg-white/60 py-3 text-[11px] font-bold text-[#216B45]"
         >
           <Icon name="book" size={15} />
-          Browse the Knowledge Centre
+          {t("advisor.browseKnowledge")}
         </button>
       </div>
     </ScreenShell>
