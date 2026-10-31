@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -52,7 +53,7 @@ from app.config import get_settings
 # keeps the agent's conflict check consistent with the decision engine instead
 # of maintaining a second copy that could drift.
 from app.decision_engine import _CROP_MOISTURE_THRESHOLDS as CROP_MOISTURE_THRESHOLDS
-from app.rag_service import RagUnavailableError
+from app.rag_service import RagUnavailableError, remaining_budget
 
 logger = logging.getLogger("farmiq.agent")
 
@@ -402,12 +403,14 @@ def plan_tools(
     owner_id: str = "",
     language: str = "en",
     history: Optional[list[dict]] = None,
+    timeout: Optional[float] = None,
 ) -> Optional[dict[str, Any]]:
     """Ask the LLM which tools this message needs.
 
     Returns ``{"intent", "tools", "needs_retrieval"}`` or ``None`` when the LLM
-    is unavailable or its reply cannot be used — the caller then falls back to
-    :func:`classify_intent` / :func:`tools_for_intent`.
+    is unavailable, its reply cannot be used, or the optional ``timeout``
+    budget elapses — the caller then falls back to :func:`classify_intent` /
+    :func:`tools_for_intent`.
     """
     from app import rag_service
 
@@ -427,6 +430,7 @@ def plan_tools(
         system=_PLANNER_SYSTEM_PROMPT,
         temperature=0.0,
         max_tokens=250,
+        timeout=timeout,
     )
     plan = _validate_plan(_extract_plan_json(raw)) if raw else None
     if plan is None:
@@ -1388,10 +1392,27 @@ def answer(
     lang = language if language in ("mr", "en") else "en"
     now = now or datetime.now(timezone.utc)
 
+    # One wall-clock budget covers every LLM call this request makes (tool plan,
+    # direct answer, retrieval). The web/app client aborts at 90s, so the budget
+    # sits well below that: whatever has not answered by the deadline is
+    # abandoned and the deterministic, structured answer is returned instead of
+    # leaving the farmer with a network timeout.
+    settings = get_settings()
+    deadline = time.monotonic() + float(settings.assistant_llm_budget_seconds)
+
     # The LLM decides which tools (if any) this message needs. Only when it is
     # unavailable or its reply is unusable does the deterministic router take
     # over, so the agent keeps working with the LLM down.
-    plan = plan_tools(question, owner_id=owner_id, language=lang, history=history)
+    plan = plan_tools(
+        question,
+        owner_id=owner_id,
+        language=lang,
+        history=history,
+        timeout=min(
+            float(settings.llm_planner_timeout_seconds),
+            remaining_budget(deadline) or 0.0,
+        ),
+    )
     if plan is not None:
         intent = plan["intent"]
         tools = plan["tools"]
@@ -1426,6 +1447,7 @@ def answer(
             history=history,
             results=results,
             allow_retrieval=allow_retrieval,
+            deadline=deadline,
         )
 
     # The structured answer is the primary reply. The assistant's prose is used
@@ -1488,6 +1510,7 @@ def _explain(
     history: Optional[list[dict]],
     results: dict[str, dict],
     allow_retrieval: bool = True,
+    deadline: Optional[float] = None,
 ) -> tuple[Optional[str], bool, list[dict]]:
     """Ask the LLM to generate a natural answer from gathered evidence.
 
@@ -1506,6 +1529,11 @@ def _explain(
        ``allow_retrieval`` to false when it judged that reference documents
        would not help, which also avoids a redundant model call.
 
+    ``deadline`` is the shared request budget (a ``time.monotonic()`` value).
+    It is split between the two calls so a slow provider spends at most its
+    share; once it elapses the remaining call is skipped and the caller keeps
+    its structured answer.
+
     Never raises: when the LLM is unavailable the caller still has the
     structured section answer.
     """
@@ -1515,6 +1543,16 @@ def _explain(
     ml_ctx = ml_results(results)
     tool_summary = _tool_results_summary(results, lang)
 
+    # Split the remaining budget so a slow direct answer cannot also swallow the
+    # retrieval step's allowance (and vice versa).
+    remaining = remaining_budget(deadline)
+    if remaining is None:
+        direct_timeout = None
+    elif allow_retrieval:
+        direct_timeout = remaining * 0.6
+    else:
+        direct_timeout = remaining
+
     # ── Primary: direct LLM call ─────────────────────────────────────────
     direct = rag_service.direct_llm_answer(
         question,
@@ -1523,6 +1561,7 @@ def _explain(
         history=history,
         farm_context=farm_ctx,
         tool_results_summary=tool_summary,
+        timeout=direct_timeout,
     )
     direct_text = str(direct.get("answer") or "").strip()
     direct_used = bool(direct.get("llm_used"))
@@ -1542,6 +1581,7 @@ def _explain(
                 language=lang,
                 history=history,
                 farm_context=farm_ctx,
+                timeout=remaining_budget(deadline),
             )
             status = rag_resp.get("retrieval_status", "")
             raw_answer = str(rag_resp.get("answer") or "").strip()

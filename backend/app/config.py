@@ -117,6 +117,16 @@ class Settings(BaseSettings):
     # an unresponsive provider degrades to the retrieved-passages fallback
     # instead of holding the request open.
     hf_timeout_seconds: float = 45.0
+    # The tool planner (see app/agent_service.py) is a small classification-style
+    # call that runs *in addition to* answer generation. It gets its own,
+    # shorter budget so an unhealthy provider degrades to the deterministic
+    # router rather than spending the whole response budget on the plan.
+    llm_planner_timeout_seconds: float = 12.0
+    # Hard ceiling for all LLM work inside one assistant request. The web/app
+    # client aborts chat and agent calls after 90s (CHAT_TIMEOUT_MS), so the
+    # assistant must answer before that: whatever has not finished by this
+    # point is abandoned and the structured, deterministic answer is returned.
+    assistant_llm_budget_seconds: float = 65.0
 
     # â”€â”€ Weather (Open-Meteo, no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Used to auto-fill temperature / humidity / accumulated rainfall in the
