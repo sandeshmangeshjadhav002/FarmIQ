@@ -1,312 +1,433 @@
-﻿# FarmIQ
+<div align="center">
 
-An AI-powered agricultural advisory platform that helps farmers with crop recommendations, irrigation scheduling, soil health monitoring, market intelligence, IoT sensor management, and more — all through a mobile-first web app.
+<img src="docs/screenshots/03_home_screen.png" width="280" alt="FarmIQ Home Screen"/>
 
----
+# 🌾 FarmIQ — Intelligent Smart Agriculture Platform
 
-## Project Structure
+**AI-powered agricultural decision support for Indian farmers**
 
-```
-FarmIQ-main/
-├── backend/                  # Python FastAPI backend
-│   ├── .env                  # Database configuration
-│   ├── venv/
-│   │   └── main.py           # FastAPI app (all routes, models, DB logic)
-│   └── start_server.bat      # Launches the server on port 8000
-│
-└── FarmIQ-main/              # React/Vite frontend
-    ├── package.json
-    ├── vite.config.js
-    └── src/
-        ├── App.jsx            # Root component — navigation state machine
-        ├── data/modules.js    # Master data: module catalog and all demo content
-        ├── constants/
-        │   ├── languages.js   # 11 supported language labels
-        │   └── icons.jsx      # SVG icon definitions
-        ├── pages/             # 7 top-level screen components
-        └── components/        # common/, layout/, modules/ sub-directories
-```
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Capacitor](https://img.shields.io/badge/Capacitor-8-119EFF?logo=capacitor&logoColor=white)](https://capacitorjs.com)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://python.org)
+
+[**🚀 Live Demo**](#-live-demo) · [**📸 Screenshots**](#-screenshots) · [**⚡ Quick Start**](#-quick-start) · [**📖 Docs**](#-documentation)
+
+</div>
 
 ---
 
-## Tech Stack
+## 🌟 What is FarmIQ?
 
-### Frontend
-| Library | Version | Purpose |
-|---|---|---|
-| React | ^19.0.0 | UI framework |
-| Vite | ^8.0.5 | Dev server and bundler |
-| Tailwind CSS | ^4.0.0 | Utility-first styling |
-| TypeScript | ^5.7.0 | Type checking (dev only, source is JSX) |
+FarmIQ transforms a smartphone into a full-featured farm advisor. It combines **real ML models**, **live IoT sensor data**, **weather forecasts**, and an **AI assistant** to give Indian farmers personalised, evidence-based recommendations in English and Marathi.
 
-### Backend
-| Library | Purpose |
+> Built for hackathons. Deployable on Android. Backed by real data.
+
+---
+
+## 🚀 Live Demo
+
+| Platform | Link |
 |---|---|
-| FastAPI | ASGI web framework |
-| Supabase (Postgres + Auth) | Database + authentication (JWT verified server-side) |
-| supabase-py | Server-side Supabase client (service-role + token verification) |
-| Pydantic v2 | Request/response validation |
-| scikit-learn / joblib | ML adapter: loads existing encoders/scalers + optional models |
-| uvicorn | ASGI server |
+| 🔌 **Backend API** | [farmiq-api-hpss.onrender.com](https://farmiq-api-hpss.onrender.com/api/health) |
+| 📱 **Android APK** | [Download debug APK](https://github.com/sandeshmangeshjadhav002/FarmIQ-copy/releases) |
+| 📸 **Screenshots** | [See every screen](#-screenshots) |
 
-> The backend was rebuilt from the old single-file SQLAlchemy+bcrypt app into a
-> structured FastAPI + Supabase package. See **[backend/README.md](backend/README.md)**
-> for setup, the full API reference, ML integration, Supabase migration, and tests.
+> 🌐 The web app isn't hosted publicly yet — [deploy your own](#-deploy-to-production) (Render + Vercel). The live backend above runs on Render's free tier, so the first request may take up to a minute to wake it.
 
----
-
-## Prerequisites
-
-- **Node.js** (v18+) and **npm**
-- **Python** (3.11+)
-- **PostgreSQL** (running locally on port 5432)
-
----
-
-## Getting Started
-
-### 1. Set up the database
-
-Create a PostgreSQL database named `FarmIQ`:
-
-```sql
-CREATE DATABASE "FarmIQ";
+**Demo account** (read-only, pre-seeded with farm data):
+```
+Mobile : +91 98765 43210
+Password: Demo@1234
 ```
 
-### 2. Configure the backend environment
+> No account needed — tap **"Continue without account"** on the login screen to explore.
 
-Edit `backend/.env` to match your PostgreSQL credentials:
+---
 
+## 📸 Screenshots
+
+<table>
+<tr>
+<td align="center" width="33%">
+  <img src="docs/screenshots/01_login_screen.png" width="220" alt="Login"/>
+  <br/><b>Login</b>
+</td>
+<td align="center" width="33%">
+  <img src="docs/screenshots/03_home_screen.png" width="220" alt="Home Dashboard"/>
+  <br/><b>Home Dashboard</b>
+</td>
+<td align="center" width="33%">
+  <img src="docs/screenshots/04_home_action_plan.png" width="220" alt="Today's Action Plan"/>
+  <br/><b>Today's Action Plan</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+  <img src="docs/screenshots/06_ai_chat.png" width="220" alt="AI Chat Assistant"/>
+  <br/><b>AI Chat Assistant</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/05_module_hub.png" width="220" alt="Module Hub"/>
+  <br/><b>Module Hub (22 tools)</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/07_farm_screen.png" width="220" alt="Farm Screen"/>
+  <br/><b>Farm Screen</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+  <img src="docs/screenshots/09_crop_recommendation.png" width="220" alt="Crop Recommendation"/>
+  <br/><b>Crop Recommendation (ML)</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/11_smart_irrigation.png" width="220" alt="Smart Irrigation"/>
+  <br/><b>Smart Irrigation</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/10_fertilizer.png" width="220" alt="Fertilizer Advice"/>
+  <br/><b>Fertilizer Recommendation</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+  <img src="docs/screenshots/12_organic_farming.png" width="220" alt="Organic Farming"/>
+  <br/><b>Organic Farming Advisor</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/13_drought_management.png" width="220" alt="Drought Management"/>
+  <br/><b>Drought Management</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/14_yield_prediction.png" width="220" alt="Yield Prediction"/>
+  <br/><b>Yield Prediction</b>
+</td>
+</tr>
+<tr>
+<td align="center">
+  <img src="docs/screenshots/16_iot_sensors.png" width="220" alt="IoT Sensors"/>
+  <br/><b>IoT Sensor Monitoring</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/17_govt_schemes.png" width="220" alt="Government Schemes"/>
+  <br/><b>Government Schemes</b>
+</td>
+<td align="center">
+  <img src="docs/screenshots/20_mlops_dashboard.png" width="220" alt="MLOps Dashboard"/>
+  <br/><b>MLOps Dashboard</b>
+</td>
+</tr>
+</table>
+
+---
+
+## ✨ Features
+
+### 🤖 AI-Powered Decision Engine
+- **Farm Action Plan** — daily prioritised recommendations combining weather, sensor data, and ML predictions
+- **AI Chat Assistant** — natural conversation in English and Marathi; understands greetings, farm questions, and crop advice
+- **Groq LLM** (llama-3.3-70b-versatile) with RAG knowledge base
+- **Voice input** (Web Speech API + server-side Groq Whisper fallback)
+- **Text-to-speech** in Marathi and English (edge-tts neural voices, no API key)
+
+### 🌱 Crop & Soil Intelligence
+| Feature | Model | Accuracy |
+|---|---|---|
+| Crop Recommendation | RandomForest (22 crops) | Real metrics via `/api/mlops/evaluation` |
+| Fertilizer Recommendation | RandomForest (7 types) | Real metrics |
+| Yield Prediction | RandomForest Regressor | Real metrics |
+| Irrigation Decision | RandomForest + rule baseline | Real metrics |
+
+### 🌿 New: Organic vs Modern Farming
+Compare organic, conventional, and integrated farming methods side-by-side:
+- Nutrient management strategies
+- Input cost estimates
+- Labour and water requirements
+- Environmental impact
+- Transition plans
+
+### 💧 New: Drought Management
+- Severity assessment from soil moisture + rainfall + ML
+- 6-category recommendations (sowing, irrigation, mulching, crop alternatives, dry spell, finance)
+- Live Open-Meteo weather + 7-day forecast
+- ICAR-sourced guidance, with source citations
+
+### 📡 IoT Integration
+- ESP32/ESP8266 device pairing with device tokens
+- Real-time soil moisture, temperature, humidity
+- Sensor freshness alerts (stale / offline detection)
+- Interactive Sensor Simulator for demos
+
+### 🌦️ Weather (Open-Meteo — free, no API key)
+- Current conditions auto-filled in all ML forms
+- Historical 30-day rainfall for cumulative crop models
+- 7-day forecast clearly labelled as unconfirmed
+
+### 🏛️ Government Schemes
+- PM-KISAN, PMFBY, Soil Health Card, PM Kisan Samman Nidhi
+- Eligibility, benefits, documents, application process
+- Official source links and last-verified dates
+
+### 📊 MLOps Dashboard
+- Real evaluation metrics on held-out test sets
+- Confusion matrices, F1, accuracy, RMSE
+- Model version, training methodology, caveats
+
+---
+
+## 🏗️ Architecture
+
+```
+📱 Android App (Capacitor)
+    └── React 19 + Tailwind CSS v4 (Vite 8)
+          └── REST API calls
+                └── FastAPI (Python 3.14 + uvicorn)
+                      ├── Supabase (PostgreSQL + Auth + RLS)
+                      ├── scikit-learn ML models (.joblib)
+                      ├── Open-Meteo weather API (free, key-less)
+                      ├── ChromaDB + sentence-transformers (RAG)
+                      ├── Groq Whisper (speech-to-text)
+                      └── edge-tts (text-to-speech)
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Tailwind CSS v4, Vite 8 |
+| **Mobile** | Capacitor 8 (Android), Speech Recognition, TTS |
+| **Backend** | FastAPI 0.162, Python 3.14, Uvicorn |
+| **Database** | Supabase (PostgreSQL), Row Level Security |
+| **ML Models** | scikit-learn 1.9, RandomForest (4 domains) |
+| **AI/LLM** | Groq (llama-3.3-70b), edge-tts, Whisper |
+| **Weather** | Open-Meteo (free, key-less) |
+| **RAG** | ChromaDB, sentence-transformers (multilingual) |
+| **Deployment** | Render (backend), Vercel (frontend) |
+
+---
+
+## ⚡ Quick Start
+
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.12+ (or 3.14)
+- A free [Supabase](https://supabase.com) project
+- A free [Groq](https://console.groq.com) API key
+
+### 1. Clone
+```bash
+git clone https://github.com/sandeshmangeshjadhav002/FarmIQ-copy.git
+cd FarmIQ-copy
+```
+
+### 2. Backend setup
+```powershell
+cd backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -r ..\FarmIQ-rag\FarmIQ-RAG\requirements.txt
+```
+
+Copy `.env.example` to `.env` and fill in:
 ```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=FarmIQ
-DB_USER=postgres
-DB_PASSWORD=your_password
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+STT_API_KEY=gsk_...          # Groq API key
 ```
 
-### 3. Start the backend
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-
-pip install fastapi "uvicorn[standard]" sqlalchemy psycopg pydantic[email] bcrypt python-dotenv
-uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+Apply the database migration in Supabase SQL editor:
+```sql
+-- Run backend/supabase/migrations/0001_init.sql
+-- Run backend/supabase/migrations/0002_drought_farming.sql
 ```
 
-Or use the provided script:
-
-```bash
-cd backend
-start_server.bat
+Train the ML models (one-time):
+```powershell
+python -m ml.train_models
 ```
 
-The API will be available at `http://127.0.0.1:8001`. Tables are created automatically on first startup.
+Start the backend:
+```powershell
+python -m uvicorn app.main:app --reload --port 8001
+```
 
-### 4. Start the frontend
-
-```bash
-cd FarmIQ-main
+### 3. Frontend setup
+```powershell
+# In a new terminal, from the project root
 npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+Open http://localhost:5173 — register an account and start exploring.
+
+### 4. Android build (optional)
+```powershell
+# Point the app at the backend (use your LAN IP for a physical device)
+$env:VITE_API_BASE_URL="http://10.0.2.2:8001"   # emulator
+npm run build
+npx cap sync android
+npx cap open android    # opens Android Studio
+```
 
 ---
 
-## Features
+## 🚢 Deploy to Production
 
-### Authentication
-- **Register** — full name, email, mobile number (with country code), role, and password. Password must be 8+ characters with at least one uppercase letter and one number.
-- **Login** — mobile number + password. Supports 11 country codes including India (+91), USA (+1), UK (+44), and others.
-- **Continue without account** — available from the login screen for demo access.
+### Backend → Render (free tier)
 
-### Supported Roles
-- `farmer`
-- `farm_manager`
-- `agricultural_expert`
+The repo includes `render.yaml` and a `Dockerfile`. Connect your GitHub repo to [Render](https://render.com) — it reads the blueprint automatically.
 
-### Module Hub (17 modules)
+Set these environment variables in the Render dashboard:
+```
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+STT_API_KEY          # Groq
+FRONTEND_ORIGINS     # your Vercel URL
+```
 
-| Group | Module |
-|---|---|
-| **Manage** | Farm Management, Farming Calendar, Alerts & Notifications, Reports & Analytics, Device Management, Profile & Settings |
-| **Plan** | Crop Recommendation, Fertilizer Recommendation, Yield Prediction, Market Intelligence |
-| **Monitor** | Smart Irrigation, Soil Health, IoT Sensor Monitoring, Crop Image Analysis |
-| **Learn** | Knowledge Center |
-| **Administration** | MLOps Dashboard, Administration & Roles |
+### Frontend → Vercel (free tier)
+```bash
+npm install -g vercel
+vercel --prod
+```
 
-Modules with fully custom UIs: Farm Management, Crop Image Analysis, Farming Calendar, Knowledge Center, Profile & Settings, Device Management.
+Set `VITE_API_BASE_URL=https://farmiq-api-hpss.onrender.com` in Vercel project settings.
 
-All other modules display structured demo data (metrics + detail rows) via a shared generic layout.
-
-### AI Chat Assistant
-Chat interface with quick-action shortcuts for crop advice, irrigation, fertilizer, and market prices. Currently renders a demo seed conversation — LLM integration is not yet connected.
-
-### IoT Sensor Integration
-Backend API accepts and stores sensor readings (soil moisture, temperature, humidity) keyed by `device_id`. The frontend Device Management module shows paired devices and their live status.
-
-### Language Support
-11 Indian and international languages available in the settings panel: English, Hindi, Marathi, Telugu, Tamil, Kannada, Gujarati, Bengali, Punjabi, Malayalam, and Odia.
+### Android → Play Store
+```powershell
+$env:VITE_API_BASE_URL="https://farmiq-api-hpss.onrender.com"
+npm run build
+npx cap sync android
+# In Android Studio: Build → Generate Signed Bundle → AAB
+```
 
 ---
 
-## API Reference
+## 📂 Project Structure
 
-Base URL: `http://127.0.0.1:8001`
+```
+FarmIQ/
+├── src/                        # React frontend
+│   ├── pages/                  # 7 top-level screens
+│   ├── components/
+│   │   ├── common/             # Icon, Button, TextInput, Logo
+│   │   ├── layout/             # ScreenShell, BottomNav, DesktopNav
+│   │   └── modules/            # 22 feature modules (lazy-loaded)
+│   ├── hooks/                  # useApi, useSpeech
+│   ├── lib/                    # apiClient.js (auth-aware fetch)
+│   └── data/modules.js         # Module catalog & static data
+│
+├── backend/
+│   ├── app/
+│   │   ├── routers/            # 18 FastAPI routers
+│   │   ├── agent_service.py    # LLM-driven AI agent
+│   │   ├── decision_engine.py  # Farm action plan (deterministic)
+│   │   ├── drought_service.py  # Drought assessment engine
+│   │   ├── farming_service.py  # Organic vs modern farming
+│   │   ├── farm_context_manager.py
+│   │   └── weather.py          # Open-Meteo integration
+│   ├── ml/
+│   │   ├── adapter.py          # Loads & runs .joblib models
+│   │   ├── train_models.py     # Optional: retrain from CSVs
+│   │   └── evaluate.py         # Real evaluation metrics
+│   └── supabase/migrations/    # SQL schema files
+│
+├── FarmIQ-rag/
+│   ├── datasets/raw/           # Source CSVs (Kaggle datasets)
+│   ├── datasets/processed/     # Scalers, encoders, train/test splits
+│   ├── models/                 # Trained .joblib model files
+│   └── FarmIQ-RAG/             # RAG pipeline (ChromaDB + LLM)
+│
+├── android/                    # Capacitor Android project
+├── docs/screenshots/           # App screenshots for README
+├── Dockerfile                  # Production Docker image
+└── render.yaml                 # Render deployment blueprint
+```
+
+---
+
+## 🌍 API Reference
+
+Base URL: `http://127.0.0.1:8001`  
+Interactive docs: `http://127.0.0.1:8001/docs`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Backend health check |
-| `GET` | `/api/health` | Database connectivity check |
-| `POST` | `/api/auth/register` | Register a new user (returns 201) |
-| `POST` | `/api/auth/login` | Sign in with mobile + password |
-| `POST` | `/api/sensor-readings/` | Submit a new sensor reading |
-| `GET` | `/api/sensor-readings/` | Fetch the latest 100 sensor readings |
+| `GET` | `/api/health` | Health check + DB status |
+| `POST` | `/api/auth/register` | Register (201) |
+| `POST` | `/api/auth/login` | Sign in → tokens |
+| `GET` | `/api/farms` | List farms |
+| `GET` | `/api/dashboard/plan` | 🆕 Farm Action Plan |
+| `POST` | `/api/predictions/crop` | Crop ML prediction |
+| `POST` | `/api/predictions/fertilizer` | Fertilizer ML prediction |
+| `POST` | `/api/predictions/irrigation` | Irrigation ML prediction |
+| `POST` | `/api/predictions/yield` | Yield ML prediction |
+| `POST` | `/api/agent/chat` | 🆕 LLM-driven AI agent chat |
+| `POST` | `/api/farming-methods/compare` | 🆕 Organic vs modern farming |
+| `POST` | `/api/drought/assess` | 🆕 Drought assessment |
+| `GET` | `/api/weather/current` | Live weather data |
+| `GET` | `/api/mlops/evaluation` | Real model metrics |
+| `GET` | `/api/demo/farms` | Hackathon demo farms |
+| `POST` | `/api/demo/plan` | Demo action plan |
 
-Interactive API docs (Swagger UI): `http://127.0.0.1:8000/docs`
+---
 
-### Register payload example
-```json
-{
-  "full_name": "Ravi Kumar",
-  "email": "ravi@example.com",
-  "mobile": "+919876543210",
-  "role": "farmer",
-  "password": "Secure123"
-}
-```
+## 📊 Datasets
 
-### Sensor reading payload example
-```json
-{
-  "device_id": "esp32-field-hub-01",
-  "soil_moisture": 62.5,
-  "temperature": 27.3,
-  "humidity": 71.0
-}
+| Domain | Source | Rows | License |
+|---|---|---|---|
+| Crop Recommendation | [Kaggle — atharvaingle](https://www.kaggle.com/datasets/atharvaingle/crop-recommendation-dataset) | 2,200 | CC0 Public Domain |
+| Fertilizer Recommendation | [Kaggle — gdabhishek](https://www.kaggle.com/datasets/gdabhishek/fertilizer-prediction) | ~1,000 | CC BY-NC-SA |
+| Crop Yield India | [Kaggle — abhinand05](https://www.kaggle.com/datasets/abhinand05/crop-production-in-india) | 246,000 | CC0 Public Domain |
+| Irrigation (IoT) | [GCEKIoT Community](https://github.com/GCEKIoTCommunity/Irrigation-Dataset) | ~5,000 | Academic (MHRD-NPIU) |
+
+---
+
+## 🧪 Tests
+
+```powershell
+cd backend
+.\.venv\Scripts\activate
+pytest tests/ -q       # 229 tests including agent, drought, decision engine
 ```
 
 ---
 
-## Development Notes
+## 🤝 Contributing
 
-- **No client-side router** — all navigation is state-driven in `App.jsx`. Browser back/forward and deep linking are not supported.
-- **No auth session persistence** — there is no JWT or token storage. A page refresh will return the user to the login screen.
-- **All module data is static demo content** — only auth and sensor readings actually talk to the backend. Features like yield prediction, market prices, and crop recommendations are populated with hardcoded demo values from `src/data/modules.js`.
-- **Password hashing** — bcrypt with 6 rounds in development. Increase `BCRYPT_ROUNDS` to 12+ before deploying to production.
-- **CORS** — the backend allows requests from `localhost:5173` (Vite dev server) only. Update the `allow_origins` list in `main.py` for production deployments.
-
----
-
-## Android (Capacitor)
-
-This project is wrapped with [Capacitor](https://capacitorjs.com/) so the same
-Vite/React app ships as a native Android app. The native project lives in
-`android/` and the web build is copied into `android/app/src/main/assets/public`.
-
-### Prerequisites
-- **Android Studio** (Hedgehog / 2023.1 or newer recommended)
-- **JDK 17+** (bundled with recent Android Studio)
-- An Android device (with USB debugging) **or** an emulator
-
-### Important: the backend URL
-`127.0.0.1` does **not** work on a phone/emulator - it points at the device
-itself. The URL is decided only in `src/config/api.js` from `VITE_API_BASE_URL`,
-which Vite loads per build mode:
-
-| Target | Command | Env file |
-|---|---|---|
-| Browser dev | `npm run dev` | none needed (falls back to `http://127.0.0.1:8001`) |
-| Android emulator | `npm run android:emulator` | `.env.emulator` (`http://10.0.2.2:8001`, committed) |
-| Physical device | `npm run android:device` | `.env.device.local` (gitignored): `VITE_API_BASE_URL=http://<LAN-IP>:8001` |
-| Production | `npm run build; npx cap sync android` | `.env.production.local`: `VITE_API_BASE_URL=https://<api-host>` |
-
-Dev HTTP is for debug builds only: run `cap sync` with `CAPACITOR_DEV_HTTP=1`
-(PowerShell: `$env:CAPACITOR_DEV_HTTP="1"`) and build the debug APK
-(`android/app/src/debug/res/xml/network_security_config.xml` allows cleartext;
-release builds are HTTPS-only). A debug APK can send cleartext to any host -
-never distribute it.
-
-The Capacitor Android WebView origin is `https://localhost` (in the default
-`FRONTEND_ORIGINS`). In production set `ENVIRONMENT=production` and
-`FRONTEND_ORIGINS=https://<web-site>,https://localhost`.
-
-Start the backend on all interfaces (from `backend/`) and verify reachability:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8001
-curl http://<LAN-IP>:8001/health   # also open this URL in the phone browser
-```
-
-Troubleshooting:
-- Phone cannot open `/health`: allow inbound TCP 8001 (`New-NetFirewallRule -DisplayName FarmIQ -Direction Inbound -Protocol TCP -LocalPort 8001 -Profile Private -Action Allow`), same Wi-Fi, no client isolation.
-- App shows "Cannot reach the FarmIQ server": stale/wrong URL (rebuild after changing env) or cleartext blocked (release build with an http URL).
-- CORS error in chrome://inspect: origin missing from `FRONTEND_ORIGINS`.
-```
-
-### Build & run on Android
-
-```bash
-# 1. Build the web app with the backend URL the device can reach (PowerShell):
-$env:VITE_API_BASE_URL="http://10.0.2.2:8001"; npm run build
-
-# 2. Sync the web build + Capacitor config into the native project:
-npx cap sync android
-
-# 3. Open in Android Studio and run on a device/emulator:
-npx cap open android
-```
-
-Or use the convenience scripts:
-
-```bash
-npm run cap:sync   # build + npx cap sync
-npm run cap:open   # open the android project in Android Studio
-npm run android    # build + sync + open (one shot)
-```
-
-### Why HTTP works during development
-The backend runs on plain HTTP. Android blocks cleartext traffic by default
-since API 28, so the project ships:
-- `android/app/src/main/res/xml/network_security_config.xml` — permits cleartext.
-- `android:networkSecurityConfig` + `android:usesCleartextTraffic` in
-  `AndroidManifest.xml`.
-- `allowMixedContent: true` in `capacitor.config.ts` (the WebView shell is HTTPS).
-
-For production, serve the backend over HTTPS and tighten the network security
-config (remove `cleartextTrafficPermitted="true"` or scope it to your domain).
-
-### Rebuilding after frontend changes
-Any change to the React app must be re-synced before it shows up in Android:
-
-```bash
-npm run cap:sync
-```
-
-Then re-run from Android Studio (or `npx cap run android`).
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit: `git commit -m "Add my feature"`
+4. Push and open a Pull Request
 
 ---
 
-## Scripts
+## 📜 License
 
-### Frontend
-```bash
-npm run dev       # Start development server
-npm run build     # Production build
-npm run preview   # Preview the production build
-npm run format    # Format code with oxfmt
-npm run cap:sync  # Build + sync web assets into the Android project
-npm run cap:open  # Open the Android project in Android Studio
-npm run android   # Build + sync + open Android Studio (one shot)
-```
+MIT — see [LICENSE](LICENSE)
 
-### Backend
-```bash
-uvicorn main:app --reload          # Start with hot reload
-uvicorn main:app --host 0.0.0.0    # Expose on all interfaces
-```
+---
+
+## 🙏 Acknowledgements
+
+- [ICAR](https://icar.org.in) — agricultural guidelines used in drought and irrigation recommendations
+- [Open-Meteo](https://open-meteo.com) — free weather API
+- [Groq](https://groq.com) — fast LLM inference (llama-3.3-70b)
+- [Supabase](https://supabase.com) — open-source Firebase alternative
+- [Capacitor](https://capacitorjs.com) — cross-platform mobile framework
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Indian farmers**
+
+⭐ Star this repo if FarmIQ helped you!
+
+</div>
