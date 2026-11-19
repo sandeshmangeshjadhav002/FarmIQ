@@ -32,7 +32,7 @@ FarmIQ transforms a smartphone into a full-featured farm advisor. It combines **
 | Platform | Link |
 |---|---|
 | 🔌 **Backend API** | [farmiq-api-hpss.onrender.com](https://farmiq-api-hpss.onrender.com/api/health) |
-| 📱 **Android APK** | [Download debug APK](https://github.com/sandeshmangeshjadhav002/FarmIQ-copy/releases) |
+| 📱 **Android APK** | [Download debug APK](https://github.com/sandeshmangeshjadhav002/FarmIQ/releases) |
 | 📸 **Screenshots** | [See every screen](#-screenshots) |
 
 > 🌐 The web app isn't hosted publicly yet — [deploy your own](#-deploy-to-production) (Render + Vercel). The live backend above runs on Render's free tier, so the first request may take up to a minute to wake it.
@@ -219,8 +219,8 @@ Compare organic, conventional, and integrated farming methods side-by-side:
 
 ### 1. Clone
 ```bash
-git clone https://github.com/sandeshmangeshjadhav002/FarmIQ-copy.git
-cd FarmIQ-copy
+git clone https://github.com/sandeshmangeshjadhav002/FarmIQ.git
+cd FarmIQ
 ```
 
 ### 2. Backend setup
